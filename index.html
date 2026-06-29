@@ -9,10 +9,26 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', -apple-system, sans-serif; }
-        body { background: #0f0f1a; min-height: 100vh; padding: 12px; color: white; }
-        .container { max-width: 500px; margin: 0 auto; }
-        .hidden { display: none !important; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', -apple-system, sans-serif;
+        }
+        body {
+            background: #0f0f1a;
+            min-height: 100vh;
+            padding: 12px;
+            color: white;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .hidden {
+            display: none !important;
+        }
+
         .header {
             display: flex;
             justify-content: space-between;
@@ -27,7 +43,9 @@
             font-weight: bold;
             color: #f5a623;
         }
-        .header .logo i { margin-right: 8px; }
+        .header .logo i {
+            margin-right: 8px;
+        }
         .header .user-badge {
             font-size: 0.75rem;
             color: #888;
@@ -35,7 +53,10 @@
             padding: 6px 14px;
             border-radius: 30px;
         }
-        .header .user-badge i { color: #f5a623; margin-right: 4px; }
+        .header .user-badge i {
+            color: #f5a623;
+            margin-right: 4px;
+        }
 
         .role-selector {
             display: flex;
@@ -57,9 +78,19 @@
             text-align: center;
             min-width: 55px;
         }
-        .role-btn.active { border-color: #f5a623; color: #f5a623; background: rgba(245,166,35,0.1); }
-        .role-btn:active { transform: scale(0.97); }
-        .role-btn i { display: block; font-size: 1.1rem; margin-bottom: 2px; }
+        .role-btn.active {
+            border-color: #f5a623;
+            color: #f5a623;
+            background: rgba(245,166,35,0.1);
+        }
+        .role-btn:active {
+            transform: scale(0.97);
+        }
+        .role-btn i {
+            display: block;
+            font-size: 1.1rem;
+            margin-bottom: 2px;
+        }
 
         .auth-box {
             background: rgba(255,255,255,0.03);
@@ -68,9 +99,20 @@
             margin-bottom: 16px;
             border: 1px solid rgba(255,255,255,0.05);
         }
-        .auth-box h3 { margin-bottom: 12px; color: #f5a623; font-size: 1rem; }
-        .auth-box .form-group { margin-bottom: 10px; }
-        .auth-box .form-group label { display: block; font-size: 0.75rem; color: #888; margin-bottom: 4px; }
+        .auth-box h3 {
+            margin-bottom: 12px;
+            color: #f5a623;
+            font-size: 1rem;
+        }
+        .auth-box .form-group {
+            margin-bottom: 10px;
+        }
+        .auth-box .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: #888;
+            margin-bottom: 4px;
+        }
         .auth-box .form-group input,
         .auth-box .form-group select,
         .auth-box .form-group textarea {
@@ -84,11 +126,20 @@
             outline: none;
             font-family: inherit;
         }
-        .auth-box .form-group textarea { border-radius: 16px; min-height: 60px; resize: vertical; }
-        .auth-box .form-group select option { background: #1a1a2e; color: white; }
+        .auth-box .form-group textarea {
+            border-radius: 16px;
+            min-height: 60px;
+            resize: vertical;
+        }
+        .auth-box .form-group select option {
+            background: #1a1a2e;
+            color: white;
+        }
         .auth-box .form-group input:focus,
         .auth-box .form-group select:focus,
-        .auth-box .form-group textarea:focus { border-color: #f5a623; }
+        .auth-box .form-group textarea:focus {
+            border-color: #f5a623;
+        }
         .auth-box .form-group .checkbox {
             display: flex;
             align-items: center;
@@ -96,7 +147,11 @@
             color: #aaa;
             font-size: 0.85rem;
         }
-        .auth-box .form-group .checkbox input { width: auto; padding: 0; margin: 0; }
+        .auth-box .form-group .checkbox input {
+            width: auto;
+            padding: 0;
+            margin: 0;
+        }
         .auth-box .auth-actions {
             display: flex;
             gap: 8px;
@@ -112,13 +167,34 @@
             font-size: 0.8rem;
         }
 
-        .btn-primary { background: #f5a623; color: #1a1a2e; }
-        .btn-success { background: #4CAF50; color: white; }
-        .btn-danger { background: #ff4444; color: white; }
-        .btn-info { background: #2196F3; color: white; }
-        .btn-warning { background: #ff9800; color: #1a1a2e; }
-        .btn-secondary { background: rgba(255,255,255,0.08); color: white; }
-        .btn-purple { background: #9c27b0; color: white; }
+        .btn-primary {
+            background: #f5a623;
+            color: #1a1a2e;
+        }
+        .btn-success {
+            background: #4CAF50;
+            color: white;
+        }
+        .btn-danger {
+            background: #ff4444;
+            color: white;
+        }
+        .btn-info {
+            background: #2196F3;
+            color: white;
+        }
+        .btn-warning {
+            background: #ff9800;
+            color: #1a1a2e;
+        }
+        .btn-secondary {
+            background: rgba(255,255,255,0.08);
+            color: white;
+        }
+        .btn-purple {
+            background: #9c27b0;
+            color: white;
+        }
 
         .products-grid {
             display: grid;
@@ -136,9 +212,19 @@
             cursor: pointer;
             position: relative;
         }
-        .product-card:active { transform: scale(0.97); }
-        .product-card .name { font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; }
-        .product-card .price { color: #f5a623; font-weight: bold; font-size: 1rem; }
+        .product-card:active {
+            transform: scale(0.97);
+        }
+        .product-card .name {
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+        }
+        .product-card .price {
+            color: #f5a623;
+            font-weight: bold;
+            font-size: 1rem;
+        }
         .product-card .add-btn {
             margin-top: 8px;
             background: #f5a623;
@@ -150,8 +236,16 @@
             cursor: pointer;
             font-size: 0.7rem;
         }
-        .product-card .seller { font-size: 0.6rem; color: #666; margin-top: 4px; }
-        .product-card .rating { font-size: 0.7rem; color: #f5a623; margin-top: 4px; }
+        .product-card .seller {
+            font-size: 0.6rem;
+            color: #666;
+            margin-top: 4px;
+        }
+        .product-card .rating {
+            font-size: 0.7rem;
+            color: #f5a623;
+            margin-top: 4px;
+        }
         .product-card .age-18 {
             position: absolute;
             top: -5px;
@@ -179,7 +273,11 @@
             margin-bottom: 16px;
             border: 1px solid rgba(255,255,255,0.05);
         }
-        .cart-panel .title { font-weight: bold; margin-bottom: 10px; color: #f5a623; }
+        .cart-panel .title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #f5a623;
+        }
         .cart-item {
             display: flex;
             justify-content: space-between;
@@ -232,12 +330,31 @@
             padding: 3px 12px;
             border-radius: 30px;
         }
-        .status-waiting { background: #ff9800; color: white; }
-        .status-ready { background: #4CAF50; color: white; }
-        .status-delivered { background: #999; color: white; }
-        .status-courier { background: #2196F3; color: white; }
-        .status-return { background: #ff4444; color: white; }
-        .order-card .order-items { font-size: 0.8rem; color: #aaa; margin: 6px 0; }
+        .status-waiting {
+            background: #ff9800;
+            color: white;
+        }
+        .status-ready {
+            background: #4CAF50;
+            color: white;
+        }
+        .status-delivered {
+            background: #999;
+            color: white;
+        }
+        .status-courier {
+            background: #2196F3;
+            color: white;
+        }
+        .status-return {
+            background: #ff4444;
+            color: white;
+        }
+        .order-card .order-items {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin: 6px 0;
+        }
         .order-card .order-actions {
             display: flex;
             gap: 6px;
@@ -258,13 +375,13 @@
             font-weight: bold;
             color: #f5a623;
             font-family: monospace;
-            letter-spacing: 10px;
-            background: rgba(255,255,255,0.1);
+            letter-spacing: 8px;
+            background: rgba(255,255,255,0.08);
             padding: 16px;
             border-radius: 16px;
-            margin: 10px 0;
+            margin: 8px 0;
             text-align: center;
-            border: 2px dashed rgba(245,166,35,0.3);
+            border: 2px solid rgba(245,166,35,0.2);
         }
 
         .tabs {
@@ -306,10 +423,18 @@
             text-align: center;
             font-size: 0.85rem;
         }
-        .toast.show { opacity: 1; }
-        .toast.success { background: #4CAF50; }
-        .toast.error { background: #ff4444; }
-        .toast.info { background: #2196F3; }
+        .toast.show {
+            opacity: 1;
+        }
+        .toast.success {
+            background: #4CAF50;
+        }
+        .toast.error {
+            background: #ff4444;
+        }
+        .toast.info {
+            background: #2196F3;
+        }
 
         .delivery-select {
             background: rgba(255,255,255,0.03);
@@ -327,7 +452,10 @@
             font-size: 0.9rem;
             outline: none;
         }
-        .delivery-select select option { background: #1a1a2e; color: white; }
+        .delivery-select select option {
+            background: #1a1a2e;
+            color: white;
+        }
         .delivery-address {
             margin-top: 8px;
             padding: 8px 12px;
@@ -337,7 +465,9 @@
             color: #aaa;
             display: none;
         }
-        .delivery-address.show { display: block; }
+        .delivery-address.show {
+            display: block;
+        }
 
         .scan-area {
             background: rgba(255,255,255,0.03);
@@ -359,7 +489,9 @@
             font-family: monospace;
             outline: none;
         }
-        .scan-area input:focus { border-color: #f5a623; }
+        .scan-area input:focus {
+            border-color: #f5a623;
+        }
 
         .wallet {
             background: rgba(255,255,255,0.03);
@@ -373,9 +505,19 @@
             cursor: pointer;
             transition: 0.2s;
         }
-        .wallet:hover { background: rgba(255,255,255,0.06); border-color: #f5a623; }
-        .wallet .amount { font-size: 1.3rem; font-weight: bold; color: #f5a623; }
-        .wallet .hint { font-size: 0.6rem; color: #555; }
+        .wallet:hover {
+            background: rgba(255,255,255,0.06);
+            border-color: #f5a623;
+        }
+        .wallet .amount {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #f5a623;
+        }
+        .wallet .hint {
+            font-size: 0.6rem;
+            color: #555;
+        }
 
         .modal-overlay {
             position: fixed;
@@ -400,7 +542,10 @@
             overflow-y: auto;
             border: 1px solid rgba(255,255,255,0.08);
         }
-        .modal-content h3 { color: #f5a623; margin-bottom: 12px; }
+        .modal-content h3 {
+            color: #f5a623;
+            margin-bottom: 12px;
+        }
         .modal-content .close-modal {
             float: right;
             background: none;
@@ -418,7 +563,9 @@
             justify-content: center;
             margin: 10px 0;
         }
-        .modal-content .rating-stars .star.active { color: #f5a623; }
+        .modal-content .rating-stars .star.active {
+            color: #f5a623;
+        }
         .modal-content .review-text {
             width: 100%;
             padding: 12px;
@@ -433,14 +580,18 @@
             resize: vertical;
             margin: 10px 0;
         }
-        .modal-content .review-text:focus { border-color: #f5a623; }
+        .modal-content .review-text:focus {
+            border-color: #f5a623;
+        }
         .modal-content .file-input-wrapper {
             display: flex;
             align-items: center;
             gap: 10px;
             margin: 8px 0;
         }
-        .modal-content .file-input-wrapper input[type="file"] { display: none; }
+        .modal-content .file-input-wrapper input[type="file"] {
+            display: none;
+        }
         .modal-content .file-input-wrapper .file-label {
             background: rgba(255,255,255,0.05);
             padding: 8px 16px;
@@ -450,7 +601,9 @@
             font-size: 0.8rem;
             color: #aaa;
         }
-        .modal-content .file-input-wrapper .file-label:hover { border-color: #f5a623; }
+        .modal-content .file-input-wrapper .file-label:hover {
+            border-color: #f5a623;
+        }
         .modal-content .preview-photo {
             max-width: 100px;
             max-height: 100px;
@@ -474,8 +627,15 @@
             color: #f5a623;
             font-size: 0.8rem;
         }
-        .reviews-list .review-item .review-rating { color: #f5a623; font-size: 0.8rem; }
-        .reviews-list .review-item .review-text { color: #aaa; font-size: 0.85rem; margin-top: 4px; }
+        .reviews-list .review-item .review-rating {
+            color: #f5a623;
+            font-size: 0.8rem;
+        }
+        .reviews-list .review-item .review-text {
+            color: #aaa;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
         .reviews-list .review-item .review-photo {
             max-width: 100px;
             max-height: 100px;
@@ -483,7 +643,10 @@
             margin-top: 6px;
             object-fit: cover;
         }
-        .reviews-list .review-item .review-date { color: #555; font-size: 0.65rem; }
+        .reviews-list .review-item .review-date {
+            color: #555;
+            font-size: 0.65rem;
+        }
 
         .deposit-amounts {
             display: grid;
@@ -502,8 +665,12 @@
             transition: 0.2s;
             font-size: 1rem;
         }
-        .deposit-amounts button:hover { border-color: #f5a623; }
-        .deposit-amounts button:active { transform: scale(0.95); }
+        .deposit-amounts button:hover {
+            border-color: #f5a623;
+        }
+        .deposit-amounts button:active {
+            transform: scale(0.95);
+        }
         .deposit-amounts button.active {
             border-color: #f5a623;
             background: rgba(245,166,35,0.15);
@@ -524,7 +691,9 @@
             font-size: 1rem;
             outline: none;
         }
-        .deposit-custom input:focus { border-color: #f5a623; }
+        .deposit-custom input:focus {
+            border-color: #f5a623;
+        }
         .deposit-custom button {
             padding: 12px 24px;
             border-radius: 30px;
@@ -541,9 +710,19 @@
             margin: 16px 0;
             border: 1px solid rgba(255,255,255,0.05);
         }
-        .deposit-instruction h4 { color: #f5a623; margin-bottom: 8px; }
-        .deposit-instruction ol { padding-left: 20px; color: #aaa; font-size: 0.85rem; line-height: 1.6; }
-        .deposit-instruction ol li { margin-bottom: 4px; }
+        .deposit-instruction h4 {
+            color: #f5a623;
+            margin-bottom: 8px;
+        }
+        .deposit-instruction ol {
+            padding-left: 20px;
+            color: #aaa;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+        .deposit-instruction ol li {
+            margin-bottom: 4px;
+        }
 
         .order-photo {
             max-width: 60px;
@@ -559,11 +738,24 @@
         }
 
         @media (max-width: 480px) {
-            .products-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
-            .role-btn { font-size: 0.55rem; padding: 6px 4px; }
-            .role-btn i { font-size: 0.9rem; }
-            .deposit-amounts { grid-template-columns: repeat(3, 1fr); }
-            .pickup-code { font-size: 1.8rem; letter-spacing: 5px; padding: 12px; }
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            }
+            .role-btn {
+                font-size: 0.55rem;
+                padding: 6px 4px;
+            }
+            .role-btn i {
+                font-size: 0.9rem;
+            }
+            .deposit-amounts {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .pickup-code {
+                font-size: 1.8rem;
+                letter-spacing: 4px;
+                padding: 12px;
+            }
         }
     </style>
 </head>
@@ -592,7 +784,7 @@
             </button>
         </div>
 
-        <!-- КЛИЕНТ -->
+        <!-- ========== КЛИЕНТ ========== -->
         <div id="clientPanel">
             <div id="clientAuth" class="auth-box">
                 <h3>👤 Вход для клиента</h3>
@@ -666,7 +858,7 @@
             </div>
         </div>
 
-        <!-- ПРОДАВЕЦ -->
+        <!-- ========== ПРОДАВЕЦ ========== -->
         <div id="sellerPanel" class="hidden">
             <div id="sellerAuth" class="auth-box">
                 <h3>🏪 Вход для продавца</h3>
@@ -740,7 +932,7 @@
             </div>
         </div>
 
-        <!-- ПВЗ -->
+        <!-- ========== ПВЗ ========== -->
         <div id="pvzPanel" class="hidden">
             <div id="pvzAuth" class="auth-box">
                 <h3>🏪 Вход для ПВЗ</h3>
@@ -778,7 +970,7 @@
             </div>
         </div>
 
-        <!-- КУРЬЕР -->
+        <!-- ========== КУРЬЕР ========== -->
         <div id="courierPanel" class="hidden">
             <div id="courierAuth" class="auth-box">
                 <h3>🚚 Вход для курьера</h3>
@@ -812,7 +1004,7 @@
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО ДЛЯ ТОВАРА -->
+    <!-- ========== МОДАЛЬНОЕ ОКНО ДЛЯ ТОВАРА ========== -->
     <div id="productModal" class="modal-overlay hidden" onclick="if(event.target===this) closeProductModal()">
         <div class="modal-content">
             <button class="close-modal" onclick="closeProductModal()">✕</button>
@@ -852,7 +1044,7 @@
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО ПОПОЛНЕНИЯ КОШЕЛЬКА -->
+    <!-- ========== МОДАЛЬНОЕ ОКНО ПОПОЛНЕНИЯ КОШЕЛЬКА ========== -->
     <div id="depositModal" class="modal-overlay hidden" onclick="if(event.target===this) closeDepositModal()">
         <div class="modal-content">
             <button class="close-modal" onclick="closeDepositModal()">✕</button>
@@ -952,7 +1144,8 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    document.getElementById('productPhotoPreview').innerHTML = `<img src="${e.target.result}" class="preview-photo">`;
+                    document.getElementById('productPhotoPreview').innerHTML =
+                        `<img src="${e.target.result}" class="preview-photo">`;
                 };
                 reader.readAsDataURL(file);
             }
@@ -963,7 +1156,8 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    document.getElementById('reviewPhotoPreview').innerHTML = `<img src="${e.target.result}" class="preview-photo">`;
+                    document.getElementById('reviewPhotoPreview').innerHTML =
+                        `<img src="${e.target.result}" class="preview-photo">`;
                 };
                 reader.readAsDataURL(file);
             }
@@ -1084,7 +1278,8 @@
 
         function loadProductRating(productId) {
             db.ref('reviews/' + productId).on('value', (sn) => {
-                let total = 0, count = 0;
+                let total = 0,
+                    count = 0;
                 sn.forEach(child => {
                     const review = child.val();
                     total += review.rating || 0;
@@ -1112,7 +1307,8 @@
 
             const photoContainer = document.getElementById('modalProductPhoto');
             if (product.photo) {
-                photoContainer.innerHTML = `<img src="${product.photo}" style="max-width:100%;max-height:200px;border-radius:12px;object-fit:cover;">`;
+                photoContainer.innerHTML =
+                    `<img src="${product.photo}" style="max-width:100%;max-height:200px;border-radius:12px;object-fit:cover;">`;
             } else {
                 photoContainer.innerHTML = '';
             }
@@ -1224,7 +1420,8 @@
                 return;
             }
             depositTarget = target;
-            document.getElementById('depositCurrentBalance').textContent = (currentUser.wallet || 0).toLocaleString() + ' ₽';
+            document.getElementById('depositCurrentBalance').textContent = (currentUser.wallet || 0).toLocaleString() +
+            ' ₽';
             document.getElementById('depositCustomAmount').value = '';
             document.querySelectorAll('.deposit-amounts button').forEach(b => b.classList.remove('active'));
             document.getElementById('depositModal').classList.remove('hidden');
@@ -1262,9 +1459,9 @@
 
             const newBalance = (currentUser.wallet || 0) + amount;
             let path = '';
-            if (depositTarget === 'client') { path = 'users/' + currentUser.id + '/wallet'; }
-            else if (depositTarget === 'seller') { path = 'sellers/' + currentUser.id + '/wallet'; }
-            else if (depositTarget === 'courier') { path = 'couriers/' + currentUser.id + '/wallet'; }
+            if (depositTarget === 'client') { path = 'users/' + currentUser.id + '/wallet'; } else if (depositTarget ===
+                'seller') { path = 'sellers/' + currentUser.id + '/wallet'; } else if (depositTarget === 'courier') {
+                path = 'couriers/' + currentUser.id + '/wallet'; }
 
             db.ref(path).set(newBalance).then(() => {
                 currentUser.wallet = newBalance;
@@ -1462,7 +1659,8 @@
 
         function createOrder(type, address, pvzAddress) {
             const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
-            const orderId = 'ORD' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
+            const orderId = 'ORD' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4)
+            .toUpperCase();
             const code = Math.floor(100000 + Math.random() * 900000).toString();
 
             const hasAdult = cart.some(i => i.adult);
@@ -1485,7 +1683,8 @@
                 userId: currentUser.id,
                 userName: currentUser.name,
                 phone: currentUser.phone,
-                items: cart.map(i => ({ id: i.id, name: i.name, price: i.price, qty: i.qty, adult: i.adult || false, photo: i.photo || null })),
+                items: cart.map(i => ({ id: i.id, name: i.name, price: i.price, qty: i.qty, adult: i.adult || false,
+                    photo: i.photo || null })),
                 total: total,
                 type: type,
                 address: type === 'courier' ? address : pvzAddress,
@@ -1507,7 +1706,7 @@
 
             db.ref('orders/' + orderId).set(order).then(() => {
                 showToast(`✅ Заказ #${orderId} оформлен!`, 'success');
-                showToast(`📱 КОД: ${code}`, 'info');
+                showToast(`🔑 КОД: ${code}`, 'success');
                 cart = [];
                 renderCart();
                 renderClientOrders();
@@ -1548,7 +1747,7 @@
                         </div>
                         <div style="font-weight:bold;">${o.total.toLocaleString()} ₽</div>
                         ${o.type === 'pvz' ? `<div>🏪 ПВЗ №${o.pvzNumber}<br>📍 ${o.address}</div>` : `<div>📍 ${o.address}${o.courierName ? '<br>🚚 Курьер: ' + o.courierName : ''}</div>`}
-                        <div class="pickup-code">🔑 Код: ${o.code}</div>
+                        <div class="pickup-code">🔑 ${o.code}</div>
                         ${o.hasAdult && !o.adultConfirmed ? `<div style="color:#ff4444;font-weight:bold;">🔞 Требуется подтверждение 18+ на ПВЗ</div>` : ''}
                         ${o.status === 'courier_arrived' ? `<div style="color:#4CAF50;font-size:0.8rem;">🚪 Курьер прибыл! Назовите код</div>` : ''}
                         ${o.status === 'ready' ? `<div style="color:#4CAF50;font-size:0.8rem;">✅ Готов к выдаче</div>` : ''}
@@ -1838,7 +2037,7 @@
                     <div style="font-weight:bold;">${o.total.toLocaleString()} ₽</div>
                     <div>👤 ${o.userName}</div>
                     ${o.hasAdult ? `<div style="color:#ff4444;font-weight:bold;">🔞 Требуется подтверждение 18+</div>` : ''}
-                    <div class="pickup-code">🔑 Код: ${o.code}</div>
+                    <div class="pickup-code">🔑 ${o.code}</div>
                     ${o.courierName ? `<div style="font-size:0.8rem;color:#888;">🚚 Курьер: ${o.courierName}</div>` : ''}
                     <div class="order-actions">
                         ${o.status === 'to_pvz' ? `<button class="btn-success" onclick="pvzReady('${o.id}')">✅ Готов к выдаче</button>` : ''}
@@ -1908,7 +2107,8 @@
                         found = true;
                         let adultWarning = '';
                         if (order.hasAdult && !order.adultConfirmed) {
-                            adultWarning = '<div style="color:#ff4444;font-weight:bold;margin-top:5px;">🔞 Требуется подтверждение 18+</div>';
+                            adultWarning =
+                                '<div style="color:#ff4444;font-weight:bold;margin-top:5px;">🔞 Требуется подтверждение 18+</div>';
                         }
                         result.innerHTML = `
                             <div style="background:rgba(76,175,80,0.15);padding:12px;border-radius:12px;border:1px solid #4CAF50;">
@@ -1943,7 +2143,8 @@
             db.ref('orders/' + orderId).once('value', (sn) => {
                 const order = sn.val();
                 if (order.courierId) {
-                    db.ref('couriers/' + order.courierId + '/activeOrders').transaction(current => Math.max(0, (current || 1) - 1));
+                    db.ref('couriers/' + order.courierId + '/activeOrders').transaction(current => Math.max(0, (current ||
+                        1) - 1));
                 }
             });
             showToast('🚚 Заказ передан курьеру', 'success');
@@ -2044,7 +2245,7 @@
                         <div class="order-items">${o.items.map(i => `${i.name} x${i.qty}`).join(', ')}</div>
                         <div style="font-weight:bold;">${o.total.toLocaleString()} ₽</div>
                         <div>🏪 ПВЗ №${o.pvzNumber}</div>
-                        <div class="pickup-code">🔑 Код: ${o.code}</div>
+                        <div class="pickup-code">🔑 ${o.code}</div>
                         <div class="order-actions">
                             <button class="btn-primary" onclick="courierPickup('${o.id}')">📦 Еду забирать</button>
                         </div>
@@ -2064,7 +2265,7 @@
                         <div style="font-weight:bold;">${o.total.toLocaleString()} ₽</div>
                         <div>📍 ${o.address}</div>
                         <div>👤 ${o.userName}</div>
-                        <div class="pickup-code">🔑 Код: ${o.code}</div>
+                        <div class="pickup-code">🔑 ${o.code}</div>
                         <div class="order-actions">
                             ${o.status === 'with_courier' ? `<button class="btn-success" onclick="courierArrived('${o.id}')">🚪 Прибыл</button>` : ''}
                             ${o.status === 'courier_arrived' ? `<button class="btn-success" onclick="courierDeliver('${o.id}')">📤 Выдать</button>` : ''}
@@ -2102,8 +2303,10 @@
                 if (order.code === code) {
                     db.ref('orders/' + orderId).update({ status: 'delivered' });
                     const deliveryFee = Math.max(50, Math.round(order.total * 0.05));
-                    db.ref('couriers/' + currentUser.id + '/wallet').transaction(current => (current || 0) + deliveryFee);
-                    db.ref('couriers/' + currentUser.id + '/activeOrders').transaction(current => Math.max(0, (current || 1) - 1));
+                    db.ref('couriers/' + currentUser.id + '/wallet').transaction(current => (current || 0) +
+                    deliveryFee);
+                    db.ref('couriers/' + currentUser.id + '/activeOrders').transaction(current => Math.max(0, (current ||
+                        1) - 1));
                     showToast(`✅ Заказ выдан! +${deliveryFee} ₽`, 'success');
                     courierAction('orders');
                 } else {
@@ -2193,7 +2396,7 @@
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
         console.log('🛍️ WHOPPER MARKET');
         console.log('📸 Фото товаров и отзывов сохраняются');
-        console.log('🔑 КОДЫ ЗАКАЗОВ СОХРАНЯЮТСЯ И ВИДНЫ ВСЕМ!');
+        console.log('🔑 КОДЫ ЗАКАЗОВ РАБОТАЮТ И СОХРАНЯЮТСЯ!');
         loadPVZList();
         loadCouriers();
         loadProducts();
