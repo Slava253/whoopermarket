@@ -9,26 +9,10 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', -apple-system, sans-serif;
-        }
-        body {
-            background: #0f0f1a;
-            min-height: 100vh;
-            padding: 12px;
-            color: white;
-        }
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        .hidden {
-            display: none !important;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', -apple-system, sans-serif; }
+        body { background: #0f0f1a; min-height: 100vh; padding: 12px; color: white; }
+        .container { max-width: 500px; margin: 0 auto; }
+        .hidden { display: none !important; }
         .header {
             display: flex;
             justify-content: space-between;
@@ -43,9 +27,7 @@
             font-weight: bold;
             color: #f5a623;
         }
-        .header .logo i {
-            margin-right: 8px;
-        }
+        .header .logo i { margin-right: 8px; }
         .header .user-badge {
             font-size: 0.75rem;
             color: #888;
@@ -53,10 +35,7 @@
             padding: 6px 14px;
             border-radius: 30px;
         }
-        .header .user-badge i {
-            color: #f5a623;
-            margin-right: 4px;
-        }
+        .header .user-badge i { color: #f5a623; margin-right: 4px; }
 
         .role-selector {
             display: flex;
@@ -78,19 +57,9 @@
             text-align: center;
             min-width: 55px;
         }
-        .role-btn.active {
-            border-color: #f5a623;
-            color: #f5a623;
-            background: rgba(245,166,35,0.1);
-        }
-        .role-btn:active {
-            transform: scale(0.97);
-        }
-        .role-btn i {
-            display: block;
-            font-size: 1.1rem;
-            margin-bottom: 2px;
-        }
+        .role-btn.active { border-color: #f5a623; color: #f5a623; background: rgba(245,166,35,0.1); }
+        .role-btn:active { transform: scale(0.97); }
+        .role-btn i { display: block; font-size: 1.1rem; margin-bottom: 2px; }
 
         .auth-box {
             background: rgba(255,255,255,0.03);
@@ -99,20 +68,9 @@
             margin-bottom: 16px;
             border: 1px solid rgba(255,255,255,0.05);
         }
-        .auth-box h3 {
-            margin-bottom: 12px;
-            color: #f5a623;
-            font-size: 1rem;
-        }
-        .auth-box .form-group {
-            margin-bottom: 10px;
-        }
-        .auth-box .form-group label {
-            display: block;
-            font-size: 0.75rem;
-            color: #888;
-            margin-bottom: 4px;
-        }
+        .auth-box h3 { margin-bottom: 12px; color: #f5a623; font-size: 1rem; }
+        .auth-box .form-group { margin-bottom: 10px; }
+        .auth-box .form-group label { display: block; font-size: 0.75rem; color: #888; margin-bottom: 4px; }
         .auth-box .form-group input,
         .auth-box .form-group select,
         .auth-box .form-group textarea {
@@ -126,20 +84,11 @@
             outline: none;
             font-family: inherit;
         }
-        .auth-box .form-group textarea {
-            border-radius: 16px;
-            min-height: 60px;
-            resize: vertical;
-        }
-        .auth-box .form-group select option {
-            background: #1a1a2e;
-            color: white;
-        }
+        .auth-box .form-group textarea { border-radius: 16px; min-height: 60px; resize: vertical; }
+        .auth-box .form-group select option { background: #1a1a2e; color: white; }
         .auth-box .form-group input:focus,
         .auth-box .form-group select:focus,
-        .auth-box .form-group textarea:focus {
-            border-color: #f5a623;
-        }
+        .auth-box .form-group textarea:focus { border-color: #f5a623; }
         .auth-box .form-group .checkbox {
             display: flex;
             align-items: center;
@@ -147,11 +96,7 @@
             color: #aaa;
             font-size: 0.85rem;
         }
-        .auth-box .form-group .checkbox input {
-            width: auto;
-            padding: 0;
-            margin: 0;
-        }
+        .auth-box .form-group .checkbox input { width: auto; padding: 0; margin: 0; }
         .auth-box .auth-actions {
             display: flex;
             gap: 8px;
@@ -167,34 +112,13 @@
             font-size: 0.8rem;
         }
 
-        .btn-primary {
-            background: #f5a623;
-            color: #1a1a2e;
-        }
-        .btn-success {
-            background: #4CAF50;
-            color: white;
-        }
-        .btn-danger {
-            background: #ff4444;
-            color: white;
-        }
-        .btn-info {
-            background: #2196F3;
-            color: white;
-        }
-        .btn-warning {
-            background: #ff9800;
-            color: #1a1a2e;
-        }
-        .btn-secondary {
-            background: rgba(255,255,255,0.08);
-            color: white;
-        }
-        .btn-purple {
-            background: #9c27b0;
-            color: white;
-        }
+        .btn-primary { background: #f5a623; color: #1a1a2e; }
+        .btn-success { background: #4CAF50; color: white; }
+        .btn-danger { background: #ff4444; color: white; }
+        .btn-info { background: #2196F3; color: white; }
+        .btn-warning { background: #ff9800; color: #1a1a2e; }
+        .btn-secondary { background: rgba(255,255,255,0.08); color: white; }
+        .btn-purple { background: #9c27b0; color: white; }
 
         .products-grid {
             display: grid;
@@ -212,19 +136,9 @@
             cursor: pointer;
             position: relative;
         }
-        .product-card:active {
-            transform: scale(0.97);
-        }
-        .product-card .name {
-            font-weight: 600;
-            font-size: 0.85rem;
-            margin-bottom: 4px;
-        }
-        .product-card .price {
-            color: #f5a623;
-            font-weight: bold;
-            font-size: 1rem;
-        }
+        .product-card:active { transform: scale(0.97); }
+        .product-card .name { font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; }
+        .product-card .price { color: #f5a623; font-weight: bold; font-size: 1rem; }
         .product-card .add-btn {
             margin-top: 8px;
             background: #f5a623;
@@ -236,16 +150,8 @@
             cursor: pointer;
             font-size: 0.7rem;
         }
-        .product-card .seller {
-            font-size: 0.6rem;
-            color: #666;
-            margin-top: 4px;
-        }
-        .product-card .rating {
-            font-size: 0.7rem;
-            color: #f5a623;
-            margin-top: 4px;
-        }
+        .product-card .seller { font-size: 0.6rem; color: #666; margin-top: 4px; }
+        .product-card .rating { font-size: 0.7rem; color: #f5a623; margin-top: 4px; }
         .product-card .age-18 {
             position: absolute;
             top: -5px;
@@ -273,11 +179,7 @@
             margin-bottom: 16px;
             border: 1px solid rgba(255,255,255,0.05);
         }
-        .cart-panel .title {
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #f5a623;
-        }
+        .cart-panel .title { font-weight: bold; margin-bottom: 10px; color: #f5a623; }
         .cart-item {
             display: flex;
             justify-content: space-between;
@@ -330,31 +232,12 @@
             padding: 3px 12px;
             border-radius: 30px;
         }
-        .status-waiting {
-            background: #ff9800;
-            color: white;
-        }
-        .status-ready {
-            background: #4CAF50;
-            color: white;
-        }
-        .status-delivered {
-            background: #999;
-            color: white;
-        }
-        .status-courier {
-            background: #2196F3;
-            color: white;
-        }
-        .status-return {
-            background: #ff4444;
-            color: white;
-        }
-        .order-card .order-items {
-            font-size: 0.8rem;
-            color: #aaa;
-            margin: 6px 0;
-        }
+        .status-waiting { background: #ff9800; color: white; }
+        .status-ready { background: #4CAF50; color: white; }
+        .status-delivered { background: #999; color: white; }
+        .status-courier { background: #2196F3; color: white; }
+        .status-return { background: #ff4444; color: white; }
+        .order-card .order-items { font-size: 0.8rem; color: #aaa; margin: 6px 0; }
         .order-card .order-actions {
             display: flex;
             gap: 6px;
@@ -371,16 +254,17 @@
         }
 
         .pickup-code {
-            font-size: 2.2rem;
+            font-size: 2.5rem;
             font-weight: bold;
             color: #f5a623;
             font-family: monospace;
-            letter-spacing: 8px;
-            background: rgba(255,255,255,0.05);
-            padding: 12px;
-            border-radius: 12px;
-            margin: 8px 0;
+            letter-spacing: 10px;
+            background: rgba(255,255,255,0.1);
+            padding: 16px;
+            border-radius: 16px;
+            margin: 10px 0;
             text-align: center;
+            border: 2px dashed rgba(245,166,35,0.3);
         }
 
         .tabs {
@@ -422,18 +306,10 @@
             text-align: center;
             font-size: 0.85rem;
         }
-        .toast.show {
-            opacity: 1;
-        }
-        .toast.success {
-            background: #4CAF50;
-        }
-        .toast.error {
-            background: #ff4444;
-        }
-        .toast.info {
-            background: #2196F3;
-        }
+        .toast.show { opacity: 1; }
+        .toast.success { background: #4CAF50; }
+        .toast.error { background: #ff4444; }
+        .toast.info { background: #2196F3; }
 
         .delivery-select {
             background: rgba(255,255,255,0.03);
@@ -451,10 +327,7 @@
             font-size: 0.9rem;
             outline: none;
         }
-        .delivery-select select option {
-            background: #1a1a2e;
-            color: white;
-        }
+        .delivery-select select option { background: #1a1a2e; color: white; }
         .delivery-address {
             margin-top: 8px;
             padding: 8px 12px;
@@ -464,9 +337,7 @@
             color: #aaa;
             display: none;
         }
-        .delivery-address.show {
-            display: block;
-        }
+        .delivery-address.show { display: block; }
 
         .scan-area {
             background: rgba(255,255,255,0.03);
@@ -488,9 +359,7 @@
             font-family: monospace;
             outline: none;
         }
-        .scan-area input:focus {
-            border-color: #f5a623;
-        }
+        .scan-area input:focus { border-color: #f5a623; }
 
         .wallet {
             background: rgba(255,255,255,0.03);
@@ -504,19 +373,9 @@
             cursor: pointer;
             transition: 0.2s;
         }
-        .wallet:hover {
-            background: rgba(255,255,255,0.06);
-            border-color: #f5a623;
-        }
-        .wallet .amount {
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: #f5a623;
-        }
-        .wallet .hint {
-            font-size: 0.6rem;
-            color: #555;
-        }
+        .wallet:hover { background: rgba(255,255,255,0.06); border-color: #f5a623; }
+        .wallet .amount { font-size: 1.3rem; font-weight: bold; color: #f5a623; }
+        .wallet .hint { font-size: 0.6rem; color: #555; }
 
         .modal-overlay {
             position: fixed;
@@ -541,10 +400,7 @@
             overflow-y: auto;
             border: 1px solid rgba(255,255,255,0.08);
         }
-        .modal-content h3 {
-            color: #f5a623;
-            margin-bottom: 12px;
-        }
+        .modal-content h3 { color: #f5a623; margin-bottom: 12px; }
         .modal-content .close-modal {
             float: right;
             background: none;
@@ -562,9 +418,7 @@
             justify-content: center;
             margin: 10px 0;
         }
-        .modal-content .rating-stars .star.active {
-            color: #f5a623;
-        }
+        .modal-content .rating-stars .star.active { color: #f5a623; }
         .modal-content .review-text {
             width: 100%;
             padding: 12px;
@@ -579,18 +433,14 @@
             resize: vertical;
             margin: 10px 0;
         }
-        .modal-content .review-text:focus {
-            border-color: #f5a623;
-        }
+        .modal-content .review-text:focus { border-color: #f5a623; }
         .modal-content .file-input-wrapper {
             display: flex;
             align-items: center;
             gap: 10px;
             margin: 8px 0;
         }
-        .modal-content .file-input-wrapper input[type="file"] {
-            display: none;
-        }
+        .modal-content .file-input-wrapper input[type="file"] { display: none; }
         .modal-content .file-input-wrapper .file-label {
             background: rgba(255,255,255,0.05);
             padding: 8px 16px;
@@ -600,9 +450,7 @@
             font-size: 0.8rem;
             color: #aaa;
         }
-        .modal-content .file-input-wrapper .file-label:hover {
-            border-color: #f5a623;
-        }
+        .modal-content .file-input-wrapper .file-label:hover { border-color: #f5a623; }
         .modal-content .preview-photo {
             max-width: 100px;
             max-height: 100px;
@@ -626,15 +474,8 @@
             color: #f5a623;
             font-size: 0.8rem;
         }
-        .reviews-list .review-item .review-rating {
-            color: #f5a623;
-            font-size: 0.8rem;
-        }
-        .reviews-list .review-item .review-text {
-            color: #aaa;
-            font-size: 0.85rem;
-            margin-top: 4px;
-        }
+        .reviews-list .review-item .review-rating { color: #f5a623; font-size: 0.8rem; }
+        .reviews-list .review-item .review-text { color: #aaa; font-size: 0.85rem; margin-top: 4px; }
         .reviews-list .review-item .review-photo {
             max-width: 100px;
             max-height: 100px;
@@ -642,10 +483,7 @@
             margin-top: 6px;
             object-fit: cover;
         }
-        .reviews-list .review-item .review-date {
-            color: #555;
-            font-size: 0.65rem;
-        }
+        .reviews-list .review-item .review-date { color: #555; font-size: 0.65rem; }
 
         .deposit-amounts {
             display: grid;
@@ -664,12 +502,8 @@
             transition: 0.2s;
             font-size: 1rem;
         }
-        .deposit-amounts button:hover {
-            border-color: #f5a623;
-        }
-        .deposit-amounts button:active {
-            transform: scale(0.95);
-        }
+        .deposit-amounts button:hover { border-color: #f5a623; }
+        .deposit-amounts button:active { transform: scale(0.95); }
         .deposit-amounts button.active {
             border-color: #f5a623;
             background: rgba(245,166,35,0.15);
@@ -690,9 +524,7 @@
             font-size: 1rem;
             outline: none;
         }
-        .deposit-custom input:focus {
-            border-color: #f5a623;
-        }
+        .deposit-custom input:focus { border-color: #f5a623; }
         .deposit-custom button {
             padding: 12px 24px;
             border-radius: 30px;
@@ -709,23 +541,13 @@
             margin: 16px 0;
             border: 1px solid rgba(255,255,255,0.05);
         }
-        .deposit-instruction h4 {
-            color: #f5a623;
-            margin-bottom: 8px;
-        }
-        .deposit-instruction ol {
-            padding-left: 20px;
-            color: #aaa;
-            font-size: 0.85rem;
-            line-height: 1.6;
-        }
-        .deposit-instruction ol li {
-            margin-bottom: 4px;
-        }
+        .deposit-instruction h4 { color: #f5a623; margin-bottom: 8px; }
+        .deposit-instruction ol { padding-left: 20px; color: #aaa; font-size: 0.85rem; line-height: 1.6; }
+        .deposit-instruction ol li { margin-bottom: 4px; }
 
         .order-photo {
-            max-width: 80px;
-            max-height: 80px;
+            max-width: 60px;
+            max-height: 60px;
             border-radius: 8px;
             object-fit: cover;
             margin-right: 8px;
@@ -737,19 +559,11 @@
         }
 
         @media (max-width: 480px) {
-            .products-grid {
-                grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-            }
-            .role-btn {
-                font-size: 0.55rem;
-                padding: 6px 4px;
-            }
-            .role-btn i {
-                font-size: 0.9rem;
-            }
-            .deposit-amounts {
-                grid-template-columns: repeat(3, 1fr);
-            }
+            .products-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+            .role-btn { font-size: 0.55rem; padding: 6px 4px; }
+            .role-btn i { font-size: 0.9rem; }
+            .deposit-amounts { grid-template-columns: repeat(3, 1fr); }
+            .pickup-code { font-size: 1.8rem; letter-spacing: 5px; padding: 12px; }
         }
     </style>
 </head>
@@ -906,8 +720,8 @@
                     </div>
                     <div class="form-group">
                         <label>Фото товара</label>
-                        <input type="file" id="productPhoto" accept="image/*">
-                        <div id="productPhotoPreview"></div>
+                        <input type="file" id="productPhoto" accept="image/*" onchange="previewProductPhoto(event)">
+                        <div id="productPhotoPreview" style="margin-top:8px;"></div>
                     </div>
                     <div class="form-group">
                         <div class="checkbox">
@@ -1024,7 +838,7 @@
                 </div>
                 <textarea class="review-text" id="modalReviewText" placeholder="Напишите отзыв..."></textarea>
                 <div class="file-input-wrapper">
-                    <input type="file" id="reviewPhoto" accept="image/*">
+                    <input type="file" id="reviewPhoto" accept="image/*" onchange="previewReviewPhoto(event)">
                     <label for="reviewPhoto" class="file-label">📷 Добавить фото к отзыву</label>
                 </div>
                 <div id="reviewPhotoPreview"></div>
@@ -1101,7 +915,8 @@
             type: 'client',
             phone: null,
             pvzNumber: null,
-            shopName: null
+            shopName: null,
+            wallet: 0
         };
         let cart = [];
         let clientTab = 'active';
@@ -1110,14 +925,12 @@
         let currentProductId = null;
         let selectedRating = 0;
         let depositTarget = 'client';
-        let reviewPhotoFile = null;
-        let productPhotoFile = null;
 
         // ========== НАЧАЛЬНЫЕ ТОВАРЫ ==========
         const defaultProducts = [
-            { id: 'default_1', name: 'Смартфон X Pro', price: 49990, description: 'Флагманский смартфон с 6.7" экраном', sellerName: 'WHOPPER Shop', adult: false },
-            { id: 'default_2', name: 'Наушники Pro Max', price: 8990, description: 'Беспроводные наушники с шумоподавлением', sellerName: 'WHOPPER Shop', adult: false },
-            { id: 'default_3', name: 'Фитнес-браслет 5', price: 3990, description: 'Трекер активности с пульсометром', sellerName: 'WHOPPER Shop', adult: false },
+            { id: 'default_1', name: 'Смартфон X Pro', price: 49990, description: 'Флагманский смартфон', sellerName: 'WHOPPER Shop', adult: false },
+            { id: 'default_2', name: 'Наушники Pro Max', price: 8990, description: 'Беспроводные наушники', sellerName: 'WHOPPER Shop', adult: false },
+            { id: 'default_3', name: 'Фитнес-браслет 5', price: 3990, description: 'Трекер активности', sellerName: 'WHOPPER Shop', adult: false },
             { id: 'default_4', name: 'Игровая мышь RGB', price: 2590, description: 'Игровая мышь с 8 кнопками', sellerName: 'WHOPPER Shop', adult: false },
             { id: 'default_5', name: 'Электронная сигарета', price: 3490, description: 'Заряжается от USB', sellerName: 'WHOPPER Shop', adult: true },
             { id: 'default_6', name: 'Коллекционный алкоголь', price: 15990, description: 'Элитный напиток', sellerName: 'WHOPPER Shop', adult: true },
@@ -1133,21 +946,38 @@
             t._timeout = setTimeout(() => t.classList.remove('show'), 2500);
         }
 
-        // ========== ЗАГРУЗКА И СОХРАНЕНИЕ ФОТО ==========
+        // ========== ФУНКЦИИ ДЛЯ ФОТО ==========
+        function previewProductPhoto(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('productPhotoPreview').innerHTML = `<img src="${e.target.result}" class="preview-photo">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function previewReviewPhoto(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('reviewPhotoPreview').innerHTML = `<img src="${e.target.result}" class="preview-photo">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
         function uploadPhoto(file, path) {
             return new Promise((resolve, reject) => {
-                if (!file) {
-                    resolve(null);
-                    return;
-                }
+                if (!file) { resolve(null); return; }
                 const ref = storage.ref('photos/' + path + '/' + Date.now() + '_' + file.name);
                 ref.put(file).then((snapshot) => {
                     return snapshot.ref.getDownloadURL();
                 }).then((url) => {
                     resolve(url);
-                }).catch((err) => {
-                    reject(err);
-                });
+                }).catch((err) => { reject(err); });
             });
         }
 
@@ -1249,15 +1079,12 @@
                 </div>
             `).join('');
 
-            products.forEach(p => {
-                loadProductRating(p.id);
-            });
+            products.forEach(p => { loadProductRating(p.id); });
         }
 
         function loadProductRating(productId) {
             db.ref('reviews/' + productId).on('value', (sn) => {
-                let total = 0;
-                let count = 0;
+                let total = 0, count = 0;
                 sn.forEach(child => {
                     const review = child.val();
                     total += review.rating || 0;
@@ -1265,9 +1092,7 @@
                 });
                 const avg = count > 0 ? (total / count) : 0;
                 const el = document.getElementById('rating_' + productId);
-                if (el) {
-                    el.textContent = '⭐ ' + avg.toFixed(1) + ' (' + count + ')';
-                }
+                if (el) { el.textContent = '⭐ ' + avg.toFixed(1) + ' (' + count + ')'; }
             });
         }
 
@@ -1275,8 +1100,8 @@
         window.openProductModal = function(productId) {
             currentProductId = productId;
             selectedRating = 0;
-            reviewPhotoFile = null;
             document.getElementById('reviewPhotoPreview').innerHTML = '';
+            document.getElementById('reviewPhoto').value = '';
 
             const product = window.allProducts.find(p => p.id === productId);
             if (!product) return;
@@ -1293,13 +1118,8 @@
             }
 
             document.getElementById('modalProductDesc').textContent = product.description || 'Описание отсутствует';
-
             const adultEl = document.getElementById('modalProductAdult');
-            if (product.adult) {
-                adultEl.style.display = 'block';
-            } else {
-                adultEl.style.display = 'none';
-            }
+            if (product.adult) { adultEl.style.display = 'block'; } else { adultEl.style.display = 'none'; }
 
             document.querySelectorAll('#modalStars .star').forEach(s => s.classList.remove('active'));
             document.getElementById('modalReviewText').value = '';
@@ -1318,32 +1138,6 @@
                 s.classList.toggle('active', parseInt(s.dataset.star) <= rating);
             });
         };
-
-        document.getElementById('reviewPhoto').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                reviewPhotoFile = file;
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    document.getElementById('reviewPhotoPreview').innerHTML =
-                        `<img src="${event.target.result}" class="preview-photo">`;
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        document.getElementById('productPhoto').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                productPhotoFile = file;
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    document.getElementById('productPhotoPreview').innerHTML =
-                        `<img src="${event.target.result}" class="preview-photo">`;
-                };
-                reader.readAsDataURL(file);
-            }
-        });
 
         window.submitReview = function() {
             if (!currentUser.id || currentUser.type !== 'client') {
@@ -1366,13 +1160,12 @@
             }
 
             const reviewId = 'rev_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
+            const photoFile = document.getElementById('reviewPhoto').files[0];
 
-            if (reviewPhotoFile) {
-                uploadPhoto(reviewPhotoFile, 'reviews/' + currentProductId + '/' + reviewId).then((photoUrl) => {
+            if (photoFile) {
+                uploadPhoto(photoFile, 'reviews/' + currentProductId + '/' + reviewId).then((photoUrl) => {
                     saveReview(reviewId, text, photoUrl);
-                }).catch(() => {
-                    saveReview(reviewId, text, null);
-                });
+                }).catch(() => { saveReview(reviewId, text, null); });
             } else {
                 saveReview(reviewId, text, null);
             }
@@ -1395,8 +1188,8 @@
                 document.getElementById('modalReviewText').value = '';
                 document.querySelectorAll('#modalStars .star').forEach(s => s.classList.remove('active'));
                 selectedRating = 0;
-                reviewPhotoFile = null;
                 document.getElementById('reviewPhotoPreview').innerHTML = '';
+                document.getElementById('reviewPhoto').value = '';
             });
         }
 
@@ -1468,15 +1261,10 @@
             }
 
             const newBalance = (currentUser.wallet || 0) + amount;
-
             let path = '';
-            if (depositTarget === 'client') {
-                path = 'users/' + currentUser.id + '/wallet';
-            } else if (depositTarget === 'seller') {
-                path = 'sellers/' + currentUser.id + '/wallet';
-            } else if (depositTarget === 'courier') {
-                path = 'couriers/' + currentUser.id + '/wallet';
-            }
+            if (depositTarget === 'client') { path = 'users/' + currentUser.id + '/wallet'; }
+            else if (depositTarget === 'seller') { path = 'sellers/' + currentUser.id + '/wallet'; }
+            else if (depositTarget === 'courier') { path = 'couriers/' + currentUser.id + '/wallet'; }
 
             db.ref(path).set(newBalance).then(() => {
                 currentUser.wallet = newBalance;
@@ -1719,11 +1507,7 @@
 
             db.ref('orders/' + orderId).set(order).then(() => {
                 showToast(`✅ Заказ #${orderId} оформлен!`, 'success');
-                if (type === 'pvz') {
-                    showToast(`📱 Код: ${code}`, 'info');
-                } else {
-                    showToast(`📱 Код: ${code}\n🚚 Курьер: ${courierName || 'назначен'}`, 'info');
-                }
+                showToast(`📱 КОД: ${code}`, 'info');
                 cart = [];
                 renderCart();
                 renderClientOrders();
@@ -1731,7 +1515,7 @@
             });
         }
 
-        // ========== ЗАКАЗЫ КЛИЕНТА С КОДОМ ==========
+        // ========== ЗАКАЗЫ КЛИЕНТА (С КОДОМ) ==========
         function renderClientOrders() {
             const container = document.getElementById('clientOrders');
             db.ref('orders').orderByChild('userId').equalTo(currentUser.id).on('value', (sn) => {
@@ -1764,7 +1548,7 @@
                         </div>
                         <div style="font-weight:bold;">${o.total.toLocaleString()} ₽</div>
                         ${o.type === 'pvz' ? `<div>🏪 ПВЗ №${o.pvzNumber}<br>📍 ${o.address}</div>` : `<div>📍 ${o.address}${o.courierName ? '<br>🚚 Курьер: ' + o.courierName : ''}</div>`}
-                        ${o.code ? `<div class="pickup-code">Код: ${o.code}</div>` : ''}
+                        <div class="pickup-code">🔑 Код: ${o.code}</div>
                         ${o.hasAdult && !o.adultConfirmed ? `<div style="color:#ff4444;font-weight:bold;">🔞 Требуется подтверждение 18+ на ПВЗ</div>` : ''}
                         ${o.status === 'courier_arrived' ? `<div style="color:#4CAF50;font-size:0.8rem;">🚪 Курьер прибыл! Назовите код</div>` : ''}
                         ${o.status === 'ready' ? `<div style="color:#4CAF50;font-size:0.8rem;">✅ Готов к выдаче</div>` : ''}
@@ -1869,9 +1653,10 @@
             }
 
             const productId = 'prod_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
+            const photoFile = document.getElementById('productPhoto').files[0];
 
-            if (productPhotoFile) {
-                uploadPhoto(productPhotoFile, 'products/' + productId).then((photoUrl) => {
+            if (photoFile) {
+                uploadPhoto(photoFile, 'products/' + productId).then((photoUrl) => {
                     saveProduct(productId, name, price, description, adult, photoUrl);
                 }).catch(() => {
                     saveProduct(productId, name, price, description, adult, null);
@@ -1901,9 +1686,8 @@
                 document.getElementById('productPrice').value = '';
                 document.getElementById('productDesc').value = '';
                 document.getElementById('productAdult').checked = false;
-                productPhotoFile = null;
-                document.getElementById('productPhotoPreview').innerHTML = '';
                 document.getElementById('productPhoto').value = '';
+                document.getElementById('productPhotoPreview').innerHTML = '';
                 loadProducts();
             });
         }
@@ -2054,7 +1838,7 @@
                     <div style="font-weight:bold;">${o.total.toLocaleString()} ₽</div>
                     <div>👤 ${o.userName}</div>
                     ${o.hasAdult ? `<div style="color:#ff4444;font-weight:bold;">🔞 Требуется подтверждение 18+</div>` : ''}
-                    ${o.code ? `<div class="pickup-code">Код: ${o.code}</div>` : ''}
+                    <div class="pickup-code">🔑 Код: ${o.code}</div>
                     ${o.courierName ? `<div style="font-size:0.8rem;color:#888;">🚚 Курьер: ${o.courierName}</div>` : ''}
                     <div class="order-actions">
                         ${o.status === 'to_pvz' ? `<button class="btn-success" onclick="pvzReady('${o.id}')">✅ Готов к выдаче</button>` : ''}
@@ -2260,6 +2044,7 @@
                         <div class="order-items">${o.items.map(i => `${i.name} x${i.qty}`).join(', ')}</div>
                         <div style="font-weight:bold;">${o.total.toLocaleString()} ₽</div>
                         <div>🏪 ПВЗ №${o.pvzNumber}</div>
+                        <div class="pickup-code">🔑 Код: ${o.code}</div>
                         <div class="order-actions">
                             <button class="btn-primary" onclick="courierPickup('${o.id}')">📦 Еду забирать</button>
                         </div>
@@ -2279,7 +2064,7 @@
                         <div style="font-weight:bold;">${o.total.toLocaleString()} ₽</div>
                         <div>📍 ${o.address}</div>
                         <div>👤 ${o.userName}</div>
-                        ${o.code ? `<div class="pickup-code">Код: ${o.code}</div>` : ''}
+                        <div class="pickup-code">🔑 Код: ${o.code}</div>
                         <div class="order-actions">
                             ${o.status === 'with_courier' ? `<button class="btn-success" onclick="courierArrived('${o.id}')">🚪 Прибыл</button>` : ''}
                             ${o.status === 'courier_arrived' ? `<button class="btn-success" onclick="courierDeliver('${o.id}')">📤 Выдать</button>` : ''}
@@ -2407,8 +2192,8 @@
 
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
         console.log('🛍️ WHOPPER MARKET');
-        console.log('📸 Фото товаров, отзывов и заказов сохраняются');
-        console.log('🔑 Коды заказов сохраняются и видны всем');
+        console.log('📸 Фото товаров и отзывов сохраняются');
+        console.log('🔑 КОДЫ ЗАКАЗОВ СОХРАНЯЮТСЯ И ВИДНЫ ВСЕМ!');
         loadPVZList();
         loadCouriers();
         loadProducts();
