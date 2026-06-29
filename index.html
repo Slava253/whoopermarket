@@ -505,11 +505,21 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .wallet:hover {
+            background: rgba(255,255,255,0.06);
+            border-color: #f5a623;
         }
         .wallet .amount {
             font-size: 1.3rem;
             font-weight: bold;
             color: #f5a623;
+        }
+        .wallet .hint {
+            font-size: 0.6rem;
+            color: #555;
         }
 
         .modal-overlay {
@@ -518,7 +528,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             z-index: 1000;
             display: flex;
             align-items: center;
@@ -607,6 +617,85 @@
             font-size: 0.65rem;
         }
 
+        /* Стили для пополнения */
+        .deposit-amounts {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin: 10px 0;
+        }
+        .deposit-amounts button {
+            padding: 10px;
+            border-radius: 30px;
+            border: 2px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.03);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 1rem;
+        }
+        .deposit-amounts button:hover {
+            border-color: #f5a623;
+        }
+        .deposit-amounts button:active {
+            transform: scale(0.95);
+        }
+        .deposit-amounts button.active {
+            border-color: #f5a623;
+            background: rgba(245,166,35,0.15);
+            color: #f5a623;
+        }
+
+        .deposit-custom {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .deposit-custom input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.05);
+            color: white;
+            font-size: 1rem;
+            outline: none;
+        }
+        .deposit-custom input:focus {
+            border-color: #f5a623;
+        }
+        .deposit-custom button {
+            padding: 12px 24px;
+            border-radius: 30px;
+            border: none;
+            background: #f5a623;
+            color: #1a1a2e;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .deposit-instruction {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 16px;
+            margin: 16px 0;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .deposit-instruction h4 {
+            color: #f5a623;
+            margin-bottom: 8px;
+        }
+        .deposit-instruction ol {
+            padding-left: 20px;
+            color: #aaa;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+        .deposit-instruction ol li {
+            margin-bottom: 4px;
+        }
+
         @media (max-width: 480px) {
             .products-grid {
                 grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
@@ -617,6 +706,9 @@
             }
             .role-btn i {
                 font-size: 0.9rem;
+            }
+            .deposit-amounts {
+                grid-template-columns: repeat(3, 1fr);
             }
         }
     </style>
@@ -664,8 +756,12 @@
                 </div>
             </div>
             <div id="clientContent" class="hidden">
-                <div class="wallet">
-                    <span><i class="fas fa-wallet"></i> WHOPPER Кошелёк</span>
+                <!-- КОШЕЛЁК С КЛИКОМ -->
+                <div class="wallet" onclick="openDepositModal('client')">
+                    <div>
+                        <span><i class="fas fa-wallet"></i> WHOPPER Кошелёк</span>
+                        <div class="hint">👆 Нажмите для пополнения</div>
+                    </div>
                     <span class="amount" id="clientWallet">0 ₽</span>
                 </div>
 
@@ -747,8 +843,11 @@
                 </div>
             </div>
             <div id="sellerContent" class="hidden">
-                <div class="wallet">
-                    <span><i class="fas fa-wallet"></i> WHOPPER Кошелёк</span>
+                <div class="wallet" onclick="openDepositModal('seller')">
+                    <div>
+                        <span><i class="fas fa-wallet"></i> WHOPPER Кошелёк</span>
+                        <div class="hint">👆 Нажмите для пополнения</div>
+                    </div>
                     <span class="amount" id="sellerWallet">0 ₽</span>
                 </div>
 
@@ -839,8 +938,11 @@
                 </div>
             </div>
             <div id="courierContent" class="hidden">
-                <div class="wallet">
-                    <span><i class="fas fa-wallet"></i> Заработано</span>
+                <div class="wallet" onclick="openDepositModal('courier')">
+                    <div>
+                        <span><i class="fas fa-wallet"></i> Заработано</span>
+                        <div class="hint">👆 Нажмите для пополнения</div>
+                    </div>
                     <span class="amount" id="courierWallet">0 ₽</span>
                 </div>
                 <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
@@ -886,6 +988,51 @@
         </div>
     </div>
 
+    <!-- МОДАЛЬНОЕ ОКНО ПОПОЛНЕНИЯ КОШЕЛЬКА -->
+    <div id="depositModal" class="modal-overlay hidden" onclick="if(event.target===this) closeDepositModal()">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeDepositModal()">✕</button>
+            <h3><i class="fas fa-wallet"></i> Пополнение кошелька</h3>
+
+            <div class="deposit-instruction">
+                <h4>📖 Как пополнить?</h4>
+                <ol>
+                    <li>Выберите сумму из предложенных или введите свою</li>
+                    <li>Нажмите <strong>«Пополнить»</strong></li>
+                    <li>Средства будут зачислены мгновенно</li>
+                    <li>💰 Кошелёк пополняется автоматически</li>
+                </ol>
+            </div>
+
+            <div style="margin:12px 0;">
+                <label style="font-size:0.8rem;color:#888;">Выберите сумму:</label>
+                <div class="deposit-amounts">
+                    <button onclick="selectDepositAmount(100)">100 ₽</button>
+                    <button onclick="selectDepositAmount(500)">500 ₽</button>
+                    <button onclick="selectDepositAmount(1000)">1 000 ₽</button>
+                    <button onclick="selectDepositAmount(3000)">3 000 ₽</button>
+                    <button onclick="selectDepositAmount(5000)">5 000 ₽</button>
+                    <button onclick="selectDepositAmount(10000)">10 000 ₽</button>
+                </div>
+            </div>
+
+            <div style="margin:12px 0;">
+                <label style="font-size:0.8rem;color:#888;">Или введите свою сумму:</label>
+                <div class="deposit-custom">
+                    <input type="number" id="depositCustomAmount" placeholder="Сумма в ₽" min="1">
+                    <button onclick="depositCustom()">Пополнить</button>
+                </div>
+            </div>
+
+            <div style="margin-top:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:12px;">
+                <div style="display:flex;justify-content:space-between;color:#888;font-size:0.9rem;">
+                    <span>Текущий баланс:</span>
+                    <span style="color:#f5a623;font-weight:bold;" id="depositCurrentBalance">0 ₽</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ========== FIREBASE ==========
         const firebaseConfig = {
@@ -916,6 +1063,8 @@
         let allCouriers = [];
         let currentProductId = null;
         let selectedRating = 0;
+        let depositTarget = 'client';
+        let selectedDepositAmount = 0;
 
         // ========== НАЧАЛЬНЫЕ ТОВАРЫ ==========
         const defaultProducts = [
@@ -970,9 +1119,8 @@
             }
         };
 
-        // ========== ЗАГРУЗКА ТОВАРОВ (С НАЧАЛЬНЫМИ) ==========
+        // ========== ЗАГРУЗКА ТОВАРОВ ==========
         function loadProducts() {
-            // Сначала загружаем начальные товары
             defaultProducts.forEach(p => {
                 db.ref('products/' + p.id).once('value', (sn) => {
                     if (!sn.exists()) {
@@ -1006,7 +1154,6 @@
                         isDefault: data.isDefault || false
                     });
                 });
-                // Сортируем: сначала начальные, потом остальные
                 products.sort((a, b) => {
                     if (a.isDefault && !b.isDefault) return -1;
                     if (!a.isDefault && b.isDefault) return 1;
@@ -1035,7 +1182,6 @@
                 </div>
             `).join('');
 
-            // Загружаем рейтинги
             products.forEach(p => {
                 loadProductRating(p.id);
             });
@@ -1078,11 +1224,9 @@
                 adultEl.style.display = 'none';
             }
 
-            // Сбрасываем звёзды
             document.querySelectorAll('#modalStars .star').forEach(s => s.classList.remove('active'));
             document.getElementById('modalReviewText').value = '';
 
-            // Загружаем отзывы
             loadReviews(productId);
 
             document.getElementById('productModal').classList.remove('hidden');
@@ -1157,6 +1301,88 @@
                     </div>
                 `).join('');
             });
+        }
+
+        // ========== ПОПОЛНЕНИЕ КОШЕЛЬКА ==========
+        window.openDepositModal = function(target) {
+            if (!currentUser.id) {
+                showToast('❌ Войдите в аккаунт', 'error');
+                return;
+            }
+            depositTarget = target;
+            selectedDepositAmount = 0;
+            document.getElementById('depositCurrentBalance').textContent = (currentUser.wallet || 0).toLocaleString() + ' ₽';
+            document.getElementById('depositCustomAmount').value = '';
+            document.querySelectorAll('.deposit-amounts button').forEach(b => b.classList.remove('active'));
+            document.getElementById('depositModal').classList.remove('hidden');
+        };
+
+        window.closeDepositModal = function() {
+            document.getElementById('depositModal').classList.add('hidden');
+        };
+
+        window.selectDepositAmount = function(amount) {
+            selectedDepositAmount = amount;
+            document.querySelectorAll('.deposit-amounts button').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.deposit-amounts button').forEach(b => {
+                if (parseInt(b.textContent.replace(/[^0-9]/g, '')) === amount) {
+                    b.classList.add('active');
+                }
+            });
+            document.getElementById('depositCustomAmount').value = '';
+            // Сразу пополняем
+            depositAmount(amount);
+        };
+
+        window.depositCustom = function() {
+            const amount = parseInt(document.getElementById('depositCustomAmount').value);
+            if (!amount || amount <= 0) {
+                showToast('❌ Введите корректную сумму', 'error');
+                return;
+            }
+            depositAmount(amount);
+        };
+
+        function depositAmount(amount) {
+            if (!currentUser.id) {
+                showToast('❌ Войдите в аккаунт', 'error');
+                return;
+            }
+
+            const newBalance = (currentUser.wallet || 0) + amount;
+
+            let path = '';
+            if (depositTarget === 'client') {
+                path = 'users/' + currentUser.id + '/wallet';
+            } else if (depositTarget === 'seller') {
+                path = 'sellers/' + currentUser.id + '/wallet';
+            } else if (depositTarget === 'courier') {
+                path = 'couriers/' + currentUser.id + '/wallet';
+            }
+
+            db.ref(path).set(newBalance).then(() => {
+                currentUser.wallet = newBalance;
+                updateWalletDisplay();
+                showToast(`✅ Кошелёк пополнен на ${amount.toLocaleString()} ₽`, 'success');
+                document.getElementById('depositCurrentBalance').textContent = newBalance.toLocaleString() + ' ₽';
+                selectedDepositAmount = 0;
+                document.querySelectorAll('.deposit-amounts button').forEach(b => b.classList.remove('active'));
+                document.getElementById('depositCustomAmount').value = '';
+                setTimeout(() => closeDepositModal(), 1000);
+            }).catch(err => {
+                showToast('❌ Ошибка пополнения', 'error');
+                console.error(err);
+            });
+        }
+
+        function updateWalletDisplay() {
+            if (currentRole === 'client') {
+                document.getElementById('clientWallet').textContent = (currentUser.wallet || 0).toLocaleString() + ' ₽';
+            } else if (currentRole === 'seller') {
+                document.getElementById('sellerWallet').textContent = (currentUser.wallet || 0).toLocaleString() + ' ₽';
+            } else if (currentRole === 'courier') {
+                document.getElementById('courierWallet').textContent = (currentUser.wallet || 0).toLocaleString() + ' ₽';
+            }
         }
 
         // ========== КЛИЕНТ ==========
@@ -1311,7 +1537,6 @@
                 return;
             }
 
-            // Проверяем товары 18+
             const hasAdult = cart.some(i => i.adult);
             if (hasAdult && type !== 'pvz') {
                 showToast('❌ Товары 18+ можно забрать только в ПВЗ', 'error');
@@ -1336,7 +1561,6 @@
             const code = Math.floor(100000 + Math.random() * 900000).toString();
             const qrData = 'WHOPPER:' + orderId + ':' + code;
 
-            // Проверяем товары 18+
             const hasAdult = cart.some(i => i.adult);
 
             let courierId = null;
@@ -1743,7 +1967,6 @@
             db.ref('orders/' + orderId).once('value', (sn) => {
                 const order = sn.val();
                 if (order.code === code) {
-                    // Проверяем подтверждение 18+ если нужно
                     if (order.hasAdult && !order.adultConfirmed) {
                         if (!confirm('🔞 Товар 18+. Подтвердить выдачу?')) return;
                         db.ref('orders/' + orderId).update({ adultConfirmed: true });
@@ -2073,6 +2296,7 @@
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
         console.log('🛍️ WHOPPER MARKET ЗАПУЩЕН');
         console.log('Выберите роль: Клиент, Продавец, ПВЗ или Курьер');
+        console.log('💰 Нажмите на кошелёк чтобы пополнить');
         loadPVZList();
         loadCouriers();
         loadProducts();
