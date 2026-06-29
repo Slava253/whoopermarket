@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -24,7 +25,9 @@
             max-width: 500px;
             margin: 0 auto;
         }
-        .hidden { display: none !important; }
+        .hidden {
+            display: none !important;
+        }
 
         .header {
             display: flex;
@@ -40,7 +43,9 @@
             font-weight: bold;
             color: #f5a623;
         }
-        .header .logo i { margin-right: 8px; }
+        .header .logo i {
+            margin-right: 8px;
+        }
         .header .user-badge {
             font-size: 0.75rem;
             color: #888;
@@ -48,7 +53,10 @@
             padding: 6px 14px;
             border-radius: 30px;
         }
-        .header .user-badge i { color: #f5a623; margin-right: 4px; }
+        .header .user-badge i {
+            color: #f5a623;
+            margin-right: 4px;
+        }
 
         .role-selector {
             display: flex;
@@ -58,25 +66,31 @@
         }
         .role-btn {
             flex: 1;
-            padding: 10px;
+            padding: 8px 6px;
             border-radius: 16px;
             border: 2px solid rgba(255,255,255,0.08);
             background: rgba(255,255,255,0.03);
             color: #888;
             cursor: pointer;
             font-weight: bold;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             transition: 0.2s;
             text-align: center;
-            min-width: 80px;
+            min-width: 60px;
         }
         .role-btn.active {
             border-color: #f5a623;
             color: #f5a623;
             background: rgba(245,166,35,0.1);
         }
-        .role-btn:active { transform: scale(0.97); }
-        .role-btn i { display: block; font-size: 1.5rem; margin-bottom: 4px; }
+        .role-btn:active {
+            transform: scale(0.97);
+        }
+        .role-btn i {
+            display: block;
+            font-size: 1.2rem;
+            margin-bottom: 2px;
+        }
 
         .auth-box {
             background: rgba(255,255,255,0.03);
@@ -130,14 +144,33 @@
             border: none;
             font-weight: bold;
             cursor: pointer;
+            font-size: 0.85rem;
         }
 
-        .btn-primary { background: #f5a623; color: #1a1a2e; }
-        .btn-success { background: #4CAF50; color: white; }
-        .btn-danger { background: #ff4444; color: white; }
-        .btn-info { background: #2196F3; color: white; }
-        .btn-warning { background: #ff9800; color: #1a1a2e; }
-        .btn-secondary { background: rgba(255,255,255,0.08); color: white; }
+        .btn-primary {
+            background: #f5a623;
+            color: #1a1a2e;
+        }
+        .btn-success {
+            background: #4CAF50;
+            color: white;
+        }
+        .btn-danger {
+            background: #ff4444;
+            color: white;
+        }
+        .btn-info {
+            background: #2196F3;
+            color: white;
+        }
+        .btn-warning {
+            background: #ff9800;
+            color: #1a1a2e;
+        }
+        .btn-secondary {
+            background: rgba(255,255,255,0.08);
+            color: white;
+        }
 
         .products-grid {
             display: grid;
@@ -154,9 +187,19 @@
             transition: 0.2s;
             border: 1px solid rgba(255,255,255,0.05);
         }
-        .product-card:active { transform: scale(0.97); }
-        .product-card .name { font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; }
-        .product-card .price { color: #f5a623; font-weight: bold; font-size: 1.1rem; }
+        .product-card:active {
+            transform: scale(0.97);
+        }
+        .product-card .name {
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+        }
+        .product-card .price {
+            color: #f5a623;
+            font-weight: bold;
+            font-size: 1rem;
+        }
         .product-card .add-btn {
             margin-top: 8px;
             background: #f5a623;
@@ -166,7 +209,12 @@
             border-radius: 30px;
             font-weight: bold;
             cursor: pointer;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
+        }
+        .product-card .seller {
+            font-size: 0.6rem;
+            color: #666;
+            margin-top: 4px;
         }
 
         .cart-panel {
@@ -186,11 +234,11 @@
             justify-content: space-between;
             padding: 6px 0;
             border-bottom: 1px solid rgba(255,255,255,0.05);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
         .cart-total {
             font-weight: bold;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             margin-top: 10px;
             padding-top: 10px;
             border-top: 2px solid rgba(255,255,255,0.1);
@@ -211,6 +259,7 @@
             font-weight: bold;
             cursor: pointer;
             min-width: 80px;
+            font-size: 0.8rem;
         }
 
         .order-card {
@@ -225,30 +274,59 @@
             justify-content: space-between;
             font-weight: bold;
             margin-bottom: 6px;
+            font-size: 0.9rem;
         }
         .order-card .order-status {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             padding: 3px 12px;
             border-radius: 30px;
         }
-        .status-waiting { background: #ff9800; color: white; }
-        .status-ready { background: #4CAF50; color: white; }
-        .status-delivered { background: #999; color: white; }
-        .status-courier { background: #2196F3; color: white; }
-        .status-return { background: #ff4444; color: white; }
-        .order-card .order-items { font-size: 0.85rem; color: #aaa; margin: 6px 0; }
-        .order-card .order-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+        .status-waiting {
+            background: #ff9800;
+            color: white;
+        }
+        .status-ready {
+            background: #4CAF50;
+            color: white;
+        }
+        .status-delivered {
+            background: #999;
+            color: white;
+        }
+        .status-courier {
+            background: #2196F3;
+            color: white;
+        }
+        .status-return {
+            background: #ff4444;
+            color: white;
+        }
+        .status-pvz {
+            background: #9c27b0;
+            color: white;
+        }
+        .order-card .order-items {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin: 6px 0;
+        }
+        .order-card .order-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
         .order-card .order-actions button {
             padding: 6px 14px;
             border-radius: 30px;
             border: none;
             font-weight: bold;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             cursor: pointer;
         }
 
         .pickup-code {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: bold;
             color: #f5a623;
             font-family: monospace;
@@ -257,6 +335,15 @@
             padding: 10px;
             border-radius: 12px;
             margin: 8px 0;
+            text-align: center;
+        }
+
+        .qr-container {
+            background: white;
+            padding: 16px;
+            border-radius: 16px;
+            display: inline-block;
+            margin: 10px 0;
         }
 
         .tabs {
@@ -270,7 +357,7 @@
             border-radius: 30px;
             background: rgba(255,255,255,0.05);
             cursor: pointer;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #888;
             border: 1px solid transparent;
         }
@@ -296,19 +383,19 @@
             font-weight: 600;
             max-width: 90%;
             text-align: center;
+            font-size: 0.85rem;
         }
-        .toast.show { opacity: 1; }
-        .toast.success { background: #4CAF50; }
-        .toast.error { background: #ff4444; }
-        .toast.info { background: #2196F3; }
-
-        .pvz-number {
-            background: rgba(255,255,255,0.05);
-            padding: 6px 14px;
-            border-radius: 30px;
-            font-size: 0.75rem;
-            color: #f5a623;
-            display: inline-block;
+        .toast.show {
+            opacity: 1;
+        }
+        .toast.success {
+            background: #4CAF50;
+        }
+        .toast.error {
+            background: #ff4444;
+        }
+        .toast.info {
+            background: #2196F3;
         }
 
         .delivery-select {
@@ -336,7 +423,7 @@
             padding: 8px 12px;
             background: rgba(255,255,255,0.03);
             border-radius: 12px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #aaa;
             display: none;
         }
@@ -344,10 +431,57 @@
             display: block;
         }
 
+        .scan-area {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 2px dashed rgba(255,255,255,0.08);
+        }
+        .scan-area input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.05);
+            color: white;
+            font-size: 1rem;
+            text-align: center;
+            letter-spacing: 2px;
+            font-family: monospace;
+            outline: none;
+        }
+        .scan-area input:focus {
+            border-color: #f5a623;
+        }
+
+        .wallet {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .wallet .amount {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #f5a623;
+        }
+
         @media (max-width: 480px) {
-            .products-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
-            .role-btn { font-size: 0.7rem; padding: 8px; }
-            .role-btn i { font-size: 1.2rem; }
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            }
+            .role-btn {
+                font-size: 0.6rem;
+                padding: 6px 4px;
+            }
+            .role-btn i {
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
@@ -364,6 +498,9 @@
         <div class="role-selector" id="roleSelector">
             <button class="role-btn active" data-role="client" onclick="switchRole('client')">
                 <i class="fas fa-user"></i> Клиент
+            </button>
+            <button class="role-btn" data-role="seller" onclick="switchRole('seller')">
+                <i class="fas fa-store-alt"></i> Продавец
             </button>
             <button class="role-btn" data-role="pvz" onclick="switchRole('pvz')">
                 <i class="fas fa-warehouse"></i> ПВЗ
@@ -391,10 +528,17 @@
                 </div>
             </div>
             <div id="clientContent" class="hidden">
+                <!-- Кошелёк -->
+                <div class="wallet">
+                    <span><i class="fas fa-wallet"></i> WHOPPER Кошелёк</span>
+                    <span class="amount" id="clientWallet">0 ₽</span>
+                </div>
+
                 <div class="products-grid" id="productsGrid"></div>
+
                 <div class="cart-panel" id="cartPanel">
                     <div class="title">🛒 Корзина</div>
-                    <div id="cartItems"><div style="color:#555; font-size:0.85rem;">Пусто</div></div>
+                    <div id="cartItems"><div style="color:#555; font-size:0.8rem;">Пусто</div></div>
                     <div class="cart-total"><span>Итого:</span> <span id="cartTotal">0 ₽</span></div>
                     <div class="cart-actions">
                         <button class="btn-primary" onclick="showCheckout()">💳 Оформить</button>
@@ -402,30 +546,26 @@
                     </div>
                 </div>
 
-                <!-- МОДАЛЬНОЕ ОКНО ОФОРМЛЕНИЯ -->
+                <!-- Модальное окно оформления -->
                 <div id="checkoutModal" class="hidden" style="background:rgba(255,255,255,0.03);border-radius:16px;padding:16px;margin-bottom:16px;border:1px solid rgba(255,255,255,0.08);">
                     <h3 style="color:#f5a623;margin-bottom:12px;">📦 Оформление заказа</h3>
                     <div class="delivery-select">
                         <label style="font-size:0.8rem;color:#888;">Способ получения:</label>
                         <select id="deliveryType" onchange="toggleDeliveryFields()">
+                            <option value="pvz">🏪 ПВЗ (самовывоз)</option>
                             <option value="courier">🚚 Курьер</option>
-                            <option value="pvz">🏪 ПВЗ</option>
                         </select>
                     </div>
-                    <div id="courierField" class="form-group">
-                        <label>Адрес доставки</label>
-                        <input type="text" id="deliveryAddress" placeholder="Введите адрес">
-                    </div>
-                    <div id="pvzField" class="form-group" style="display:none;">
-                        <label>Выберите ПВЗ</label>
+                    <div id="pvzField" class="form-group">
+                        <label>Выберите ПВЗ для получения</label>
                         <select id="pvzSelect">
                             <option value="">-- Выберите ПВЗ --</option>
                         </select>
                         <div id="pvzAddressDisplay" class="delivery-address"></div>
-                        <div style="margin-top:8px;font-size:0.8rem;color:#555;">
-                            <i class="fas fa-plus-circle" style="color:#f5a623;cursor:pointer;" onclick="addNewPVZ()"></i>
-                            Добавить новый ПВЗ
-                        </div>
+                    </div>
+                    <div id="courierField" class="form-group" style="display:none;">
+                        <label>Адрес доставки</label>
+                        <input type="text" id="deliveryAddress" placeholder="Введите адрес">
                     </div>
                     <div style="display:flex;gap:8px;margin-top:12px;">
                         <button class="btn-primary" onclick="confirmCheckout()" style="flex:1;">✅ Оформить</button>
@@ -440,6 +580,66 @@
                     </div>
                     <div id="clientOrders"></div>
                 </div>
+            </div>
+        </div>
+
+        <!-- ПРОДАВЕЦ -->
+        <div id="sellerPanel" class="hidden">
+            <div id="sellerAuth" class="auth-box">
+                <h3>🏪 Вход для продавца</h3>
+                <div class="form-group">
+                    <label>ФИО</label>
+                    <input type="text" id="sellerFullName" placeholder="Иванов Иван Иванович">
+                </div>
+                <div class="form-group">
+                    <label>Название магазина</label>
+                    <input type="text" id="sellerShopName" placeholder="Мой магазин">
+                </div>
+                <div class="form-group">
+                    <label>Номер телефона</label>
+                    <input type="tel" id="sellerPhone" placeholder="+7 999 999 99 99">
+                </div>
+                <div class="form-group">
+                    <label>Логин</label>
+                    <input type="text" id="sellerLogin" placeholder="Придумайте логин">
+                </div>
+                <div class="form-group">
+                    <label>Пароль</label>
+                    <input type="password" id="sellerPassword" placeholder="Придумайте пароль">
+                </div>
+                <div class="auth-actions">
+                    <button class="btn-primary" onclick="sellerLogin()">Войти</button>
+                    <button class="btn-success" onclick="sellerRegister()">Зарегистрироваться</button>
+                </div>
+            </div>
+            <div id="sellerContent" class="hidden">
+                <div class="wallet">
+                    <span><i class="fas fa-wallet"></i> WHOPPER Кошелёк</span>
+                    <span class="amount" id="sellerWallet">0 ₽</span>
+                </div>
+
+                <div style="background:rgba(255,255,255,0.03);border-radius:16px;padding:16px;margin-bottom:16px;border:1px solid rgba(255,255,255,0.05);">
+                    <h4 style="color:#f5a623;margin-bottom:10px;">➕ Добавить товар</h4>
+                    <div class="form-group">
+                        <label>Название товара</label>
+                        <input type="text" id="productName" placeholder="Введите название">
+                    </div>
+                    <div class="form-group">
+                        <label>Цена (₽)</label>
+                        <input type="number" id="productPrice" placeholder="999">
+                    </div>
+                    <div class="form-group">
+                        <label>Описание</label>
+                        <input type="text" id="productDesc" placeholder="Краткое описание">
+                    </div>
+                    <button class="btn-success" onclick="addProduct()" style="width:100%;padding:12px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">➕ Добавить товар</button>
+                </div>
+
+                <h4 style="color:#f5a623;margin-bottom:10px;">📦 Мои товары</h4>
+                <div id="sellerProducts"></div>
+
+                <h4 style="color:#f5a623;margin:16px 0 10px;">📋 Заказы</h4>
+                <div id="sellerOrders"></div>
             </div>
         </div>
 
@@ -470,6 +670,14 @@
                     <button class="btn-success" onclick="pvzAction('issue')">📤 Выдача</button>
                     <button class="btn-info" onclick="pvzAction('courier')">🚚 Курьер</button>
                 </div>
+
+                <!-- Сканер QR -->
+                <div class="scan-area">
+                    <h4 style="color:#f5a623;margin-bottom:8px;">📷 Сканирование QR-кода</h4>
+                    <input type="text" id="pvzScanInput" placeholder="Отсканируйте QR-код клиента" oninput="pvzScanQR(this.value)">
+                    <div id="pvzScanResult" style="margin-top:8px;"></div>
+                </div>
+
                 <div id="pvzOrders"></div>
             </div>
         </div>
@@ -492,6 +700,10 @@
                 </div>
             </div>
             <div id="courierContent" class="hidden">
+                <div class="wallet">
+                    <span><i class="fas fa-wallet"></i> Заработано</span>
+                    <span class="amount" id="courierWallet">0 ₽</span>
+                </div>
                 <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
                     <button class="btn-primary" onclick="courierAction('orders')">📦 Заказы</button>
                     <button class="btn-success" onclick="courierAction('deliveries')">🚚 Доставки</button>
@@ -522,23 +734,15 @@
             name: null,
             type: 'client',
             phone: null,
-            pvzNumber: null
+            pvzNumber: null,
+            shopName: null
         };
         let cart = [];
         let clientTab = 'active';
         let allPVZ = [];
-        let selectedPVZ = null;
+        let allCouriers = [];
 
-        const products = [
-            { id: 1, name: 'Смартфон X', price: 29990 },
-            { id: 2, name: 'Наушники Pro', price: 4990 },
-            { id: 3, name: 'Зарядка 65W', price: 1290 },
-            { id: 4, name: 'Чехол-книжка', price: 890 },
-            { id: 5, name: 'Защитное стекло', price: 590 },
-            { id: 6, name: 'Фитнес-браслет', price: 3490 },
-            { id: 7, name: 'Колонка Mini', price: 1990 },
-            { id: 8, name: 'USB-кабель', price: 390 },
-        ];
+        const products = [];
 
         // ========== ТОСТ ==========
         function showToast(msg, type = 'info') {
@@ -556,6 +760,7 @@
             document.querySelectorAll('.role-btn').forEach(b => b.classList.toggle('active', b.dataset.role === role));
 
             document.getElementById('clientPanel').classList.add('hidden');
+            document.getElementById('sellerPanel').classList.add('hidden');
             document.getElementById('pvzPanel').classList.add('hidden');
             document.getElementById('courierPanel').classList.add('hidden');
 
@@ -564,14 +769,21 @@
                 document.getElementById('clientContent').classList.add('hidden');
                 document.getElementById('clientAuth').classList.remove('hidden');
                 loadPVZList();
+                loadProducts();
+            } else if (role === 'seller') {
+                document.getElementById('sellerPanel').classList.remove('hidden');
+                document.getElementById('sellerContent').classList.add('hidden');
+                document.getElementById('sellerAuth').classList.remove('hidden');
             } else if (role === 'pvz') {
                 document.getElementById('pvzPanel').classList.remove('hidden');
                 document.getElementById('pvzContent').classList.add('hidden');
                 document.getElementById('pvzAuth').classList.remove('hidden');
+                loadPVZList();
             } else if (role === 'courier') {
                 document.getElementById('courierPanel').classList.remove('hidden');
                 document.getElementById('courierContent').classList.add('hidden');
                 document.getElementById('courierAuth').classList.remove('hidden');
+                loadCouriers();
             }
         };
 
@@ -598,8 +810,54 @@
             allPVZ.forEach(p => {
                 const option = document.createElement('option');
                 option.value = p.number;
-                option.textContent = 'ПВЗ №' + p.number + ' (' + p.address + ')';
+                option.textContent = 'ПВЗ №' + p.number;
                 select.appendChild(option);
+            });
+        }
+
+        // ========== ЗАГРУЗКА КУРЬЕРОВ ==========
+        function loadCouriers() {
+            db.ref('couriers').on('value', (sn) => {
+                allCouriers = [];
+                sn.forEach(child => {
+                    const data = child.val();
+                    allCouriers.push({
+                        id: child.key,
+                        name: data.name,
+                        login: data.login,
+                        activeOrders: data.activeOrders || 0
+                    });
+                });
+            });
+        }
+
+        // ========== ВЫБОР КУРЬЕРА ==========
+        function getAvailableCourier() {
+            // Ищем курьера с наименьшим количеством заказов
+            if (allCouriers.length === 0) return null;
+            allCouriers.sort((a, b) => a.activeOrders - b.activeOrders);
+            const courier = allCouriers[0];
+            if (courier.activeOrders >= 10) return null;
+            return courier;
+        }
+
+        // ========== ЗАГРУЗКА ТОВАРОВ ==========
+        function loadProducts() {
+            db.ref('products').on('value', (sn) => {
+                products.length = 0;
+                sn.forEach(child => {
+                    const data = child.val();
+                    products.push({
+                        id: child.key,
+                        name: data.name,
+                        price: data.price,
+                        description: data.description || '',
+                        sellerId: data.sellerId,
+                        sellerName: data.sellerName || 'Продавец'
+                    });
+                });
+                if (currentRole === 'client') renderProducts();
+                if (currentRole === 'seller') renderSellerProducts();
             });
         }
 
@@ -615,6 +873,7 @@
                         currentUser.name = child.val().name;
                         currentUser.phone = child.val().phone;
                         currentUser.type = 'client';
+                        currentUser.wallet = child.val().wallet || 0;
                     });
                     showToast('👋 Добро пожаловать, ' + currentUser.name + '!', 'success');
                     enterClientMode();
@@ -635,11 +894,12 @@
                 name: name,
                 phone: phone,
                 type: 'client',
+                wallet: 0,
                 createdAt: Date.now()
             };
 
             db.ref('users/' + userId).set(userData).then(() => {
-                currentUser = { id: userId, name: name, phone: phone, type: 'client' };
+                currentUser = { id: userId, name: name, phone: phone, type: 'client', wallet: 0 };
                 showToast('✅ Регистрация успешна!', 'success');
                 enterClientMode();
             });
@@ -649,27 +909,34 @@
             document.getElementById('clientAuth').classList.add('hidden');
             document.getElementById('clientContent').classList.remove('hidden');
             document.getElementById('userNameDisplay').textContent = currentUser.name + ' 📱';
+            document.getElementById('clientWallet').textContent = (currentUser.wallet || 0).toLocaleString() + ' ₽';
             renderProducts();
             renderClientOrders();
             renderCart();
             loadPVZList();
+            loadProducts();
         }
 
-        // ========== ТОВАРЫ И КОРЗИНА ==========
         function renderProducts() {
             const grid = document.getElementById('productsGrid');
+            if (products.length === 0) {
+                grid.innerHTML = '<div style="text-align:center;color:#555;padding:20px;">Товаров пока нет</div>';
+                return;
+            }
             grid.innerHTML = products.map(p => `
                 <div class="product-card">
                     <div class="name">${p.name}</div>
                     <div class="price">${p.price.toLocaleString()} ₽</div>
-                    <button class="add-btn" onclick="addToCart(${p.id})">➕ В корзину</button>
+                    <div class="seller">🏪 ${p.sellerName || 'Продавец'}</div>
+                    <button class="add-btn" onclick="addToCart('${p.id}')">➕ В корзину</button>
                 </div>
             `).join('');
         }
 
-        window.addToCart = function(id) {
-            const product = products.find(p => p.id === id);
-            const existing = cart.find(i => i.id === id);
+        window.addToCart = function(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            const existing = cart.find(i => i.id === productId);
             if (existing) existing.qty++;
             else cart.push({ ...product, qty: 1 });
             renderCart();
@@ -680,7 +947,7 @@
             const container = document.getElementById('cartItems');
             const totalSpan = document.getElementById('cartTotal');
             if (cart.length === 0) {
-                container.innerHTML = '<div style="color:#555; font-size:0.85rem;">Пусто</div>';
+                container.innerHTML = '<div style="color:#555; font-size:0.8rem;">Пусто</div>';
                 totalSpan.textContent = '0 ₽';
                 return;
             }
@@ -691,7 +958,7 @@
                     <div class="cart-item">
                         <span>${item.name} x${item.qty}</span>
                         <span>${(item.price * item.qty).toLocaleString()} ₽
-                            <button onclick="removeFromCart(${item.id})" style="background:none;border:none;color:#ff4444;cursor:pointer;">✕</button>
+                            <button onclick="removeFromCart('${item.id}')" style="background:none;border:none;color:#ff4444;cursor:pointer;">✕</button>
                         </span>
                     </div>
                 `;
@@ -715,7 +982,7 @@
             if (cart.length === 0) { showToast('❌ Корзина пуста', 'error'); return; }
             document.getElementById('checkoutModal').classList.remove('hidden');
             updatePVZSelect();
-            document.getElementById('deliveryType').value = 'courier';
+            document.getElementById('deliveryType').value = 'pvz';
             toggleDeliveryFields();
         };
 
@@ -725,8 +992,9 @@
 
         window.toggleDeliveryFields = function() {
             const type = document.getElementById('deliveryType').value;
-            document.getElementById('courierField').style.display = type === 'courier' ? 'block' : 'none';
             document.getElementById('pvzField').style.display = type === 'pvz' ? 'block' : 'none';
+            document.getElementById('courierField').style.display = type === 'courier' ? 'block' : 'none';
+
             if (type === 'pvz') {
                 const select = document.getElementById('pvzSelect');
                 const selected = select.value;
@@ -753,55 +1021,25 @@
             }
         });
 
-        window.addNewPVZ = function() {
-            const number = prompt('Введите номер нового ПВЗ (только цифры):');
-            if (!number || !/^\d+$/.test(number)) { showToast('❌ Введите номер цифрами', 'error'); return; }
-
-            // Проверяем существует ли
-            db.ref('pvz').orderByChild('number').equalTo(number).once('value', (sn) => {
-                if (sn.exists()) {
-                    showToast('❌ ПВЗ №' + number + ' уже существует', 'error');
-                    return;
-                }
-                const address = prompt('Введите адрес ПВЗ:');
-                if (!address) { showToast('❌ Адрес обязателен', 'error'); return; }
-                const password = prompt('Придумайте пароль для ПВЗ:');
-                if (!password) { showToast('❌ Пароль обязателен', 'error'); return; }
-
-                const pvzId = 'PVZ_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
-                db.ref('pvz/' + pvzId).set({
-                    id: pvzId,
-                    number: number,
-                    password: password,
-                    address: address,
-                    createdAt: Date.now()
-                }).then(() => {
-                    showToast('✅ ПВЗ №' + number + ' добавлен!', 'success');
-                    loadPVZList();
-                    // Автоматически выбираем
-                    setTimeout(() => {
-                        const select = document.getElementById('pvzSelect');
-                        select.value = number;
-                        const display = document.getElementById('pvzAddressDisplay');
-                        display.textContent = '📍 ' + address;
-                        display.classList.add('show');
-                    }, 500);
-                });
-            });
-        };
-
         window.confirmCheckout = function() {
             const type = document.getElementById('deliveryType').value;
+            const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
 
-            if (type === 'courier') {
-                const address = document.getElementById('deliveryAddress').value.trim();
-                if (!address) { showToast('❌ Введите адрес доставки', 'error'); return; }
-                createOrder('courier', address);
-            } else {
+            // Проверяем кошелёк
+            if ((currentUser.wallet || 0) < total) {
+                showToast('❌ Недостаточно средств на кошельке', 'error');
+                return;
+            }
+
+            if (type === 'pvz') {
                 const pvzNumber = document.getElementById('pvzSelect').value;
                 if (!pvzNumber) { showToast('❌ Выберите ПВЗ', 'error'); return; }
                 const pvz = allPVZ.find(p => p.number === pvzNumber);
                 createOrder('pvz', pvzNumber, pvz ? pvz.address : '');
+            } else {
+                const address = document.getElementById('deliveryAddress').value.trim();
+                if (!address) { showToast('❌ Введите адрес доставки', 'error'); return; }
+                createOrder('courier', address);
             }
         };
 
@@ -809,6 +1047,22 @@
             const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
             const orderId = 'ORD' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
             const code = Math.floor(100000 + Math.random() * 900000).toString();
+            const qrData = type === 'pvz' ? 'WHOPPER:' + orderId + ':' + code : 'WHOPPER:' + orderId;
+
+            // Выбираем курьера если доставка
+            let courierId = null;
+            let courierName = null;
+            if (type === 'courier') {
+                const courier = getAvailableCourier();
+                if (!courier) {
+                    showToast('❌ Нет доступных курьеров. Попробуйте позже.', 'error');
+                    return;
+                }
+                courierId = courier.id;
+                courierName = courier.name;
+                // Увеличиваем счётчик заказов у курьера
+                db.ref('couriers/' + courierId + '/activeOrders').transaction(current => (current || 0) + 1);
+            }
 
             const order = {
                 id: orderId,
@@ -821,17 +1075,51 @@
                 address: type === 'courier' ? address : pvzAddress,
                 pvzNumber: type === 'pvz' ? address : null,
                 code: code,
+                qrData: qrData,
                 status: type === 'pvz' ? 'to_pvz' : 'to_courier',
-                createdAt: Date.now()
+                createdAt: Date.now(),
+                courierId: courierId,
+                courierName: courierName,
+                sellerIds: [...new Set(cart.map(i => i.sellerId))]
             };
+
+            // Списываем деньги с кошелька
+            const newWallet = (currentUser.wallet || 0) - total;
+            db.ref('users/' + currentUser.id + '/wallet').set(newWallet);
+            currentUser.wallet = newWallet;
+            document.getElementById('clientWallet').textContent = newWallet.toLocaleString() + ' ₽';
 
             db.ref('orders/' + orderId).set(order).then(() => {
                 showToast(`✅ Заказ #${orderId} оформлен!`, 'success');
-                showToast(`📱 Код: ${code}`, 'info');
+                if (type === 'pvz') {
+                    showToast(`📱 Код: ${code}`, 'info');
+                    showQR(orderId, code);
+                } else {
+                    showToast(`📱 Код: ${code}\n🚚 Курьер: ${courierName || 'назначен'}`, 'info');
+                }
                 cart = [];
                 renderCart();
                 renderClientOrders();
                 closeCheckout();
+            });
+        }
+
+        function showQR(orderId, code) {
+            const qrDiv = document.createElement('div');
+            qrDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1a2e;padding:30px;border-radius:20px;z-index:1000;border:2px solid #f5a623;text-align:center;';
+            qrDiv.innerHTML = `
+                <h3 style="color:#f5a623;margin-bottom:10px;">QR-код для ПВЗ</h3>
+                <div id="qrCodeContainer"></div>
+                <div class="pickup-code">Код: ${code}</div>
+                <button onclick="this.parentElement.remove()" style="margin-top:15px;padding:10px 30px;border-radius:30px;border:none;background:#f5a623;font-weight:bold;cursor:pointer;">✕ Закрыть</button>
+            `;
+            document.body.appendChild(qrDiv);
+
+            // Создаём QR-код
+            new QRCode(document.getElementById('qrCodeContainer'), {
+                text: 'WHOPPER:' + orderId + ':' + code,
+                width: 200,
+                height: 200
             });
         }
 
@@ -860,8 +1148,8 @@
                         </div>
                         <div class="order-items">${o.items.map(i => `${i.name} x${i.qty}`).join(', ')}</div>
                         <div style="font-weight:bold;">${o.total.toLocaleString()} ₽</div>
-                        ${o.type === 'pvz' ? `<div>🏪 ПВЗ №${o.pvzNumber}<br>📍 ${o.address}</div>` : `<div>📍 ${o.address}</div>`}
-                        <div class="pickup-code">Код: ${o.code}</div>
+                        ${o.type === 'pvz' ? `<div>🏪 ПВЗ №${o.pvzNumber}<br>📍 ${o.address}</div>` : `<div>📍 ${o.address}${o.courierName ? '<br>🚚 Курьер: ' + o.courierName : ''}</div>`}
+                        ${o.code ? `<div class="pickup-code">Код: ${o.code}</div>` : ''}
                         ${o.status === 'courier_arrived' ? `<div style="color:#4CAF50;font-size:0.8rem;">🚪 Курьер прибыл! Назовите код</div>` : ''}
                         ${o.status === 'ready' ? `<div style="color:#4CAF50;font-size:0.8rem;">✅ Готов к выдаче</div>` : ''}
                     </div>
@@ -875,32 +1163,141 @@
             renderClientOrders();
         };
 
-        // ========== СТАТУСЫ ==========
-        function getStatusText(status) {
-            const map = {
-                'to_pvz': '🚚 Едет на ПВЗ',
-                'ready': '✅ Готов к выдаче',
-                'delivered': '📦 Выдан',
-                'to_courier': '🚚 Ожидает курьера',
-                'with_courier': '🚚 У курьера',
-                'courier_arrived': '🚪 Курьер прибыл',
-                'return': '🔄 Возврат'
+        // ========== ПРОДАВЕЦ ==========
+        window.sellerRegister = function() {
+            const fullName = document.getElementById('sellerFullName').value.trim();
+            const shopName = document.getElementById('sellerShopName').value.trim();
+            const phone = document.getElementById('sellerPhone').value.trim();
+            const login = document.getElementById('sellerLogin').value.trim();
+            const password = document.getElementById('sellerPassword').value.trim();
+
+            if (!fullName || !shopName || !phone || !login || !password) {
+                showToast('❌ Заполните все поля', 'error');
+                return;
+            }
+
+            const sellerId = 'seller_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
+            const sellerData = {
+                id: sellerId,
+                fullName: fullName,
+                shopName: shopName,
+                phone: phone,
+                login: login,
+                password: password,
+                wallet: 0,
+                createdAt: Date.now()
             };
-            return map[status] || status;
+
+            db.ref('sellers/' + sellerId).set(sellerData).then(() => {
+                showToast('✅ Регистрация продавца успешна!', 'success');
+                currentUser = {
+                    id: sellerId,
+                    name: fullName,
+                    shopName: shopName,
+                    type: 'seller',
+                    wallet: 0
+                };
+                enterSellerMode();
+            });
+        };
+
+        window.sellerLogin = function() {
+            const login = document.getElementById('sellerLogin').value.trim();
+            const password = document.getElementById('sellerPassword').value.trim();
+
+            if (!login || !password) { showToast('❌ Заполните все поля', 'error'); return; }
+
+            db.ref('sellers').orderByChild('login').equalTo(login).once('value', (sn) => {
+                if (sn.exists()) {
+                    let found = false;
+                    sn.forEach(child => {
+                        const data = child.val();
+                        if (data.password === password) {
+                            currentUser = {
+                                id: child.key,
+                                name: data.fullName,
+                                shopName: data.shopName,
+                                type: 'seller',
+                                wallet: data.wallet || 0
+                            };
+                            found = true;
+                            showToast('👋 Добро пожаловать, ' + data.fullName + '!', 'success');
+                            enterSellerMode();
+                        }
+                    });
+                    if (!found) showToast('❌ Неверный пароль', 'error');
+                } else {
+                    showToast('❌ Продавец не найден', 'error');
+                }
+            });
+        };
+
+        function enterSellerMode() {
+            document.getElementById('sellerAuth').classList.add('hidden');
+            document.getElementById('sellerContent').classList.remove('hidden');
+            document.getElementById('userNameDisplay').textContent = currentUser.shopName + ' 🏪';
+            document.getElementById('sellerWallet').textContent = (currentUser.wallet || 0).toLocaleString() + ' ₽';
+            renderSellerProducts();
+            loadProducts();
         }
 
-        function getStatusClass(status) {
-            const map = {
-                'to_pvz': 'status-waiting',
-                'ready': 'status-ready',
-                'delivered': 'status-delivered',
-                'to_courier': 'status-waiting',
-                'with_courier': 'status-courier',
-                'courier_arrived': 'status-courier',
-                'return': 'status-return'
+        window.addProduct = function() {
+            const name = document.getElementById('productName').value.trim();
+            const price = parseInt(document.getElementById('productPrice').value);
+            const description = document.getElementById('productDesc').value.trim();
+
+            if (!name || !price || price <= 0) {
+                showToast('❌ Заполните название и цену', 'error');
+                return;
+            }
+
+            const productId = 'prod_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
+            const productData = {
+                id: productId,
+                name: name,
+                price: price,
+                description: description,
+                sellerId: currentUser.id,
+                sellerName: currentUser.shopName,
+                createdAt: Date.now()
             };
-            return map[status] || 'status-waiting';
+
+            db.ref('products/' + productId).set(productData).then(() => {
+                showToast('✅ Товар добавлен!', 'success');
+                document.getElementById('productName').value = '';
+                document.getElementById('productPrice').value = '';
+                document.getElementById('productDesc').value = '';
+                loadProducts();
+            });
+        };
+
+        function renderSellerProducts() {
+            const container = document.getElementById('sellerProducts');
+            db.ref('products').orderByChild('sellerId').equalTo(currentUser.id).on('value', (sn) => {
+                const items = [];
+                sn.forEach(child => items.push({ id: child.key, ...child.val() }));
+                if (items.length === 0) {
+                    container.innerHTML = '<div style="color:#555;padding:10px;">Нет товаров</div>';
+                    return;
+                }
+                container.innerHTML = items.map(p => `
+                    <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <div style="font-weight:bold;">${p.name}</div>
+                            <div style="color:#f5a623;">${p.price} ₽</div>
+                            <div style="font-size:0.7rem;color:#666;">${p.description || ''}</div>
+                        </div>
+                        <button class="btn-danger" onclick="deleteProduct('${p.id}')" style="padding:6px 12px;border:none;border-radius:30px;cursor:pointer;">✕</button>
+                    </div>
+                `).join('');
+            });
         }
+
+        window.deleteProduct = function(productId) {
+            if (!confirm('Удалить товар?')) return;
+            db.ref('products/' + productId).remove();
+            showToast('🗑️ Товар удалён', 'info');
+        };
 
         // ========== ПВЗ ==========
         window.pvzRegister = function() {
@@ -960,7 +1357,6 @@
             });
         };
 
-        // Показываем поля регистрации ПВЗ
         document.getElementById('pvzLogin').addEventListener('input', function() {
             const fields = document.getElementById('pvzRegisterFields');
             if (this.value.length > 0) {
@@ -975,6 +1371,7 @@
             document.getElementById('pvzContent').classList.remove('hidden');
             document.getElementById('userNameDisplay').textContent = currentUser.name + ' 🏪';
             pvzAction('receive');
+            loadPVZList();
         }
 
         window.pvzAction = function(action) {
@@ -1011,7 +1408,8 @@
                     <div class="order-items">${o.items.map(i => `${i.name} x${i.qty}`).join(', ')}</div>
                     <div style="font-weight:bold;">${o.total.toLocaleString()} ₽</div>
                     <div>👤 ${o.userName}</div>
-                    <div class="pickup-code">Код: ${o.code}</div>
+                    ${o.code ? `<div class="pickup-code">Код: ${o.code}</div>` : ''}
+                    ${o.courierName ? `<div style="font-size:0.8rem;color:#888;">🚚 Курьер: ${o.courierName}</div>` : ''}
                     <div class="order-actions">
                         ${o.status === 'to_pvz' ? `<button class="btn-success" onclick="pvzReady('${o.id}')">✅ Готов к выдаче</button>` : ''}
                         ${o.status === 'ready' ? `<button class="btn-primary" onclick="pvzIssue('${o.id}')">📤 Выдать</button>` : ''}
@@ -1028,17 +1426,83 @@
         };
 
         window.pvzIssue = function(orderId) {
-            const code = prompt('Введите код клиента:');
-            if (!code) return;
+            // Проверяем сначала через сканер
+            const code = document.getElementById('pvzScanInput').value.trim();
+            if (!code) {
+                const manualCode = prompt('Введите код клиента:');
+                if (!manualCode) return;
+                verifyAndIssue(orderId, manualCode);
+            } else {
+                verifyAndIssue(orderId, code);
+                document.getElementById('pvzScanInput').value = '';
+            }
+        };
+
+        function verifyAndIssue(orderId, code) {
             db.ref('orders/' + orderId).once('value', (sn) => {
                 const order = sn.val();
                 if (order.code === code) {
                     db.ref('orders/' + orderId).update({ status: 'delivered' });
                     showToast('✅ Заказ выдан!', 'success');
+                    document.getElementById('pvzScanResult').innerHTML = '';
                 } else {
                     showToast('❌ Неверный код!', 'error');
+                    document.getElementById('pvzScanResult').innerHTML = '<div style="color:#ff4444;">❌ Неверный код</div>';
                 }
             });
+        }
+
+        // Сканирование QR
+        window.pvzScanQR = function(input) {
+            const result = document.getElementById('pvzScanResult');
+            if (!input || input.length < 10) {
+                result.innerHTML = '';
+                return;
+            }
+
+            // Проверяем формат WHOPPER:ORDERID:CODE
+            if (input.startsWith('WHOPPER:')) {
+                const parts = input.split(':');
+                if (parts.length >= 3) {
+                    const orderId = parts[1];
+                    const code = parts[2];
+
+                    db.ref('orders/' + orderId).once('value', (sn) => {
+                        const order = sn.val();
+                        if (!order) {
+                            result.innerHTML = '<div style="color:#ff4444;">❌ Заказ не найден</div>';
+                            return;
+                        }
+
+                        if (order.pvzNumber === currentUser.pvzNumber) {
+                            // Показываем товары клиента
+                            result.innerHTML = `
+                                <div style="background:rgba(76,175,80,0.15);padding:12px;border-radius:12px;border:1px solid #4CAF50;">
+                                    <div style="color:#4CAF50;font-weight:bold;">✅ Заказ найден!</div>
+                                    <div>👤 ${order.userName}</div>
+                                    <div>📦 ${order.items.map(i => `${i.name} x${i.qty}`).join(', ')}</div>
+                                    <div style="font-weight:bold;">${order.total} ₽</div>
+                                    <div style="font-size:0.8rem;color:#888;">Код: ${order.code}</div>
+                                    ${order.status === 'ready' ? 
+                                        `<button onclick="verifyAndIssue('${orderId}', '${code}')" style="margin-top:8px;padding:8px 20px;border-radius:30px;border:none;background:#4CAF50;color:white;font-weight:bold;cursor:pointer;">📤 Выдать</button>` : 
+                                        `<div style="color:#ff9800;font-size:0.8rem;">Статус: ${getStatusText(order.status)}</div>`
+                                    }
+                                </div>
+                            `;
+                        } else {
+                            result.innerHTML = `
+                                <div style="background:rgba(255,68,68,0.15);padding:12px;border-radius:12px;border:1px solid #ff4444;">
+                                    <div style="color:#ff4444;font-weight:bold;">❌ Неверный ПВЗ</div>
+                                    <div>Заказ сделан для ПВЗ №${order.pvzNumber}</div>
+                                    <div>📍 ${order.address || 'Адрес не указан'}</div>
+                                </div>
+                            `;
+                        }
+                    });
+                }
+            } else {
+                result.innerHTML = '<div style="color:#666;">🔍 Сканируйте QR-код клиента</div>';
+            }
         };
 
         window.pvzReturn = function(orderId) {
@@ -1049,6 +1513,13 @@
 
         window.pvzGiveCourier = function(orderId) {
             db.ref('orders/' + orderId).update({ status: 'delivered' });
+            // Уменьшаем счётчик заказов у курьера
+            db.ref('orders/' + orderId).once('value', (sn) => {
+                const order = sn.val();
+                if (order.courierId) {
+                    db.ref('couriers/' + order.courierId + '/activeOrders').transaction(current => Math.max(0, (current || 1) - 1));
+                }
+            });
             showToast('🚚 Заказ передан курьеру', 'success');
         };
 
@@ -1067,10 +1538,12 @@
                 name: name,
                 login: login,
                 password: password,
+                activeOrders: 0,
+                wallet: 0,
                 createdAt: Date.now()
             }).then(() => {
                 showToast('✅ Вы стали курьером!', 'success');
-                currentUser = { id: courierId, name: name, type: 'courier' };
+                currentUser = { id: courierId, name: name, type: 'courier', wallet: 0 };
                 enterCourierMode();
             });
         };
@@ -1090,7 +1563,8 @@
                             currentUser = {
                                 id: child.key,
                                 name: data.name,
-                                type: 'courier'
+                                type: 'courier',
+                                wallet: data.wallet || 0
                             };
                             found = true;
                             showToast('👋 Добро пожаловать, ' + data.name + '!', 'success');
@@ -1108,16 +1582,20 @@
             document.getElementById('courierAuth').classList.add('hidden');
             document.getElementById('courierContent').classList.remove('hidden');
             document.getElementById('userNameDisplay').textContent = currentUser.name + ' 🚚';
+            document.getElementById('courierWallet').textContent = (currentUser.wallet || 0).toLocaleString() + ' ₽';
             courierAction('orders');
+            loadCouriers();
         }
 
         window.courierAction = function(action) {
             const container = document.getElementById('courierOrders');
 
             if (action === 'orders') {
-                db.ref('orders').orderByChild('status').equalTo('to_courier').on('value', renderCourierOrders);
+                // Заказы которые нужно забрать из ПВЗ
+                db.ref('orders').orderByChild('courierId').equalTo(currentUser.id).on('value', renderCourierOrders);
             } else if (action === 'deliveries') {
-                db.ref('orders').orderByChild('status').equalTo('with_courier').on('value', renderCourierOrders);
+                // Заказы которые нужно доставить
+                db.ref('orders').orderByChild('courierId').equalTo(currentUser.id).on('value', renderCourierOrders);
             }
         };
 
@@ -1126,38 +1604,70 @@
             const orders = [];
             sn.forEach(child => orders.push({ id: child.key, ...child.val() }));
 
-            if (orders.length === 0) {
-                container.innerHTML = '<div style="text-align:center;color:#555;padding:20px;">Нет заказов</div>';
-                return;
+            // Фильтруем для доставок
+            const deliveries = orders.filter(o => o.status === 'with_courier' || o.status === 'courier_arrived');
+            const toPickup = orders.filter(o => o.status === 'to_courier');
+
+            let html = '';
+
+            if (toPickup.length > 0) {
+                html += '<h4 style="color:#f5a623;margin:8px 0;">📦 Забрать из ПВЗ</h4>';
+                html += toPickup.map(o => `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <span>#${o.id}</span>
+                            <span class="order-status status-waiting">⏳ Ожидает</span>
+                        </div>
+                        <div class="order-items">${o.items.map(i => `${i.name} x${i.qty}`).join(', ')}</div>
+                        <div style="font-weight:bold;">${o.total.toLocaleString()} ₽</div>
+                        <div>🏪 ПВЗ №${o.pvzNumber}</div>
+                        <div class="order-actions">
+                            <button class="btn-primary" onclick="courierPickup('${o.id}')">📦 Еду забирать</button>
+                        </div>
+                    </div>
+                `).join('');
             }
 
-            container.innerHTML = orders.map(o => `
-                <div class="order-card">
-                    <div class="order-header">
-                        <span>#${o.id}</span>
-                        <span class="order-status ${getStatusClass(o.status)}">${getStatusText(o.status)}</span>
+            if (deliveries.length > 0) {
+                html += '<h4 style="color:#f5a623;margin:8px 0;">🚚 Доставка клиентам</h4>';
+                html += deliveries.map(o => `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <span>#${o.id}</span>
+                            <span class="order-status ${getStatusClass(o.status)}">${getStatusText(o.status)}</span>
+                        </div>
+                        <div class="order-items">${o.items.map(i => `${i.name} x${i.qty}`).join(', ')}</div>
+                        <div style="font-weight:bold;">${o.total.toLocaleString()} ₽</div>
+                        <div>📍 ${o.address}</div>
+                        <div>👤 ${o.userName}</div>
+                        ${o.code ? `<div class="pickup-code">Код: ${o.code}</div>` : ''}
+                        <div class="order-actions">
+                            ${o.status === 'with_courier' ? `<button class="btn-success" onclick="courierArrived('${o.id}')">🚪 Прибыл</button>` : ''}
+                            ${o.status === 'courier_arrived' ? `<button class="btn-success" onclick="courierDeliver('${o.id}')">📤 Выдать</button>` : ''}
+                        </div>
                     </div>
-                    <div class="order-items">${o.items.map(i => `${i.name} x${i.qty}`).join(', ')}</div>
-                    <div style="font-weight:bold;">${o.total.toLocaleString()} ₽</div>
-                    ${o.address ? `<div style="font-size:0.8rem;color:#888;">📍 ${o.address}</div>` : ''}
-                    ${o.code ? `<div class="pickup-code">Код: ${o.code}</div>` : ''}
-                    <div class="order-actions">
-                        ${o.status === 'to_courier' ? `<button class="btn-primary" onclick="courierPickup('${o.id}')">📦 Еду забирать</button>` : ''}
-                        ${o.status === 'with_courier' ? `<button class="btn-success" onclick="courierArrived('${o.id}')">🚪 Прибыл</button>` : ''}
-                        ${o.status === 'courier_arrived' ? `<button class="btn-success" onclick="courierDeliver('${o.id}')">📤 Выдать</button>` : ''}
-                    </div>
-                </div>
-            `).join('');
+                `).join('');
+            }
+
+            if (!html) {
+                html = '<div style="text-align:center;color:#555;padding:20px;">Нет заказов</div>';
+            }
+
+            container.innerHTML = html;
         }
 
         window.courierPickup = function(orderId) {
             db.ref('orders/' + orderId).update({ status: 'with_courier' });
             showToast('📦 Заказ взят в доставку', 'success');
+            // Обновляем счётчик активных заказов курьера
+            db.ref('couriers/' + currentUser.id + '/activeOrders').transaction(current => (current || 0) + 1);
+            courierAction('orders');
         };
 
         window.courierArrived = function(orderId) {
             db.ref('orders/' + orderId).update({ status: 'courier_arrived' });
             showToast('🚪 Курьер прибыл на адрес', 'success');
+            courierAction('orders');
         };
 
         window.courierDeliver = function(orderId) {
@@ -1168,17 +1678,51 @@
                 const order = sn.val();
                 if (order.code === code) {
                     db.ref('orders/' + orderId).update({ status: 'delivered' });
-                    showToast('✅ Заказ выдан!', 'success');
+                    // Начисляем деньги курьеру
+                    const deliveryFee = Math.max(50, Math.round(order.total * 0.05));
+                    db.ref('couriers/' + currentUser.id + '/wallet').transaction(current => (current || 0) + deliveryFee);
+                    db.ref('couriers/' + currentUser.id + '/activeOrders').transaction(current => Math.max(0, (current || 1) - 1));
+                    showToast(`✅ Заказ выдан! +${deliveryFee} ₽`, 'success');
+                    courierAction('orders');
                 } else {
                     showToast('❌ Неверный код!', 'error');
                 }
             });
         };
 
+        // ========== СТАТУСЫ ==========
+        function getStatusText(status) {
+            const map = {
+                'to_pvz': '🚚 Едет на ПВЗ',
+                'ready': '✅ Готов к выдаче',
+                'delivered': '📦 Выдан',
+                'to_courier': '⏳ Ожидает курьера',
+                'with_courier': '🚚 У курьера',
+                'courier_arrived': '🚪 Курьер прибыл',
+                'return': '🔄 Возврат'
+            };
+            return map[status] || status;
+        }
+
+        function getStatusClass(status) {
+            const map = {
+                'to_pvz': 'status-waiting',
+                'ready': 'status-ready',
+                'delivered': 'status-delivered',
+                'to_courier': 'status-waiting',
+                'with_courier': 'status-courier',
+                'courier_arrived': 'status-courier',
+                'return': 'status-return'
+            };
+            return map[status] || 'status-waiting';
+        }
+
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
         console.log('🛍️ WHOPPER MARKET ЗАПУЩЕН');
-        console.log('Выберите роль: Клиент, ПВЗ или Курьер');
+        console.log('Выберите роль: Клиент, Продавец, ПВЗ или Курьер');
         loadPVZList();
+        loadCouriers();
+        loadProducts();
     </script>
 </body>
 </html>
