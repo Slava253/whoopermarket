@@ -381,10 +381,14 @@
 
         .qr-container {
             background: white;
-            padding: 16px;
+            padding: 12px;
             border-radius: 16px;
             display: inline-block;
-            margin: 10px 0;
+            margin: 8px 0;
+        }
+        .qr-container canvas {
+            display: block;
+            margin: 0 auto;
         }
 
         .tabs {
@@ -617,7 +621,6 @@
             font-size: 0.65rem;
         }
 
-        /* Стили для пополнения */
         .deposit-amounts {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -710,6 +713,10 @@
             .deposit-amounts {
                 grid-template-columns: repeat(3, 1fr);
             }
+            .qr-container canvas {
+                width: 120px !important;
+                height: 120px !important;
+            }
         }
     </style>
 </head>
@@ -756,7 +763,6 @@
                 </div>
             </div>
             <div id="clientContent" class="hidden">
-                <!-- КОШЕЛЁК С КЛИКОМ -->
                 <div class="wallet" onclick="openDepositModal('client')">
                     <div>
                         <span><i class="fas fa-wallet"></i> WHOPPER Кошелёк</span>
@@ -1330,7 +1336,6 @@
                 }
             });
             document.getElementById('depositCustomAmount').value = '';
-            // Сразу пополняем
             depositAmount(amount);
         };
 
@@ -1618,6 +1623,7 @@
         }
 
         function showQR(orderId, code) {
+            // Создаём временный QR
             const qrDiv = document.createElement('div');
             qrDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1a2e;padding:30px;border-radius:20px;z-index:1000;border:2px solid #f5a623;text-align:center;';
             qrDiv.innerHTML = `
@@ -1635,7 +1641,7 @@
             });
         }
 
-        // ========== ЗАКАЗЫ КЛИЕНТА ==========
+        // ========== ЗАКАЗЫ КЛИЕНТА (С QR-КОДОМ) ==========
         function renderClientOrders() {
             const container = document.getElementById('clientOrders');
             db.ref('orders').orderByChild('userId').equalTo(currentUser.id).on('value', (sn) => {
@@ -1662,11 +1668,41 @@
                         <div style="font-weight:bold;">${o.total.toLocaleString()} ₽</div>
                         ${o.type === 'pvz' ? `<div>🏪 ПВЗ №${o.pvzNumber}<br>📍 ${o.address}</div>` : `<div>📍 ${o.address}${o.courierName ? '<br>🚚 Курьер: ' + o.courierName : ''}</div>`}
                         ${o.code ? `<div class="pickup-code">Код: ${o.code}</div>` : ''}
+                        ${o.type === 'pvz' && o.status !== 'delivered' ? `
+                            <div class="qr-container" id="qr_${o.id}"></div>
+                            <script>
+                                setTimeout(() => {
+                                    try {
+                                        new QRCode(document.getElementById('qr_${o.id}'), {
+                                            text: 'WHOPPER:${o.id}:${o.code}',
+                                            width: 150,
+                                            height: 150
+                                        });
+                                    } catch(e) {}
+                                }, 100);
+                            <\/script>
+                        ` : ''}
                         ${o.hasAdult && !o.adultConfirmed ? `<div style="color:#ff4444;font-weight:bold;">🔞 Требуется подтверждение 18+ на ПВЗ</div>` : ''}
                         ${o.status === 'courier_arrived' ? `<div style="color:#4CAF50;font-size:0.8rem;">🚪 Курьер прибыл! Назовите код</div>` : ''}
                         ${o.status === 'ready' ? `<div style="color:#4CAF50;font-size:0.8rem;">✅ Готов к выдаче</div>` : ''}
                     </div>
                 `).join('');
+
+                // Дополнительно генерируем QR для всех заказов ПВЗ (защита от скриптов)
+                filtered.forEach(o => {
+                    if (o.type === 'pvz' && o.status !== 'delivered' && o.code) {
+                        const qrContainer = document.getElementById('qr_' + o.id);
+                        if (qrContainer && !qrContainer.querySelector('canvas')) {
+                            try {
+                                new QRCode(qrContainer, {
+                                    text: 'WHOPPER:' + o.id + ':' + o.code,
+                                    width: 150,
+                                    height: 150
+                                });
+                            } catch(e) {}
+                        }
+                    }
+                });
             });
         }
 
@@ -2297,6 +2333,7 @@
         console.log('🛍️ WHOPPER MARKET ЗАПУЩЕН');
         console.log('Выберите роль: Клиент, Продавец, ПВЗ или Курьер');
         console.log('💰 Нажмите на кошелёк чтобы пополнить');
+        console.log('📱 QR-код сохраняется в истории заказов');
         loadPVZList();
         loadCouriers();
         loadProducts();
