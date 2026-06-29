@@ -367,13 +367,13 @@
         }
 
         .pickup-code {
-            font-size: 1.8rem;
+            font-size: 2rem;
             font-weight: bold;
             color: #f5a623;
             font-family: monospace;
-            letter-spacing: 4px;
+            letter-spacing: 6px;
             background: rgba(255,255,255,0.05);
-            padding: 10px;
+            padding: 12px;
             border-radius: 12px;
             margin: 8px 0;
             text-align: center;
@@ -498,6 +498,28 @@
         }
         .scan-area input:focus {
             border-color: #f5a623;
+        }
+        .scan-area .scan-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 30px;
+            border: none;
+            background: #f5a623;
+            color: #1a1a2e;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .scan-area .scan-btn:active {
+            transform: scale(0.97);
+        }
+        .scan-area video {
+            width: 100%;
+            border-radius: 16px;
+            margin-top: 8px;
+            max-height: 300px;
+            object-fit: cover;
         }
 
         .wallet {
@@ -717,6 +739,9 @@
                 width: 120px !important;
                 height: 120px !important;
             }
+            .scan-area video {
+                max-height: 200px;
+            }
         }
     </style>
 </head>
@@ -918,7 +943,11 @@
 
                 <div class="scan-area">
                     <h4 style="color:#f5a623;margin-bottom:8px;">📷 Сканирование QR-кода</h4>
-                    <input type="text" id="pvzScanInput" placeholder="Отсканируйте QR-код клиента" oninput="pvzScanQR(this.value)">
+                    <input type="text" id="pvzScanInput" placeholder="Введите код или отсканируйте QR">
+                    <button class="scan-btn" onclick="startQRScanner()">
+                        <i class="fas fa-camera"></i> 📷 Сканировать QR
+                    </button>
+                    <video id="qrVideo" autoplay playsinline style="display:none;"></video>
                     <div id="pvzScanResult" style="margin-top:8px;"></div>
                 </div>
 
@@ -1070,7 +1099,8 @@
         let currentProductId = null;
         let selectedRating = 0;
         let depositTarget = 'client';
-        let selectedDepositAmount = 0;
+        let qrScannerActive = false;
+        let qrCodeReader = null;
 
         // ========== НАЧАЛЬНЫЕ ТОВАРЫ ==========
         const defaultProducts = [
@@ -1102,6 +1132,11 @@
             document.getElementById('pvzPanel').classList.add('hidden');
             document.getElementById('courierPanel').classList.add('hidden');
 
+            // Останавливаем сканер если был активен
+            if (qrScannerActive) {
+                stopQRScanner();
+            }
+
             if (role === 'client') {
                 document.getElementById('clientPanel').classList.remove('hidden');
                 document.getElementById('clientContent').classList.add('hidden');
@@ -1124,6 +1159,143 @@
                 loadCouriers();
             }
         };
+
+        // ========== QR СКАНЕР ==========
+        window.startQRScanner = function() {
+            const video = document.getElementById('qrVideo');
+            const resultDiv = document.getElementById('pvzScanResult');
+
+            if (qrScannerActive) {
+                stopQRScanner();
+                return;
+            }
+
+            // Проверяем поддержку камеры
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showToast('❌ Камера не поддерживается', 'error');
+                return;
+            }
+
+            navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment' }
+            }).then(function(stream) {
+                video.srcObject = stream;
+                video.style.display = 'block';
+                video.setAttribute('playsinline', '');
+                qrScannerActive = true;
+
+                // Запускаем сканирование
+                scanQRCode(video, resultDiv, stream);
+
+                showToast('📷 Наведите камеру на QR-код', 'info');
+            }).catch(function(err) {
+                console.error('Ошибка камеры:', err);
+                showToast('❌ Не удалось открыть камеру: ' + err.message, 'error');
+            });
+        };
+
+        function scanQRCode(video, resultDiv, stream) {
+            if (!qrScannerActive) return;
+
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+                // Используем jsQR для декодирования
+                try {
+                    const code = jsQR(imageData.data, imageData.width, imageData.height);
+                    if (code && code.data) {
+                        const result = code.data;
+                        // Проверяем формат
+                        if (result.startsWith('WHOPPER:')) {
+                            const parts = result.split(':');
+                            if (parts.length >= 3) {
+                                const orderId = parts[1];
+                                const orderCode = parts[2];
+                                document.getElementById('pvzScanInput').value = orderCode;
+                                processQRResult(orderId, orderCode);
+                                stopQRScanner();
+                                return;
+                            }
+                        } else {
+                            // Если просто код
+                            document.getElementById('pvzScanInput').value = result;
+                            pvzScanQR(result);
+                            stopQRScanner();
+                            return;
+                        }
+                    }
+                } catch(e) {
+                    // Игнорируем ошибки jsQR
+                }
+
+                // Продолжаем сканирование
+                requestAnimationFrame(() => scanQRCode(video, resultDiv, stream));
+            } else {
+                video.addEventListener('loadeddata', () => {
+                    scanQRCode(video, resultDiv, stream);
+                });
+            }
+        }
+
+        function processQRResult(orderId, code) {
+            db.ref('orders/' + orderId).once('value', (sn) => {
+                const order = sn.val();
+                if (!order) {
+                    document.getElementById('pvzScanResult').innerHTML = '<div style="color:#ff4444;">❌ Заказ не найден</div>';
+                    return;
+                }
+
+                if (order.pvzNumber === currentUser.pvzNumber) {
+                    let adultWarning = '';
+                    if (order.hasAdult && !order.adultConfirmed) {
+                        adultWarning = '<div style="color:#ff4444;font-weight:bold;margin-top:5px;">🔞 Требуется подтверждение 18+</div>';
+                    }
+                    document.getElementById('pvzScanResult').innerHTML = `
+                        <div style="background:rgba(76,175,80,0.15);padding:12px;border-radius:12px;border:1px solid #4CAF50;">
+                            <div style="color:#4CAF50;font-weight:bold;">✅ Заказ найден!</div>
+                            <div>👤 ${order.userName}</div>
+                            <div>📦 ${order.items.map(i => `${i.name} x${i.qty}${i.adult ? ' 🔞' : ''}`).join(', ')}</div>
+                            <div style="font-weight:bold;">${order.total} ₽</div>
+                            <div style="font-size:0.8rem;color:#888;">Код: ${order.code}</div>
+                            ${adultWarning}
+                            ${order.status === 'ready' ? 
+                                `<button onclick="verifyAndIssue('${orderId}', '${order.code}')" style="margin-top:8px;padding:8px 20px;border-radius:30px;border:none;background:#4CAF50;color:white;font-weight:bold;cursor:pointer;">📤 Выдать</button>` : 
+                                `<div style="color:#ff9800;font-size:0.8rem;">Статус: ${getStatusText(order.status)}</div>`
+                            }
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('pvzScanResult').innerHTML = `
+                        <div style="background:rgba(255,68,68,0.15);padding:12px;border-radius:12px;border:1px solid #ff4444;">
+                            <div style="color:#ff4444;font-weight:bold;">❌ Неверный ПВЗ</div>
+                            <div>Заказ сделан для ПВЗ №${order.pvzNumber}</div>
+                            <div>📍 ${order.address || 'Адрес не указан'}</div>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        function stopQRScanner() {
+            qrScannerActive = false;
+            const video = document.getElementById('qrVideo');
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+            }
+            video.style.display = 'none';
+            document.querySelector('.scan-btn').textContent = '📷 Сканировать QR';
+        }
+
+        // Подключаем jsQR библиотеку
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
+        document.head.appendChild(script);
 
         // ========== ЗАГРУЗКА ТОВАРОВ ==========
         function loadProducts() {
@@ -1316,7 +1488,6 @@
                 return;
             }
             depositTarget = target;
-            selectedDepositAmount = 0;
             document.getElementById('depositCurrentBalance').textContent = (currentUser.wallet || 0).toLocaleString() + ' ₽';
             document.getElementById('depositCustomAmount').value = '';
             document.querySelectorAll('.deposit-amounts button').forEach(b => b.classList.remove('active'));
@@ -1328,7 +1499,6 @@
         };
 
         window.selectDepositAmount = function(amount) {
-            selectedDepositAmount = amount;
             document.querySelectorAll('.deposit-amounts button').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.deposit-amounts button').forEach(b => {
                 if (parseInt(b.textContent.replace(/[^0-9]/g, '')) === amount) {
@@ -1370,7 +1540,6 @@
                 updateWalletDisplay();
                 showToast(`✅ Кошелёк пополнен на ${amount.toLocaleString()} ₽`, 'success');
                 document.getElementById('depositCurrentBalance').textContent = newBalance.toLocaleString() + ' ₽';
-                selectedDepositAmount = 0;
                 document.querySelectorAll('.deposit-amounts button').forEach(b => b.classList.remove('active'));
                 document.getElementById('depositCustomAmount').value = '';
                 setTimeout(() => closeDepositModal(), 1000);
@@ -1564,7 +1733,6 @@
             const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
             const orderId = 'ORD' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
             const code = Math.floor(100000 + Math.random() * 900000).toString();
-            const qrData = 'WHOPPER:' + orderId + ':' + code;
 
             const hasAdult = cart.some(i => i.adult);
 
@@ -1592,7 +1760,6 @@
                 address: type === 'courier' ? address : pvzAddress,
                 pvzNumber: type === 'pvz' ? address : null,
                 code: code,
-                qrData: qrData,
                 status: type === 'pvz' ? 'to_pvz' : 'to_courier',
                 createdAt: Date.now(),
                 courierId: courierId,
@@ -1621,7 +1788,7 @@
             });
         }
 
-        // ========== ЗАКАЗЫ КЛИЕНТА (С QR-КОДОМ СОХРАНЁННЫМ) ==========
+        // ========== ЗАКАЗЫ КЛИЕНТА С QR ==========
         function renderClientOrders() {
             const container = document.getElementById('clientOrders');
             db.ref('orders').orderByChild('userId').equalTo(currentUser.id).on('value', (sn) => {
@@ -1657,12 +1824,11 @@
                     </div>
                 `).join('');
 
-                // Генерируем QR для всех заказов ПВЗ (сохраняются в DOM)
+                // Генерируем QR для заказов ПВЗ
                 filtered.forEach(o => {
                     if (o.type === 'pvz' && o.status !== 'delivered' && o.code) {
                         const qrContainer = document.getElementById('qr_' + o.id);
                         if (qrContainer) {
-                            // Очищаем контейнер
                             qrContainer.innerHTML = '';
                             try {
                                 new QRCode(qrContainer, {
@@ -1671,7 +1837,7 @@
                                     height: 150
                                 });
                             } catch(e) {
-                                console.log('QR ошибка для заказа', o.id);
+                                console.log('QR ошибка', o.id);
                             }
                         }
                     }
@@ -1992,57 +2158,42 @@
 
         window.pvzScanQR = function(input) {
             const result = document.getElementById('pvzScanResult');
-            if (!input || input.length < 10) {
+            if (!input || input.length < 6) {
                 result.innerHTML = '';
                 return;
             }
 
-            if (input.startsWith('WHOPPER:')) {
-                const parts = input.split(':');
-                if (parts.length >= 3) {
-                    const orderId = parts[1];
-                    const code = parts[2];
-
-                    db.ref('orders/' + orderId).once('value', (sn) => {
-                        const order = sn.val();
-                        if (!order) {
-                            result.innerHTML = '<div style="color:#ff4444;">❌ Заказ не найден</div>';
-                            return;
+            // Ищем заказ по коду
+            db.ref('orders').orderByChild('code').equalTo(input).once('value', (sn) => {
+                let found = false;
+                sn.forEach(child => {
+                    const order = child.val();
+                    if (order.pvzNumber === currentUser.pvzNumber) {
+                        found = true;
+                        let adultWarning = '';
+                        if (order.hasAdult && !order.adultConfirmed) {
+                            adultWarning = '<div style="color:#ff4444;font-weight:bold;margin-top:5px;">🔞 Требуется подтверждение 18+</div>';
                         }
-
-                        if (order.pvzNumber === currentUser.pvzNumber) {
-                            let adultWarning = '';
-                            if (order.hasAdult && !order.adultConfirmed) {
-                                adultWarning = '<div style="color:#ff4444;font-weight:bold;margin-top:5px;">🔞 Требуется подтверждение 18+</div>';
-                            }
-                            result.innerHTML = `
-                                <div style="background:rgba(76,175,80,0.15);padding:12px;border-radius:12px;border:1px solid #4CAF50;">
-                                    <div style="color:#4CAF50;font-weight:bold;">✅ Заказ найден!</div>
-                                    <div>👤 ${order.userName}</div>
-                                    <div>📦 ${order.items.map(i => `${i.name} x${i.qty}${i.adult ? ' 🔞' : ''}`).join(', ')}</div>
-                                    <div style="font-weight:bold;">${order.total} ₽</div>
-                                    <div style="font-size:0.8rem;color:#888;">Код: ${order.code}</div>
-                                    ${adultWarning}
-                                    ${order.status === 'ready' ? 
-                                        `<button onclick="verifyAndIssue('${orderId}', '${code}')" style="margin-top:8px;padding:8px 20px;border-radius:30px;border:none;background:#4CAF50;color:white;font-weight:bold;cursor:pointer;">📤 Выдать</button>` : 
-                                        `<div style="color:#ff9800;font-size:0.8rem;">Статус: ${getStatusText(order.status)}</div>`
-                                    }
-                                </div>
-                            `;
-                        } else {
-                            result.innerHTML = `
-                                <div style="background:rgba(255,68,68,0.15);padding:12px;border-radius:12px;border:1px solid #ff4444;">
-                                    <div style="color:#ff4444;font-weight:bold;">❌ Неверный ПВЗ</div>
-                                    <div>Заказ сделан для ПВЗ №${order.pvzNumber}</div>
-                                    <div>📍 ${order.address || 'Адрес не указан'}</div>
-                                </div>
-                            `;
-                        }
-                    });
+                        result.innerHTML = `
+                            <div style="background:rgba(76,175,80,0.15);padding:12px;border-radius:12px;border:1px solid #4CAF50;">
+                                <div style="color:#4CAF50;font-weight:bold;">✅ Заказ найден!</div>
+                                <div>👤 ${order.userName}</div>
+                                <div>📦 ${order.items.map(i => `${i.name} x${i.qty}${i.adult ? ' 🔞' : ''}`).join(', ')}</div>
+                                <div style="font-weight:bold;">${order.total} ₽</div>
+                                <div style="font-size:0.8rem;color:#888;">Код: ${order.code}</div>
+                                ${adultWarning}
+                                ${order.status === 'ready' ? 
+                                    `<button onclick="verifyAndIssue('${order.id}', '${order.code}')" style="margin-top:8px;padding:8px 20px;border-radius:30px;border:none;background:#4CAF50;color:white;font-weight:bold;cursor:pointer;">📤 Выдать</button>` : 
+                                    `<div style="color:#ff9800;font-size:0.8rem;">Статус: ${getStatusText(order.status)}</div>`
+                                }
+                            </div>
+                        `;
+                    }
+                });
+                if (!found) {
+                    result.innerHTML = '<div style="color:#ff4444;">❌ Заказ не найден или не для этого ПВЗ</div>';
                 }
-            } else {
-                result.innerHTML = '<div style="color:#666;">🔍 Сканируйте QR-код клиента</div>';
-            }
+            });
         };
 
         window.pvzReturn = function(orderId) {
@@ -2306,7 +2457,7 @@
         console.log('🛍️ WHOPPER MARKET ЗАПУЩЕН');
         console.log('Выберите роль: Клиент, Продавец, ПВЗ или Курьер');
         console.log('💰 Нажмите на кошелёк чтобы пополнить');
-        console.log('📱 QR-код сохраняется в заказе и не теряется');
+        console.log('📷 На ПВЗ можно сканировать QR-код камерой');
         loadPVZList();
         loadCouriers();
         loadProducts();
