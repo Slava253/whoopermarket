@@ -1611,7 +1611,6 @@
                 showToast(`✅ Заказ #${orderId} оформлен!`, 'success');
                 if (type === 'pvz') {
                     showToast(`📱 Код: ${code}`, 'info');
-                    showQR(orderId, code);
                 } else {
                     showToast(`📱 Код: ${code}\n🚚 Курьер: ${courierName || 'назначен'}`, 'info');
                 }
@@ -1622,26 +1621,7 @@
             });
         }
 
-        function showQR(orderId, code) {
-            // Создаём временный QR
-            const qrDiv = document.createElement('div');
-            qrDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1a2e;padding:30px;border-radius:20px;z-index:1000;border:2px solid #f5a623;text-align:center;';
-            qrDiv.innerHTML = `
-                <h3 style="color:#f5a623;margin-bottom:10px;">QR-код для ПВЗ</h3>
-                <div id="qrCodeContainer"></div>
-                <div class="pickup-code">Код: ${code}</div>
-                <button onclick="this.parentElement.remove()" style="margin-top:15px;padding:10px 30px;border-radius:30px;border:none;background:#f5a623;font-weight:bold;cursor:pointer;">✕ Закрыть</button>
-            `;
-            document.body.appendChild(qrDiv);
-
-            new QRCode(document.getElementById('qrCodeContainer'), {
-                text: 'WHOPPER:' + orderId + ':' + code,
-                width: 200,
-                height: 200
-            });
-        }
-
-        // ========== ЗАКАЗЫ КЛИЕНТА (С QR-КОДОМ) ==========
+        // ========== ЗАКАЗЫ КЛИЕНТА (С QR-КОДОМ СОХРАНЁННЫМ) ==========
         function renderClientOrders() {
             const container = document.getElementById('clientOrders');
             db.ref('orders').orderByChild('userId').equalTo(currentUser.id).on('value', (sn) => {
@@ -1670,17 +1650,6 @@
                         ${o.code ? `<div class="pickup-code">Код: ${o.code}</div>` : ''}
                         ${o.type === 'pvz' && o.status !== 'delivered' ? `
                             <div class="qr-container" id="qr_${o.id}"></div>
-                            <script>
-                                setTimeout(() => {
-                                    try {
-                                        new QRCode(document.getElementById('qr_${o.id}'), {
-                                            text: 'WHOPPER:${o.id}:${o.code}',
-                                            width: 150,
-                                            height: 150
-                                        });
-                                    } catch(e) {}
-                                }, 100);
-                            <\/script>
                         ` : ''}
                         ${o.hasAdult && !o.adultConfirmed ? `<div style="color:#ff4444;font-weight:bold;">🔞 Требуется подтверждение 18+ на ПВЗ</div>` : ''}
                         ${o.status === 'courier_arrived' ? `<div style="color:#4CAF50;font-size:0.8rem;">🚪 Курьер прибыл! Назовите код</div>` : ''}
@@ -1688,18 +1657,22 @@
                     </div>
                 `).join('');
 
-                // Дополнительно генерируем QR для всех заказов ПВЗ (защита от скриптов)
+                // Генерируем QR для всех заказов ПВЗ (сохраняются в DOM)
                 filtered.forEach(o => {
                     if (o.type === 'pvz' && o.status !== 'delivered' && o.code) {
                         const qrContainer = document.getElementById('qr_' + o.id);
-                        if (qrContainer && !qrContainer.querySelector('canvas')) {
+                        if (qrContainer) {
+                            // Очищаем контейнер
+                            qrContainer.innerHTML = '';
                             try {
                                 new QRCode(qrContainer, {
                                     text: 'WHOPPER:' + o.id + ':' + o.code,
                                     width: 150,
                                     height: 150
                                 });
-                            } catch(e) {}
+                            } catch(e) {
+                                console.log('QR ошибка для заказа', o.id);
+                            }
                         }
                     }
                 });
@@ -2333,7 +2306,7 @@
         console.log('🛍️ WHOPPER MARKET ЗАПУЩЕН');
         console.log('Выберите роль: Клиент, Продавец, ПВЗ или Курьер');
         console.log('💰 Нажмите на кошелёк чтобы пополнить');
-        console.log('📱 QR-код сохраняется в истории заказов');
+        console.log('📱 QR-код сохраняется в заказе и не теряется');
         loadPVZList();
         loadCouriers();
         loadProducts();
