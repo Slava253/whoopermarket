@@ -8,9 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        /* ===== СТИЛИ (сокращены для экономии места) ===== */
         * {
             margin: 0;
             padding: 0;
@@ -30,6 +28,7 @@
         .hidden {
             display: none !important;
         }
+
         .header {
             display: flex;
             justify-content: space-between;
@@ -58,6 +57,7 @@
             color: #f5a623;
             margin-right: 4px;
         }
+
         .role-selector {
             display: flex;
             gap: 8px;
@@ -91,6 +91,7 @@
             font-size: 1.1rem;
             margin-bottom: 2px;
         }
+
         .auth-box {
             background: rgba(255,255,255,0.03);
             border-radius: 20px;
@@ -165,6 +166,7 @@
             cursor: pointer;
             font-size: 0.8rem;
         }
+
         .btn-primary {
             background: #f5a623;
             color: #1a1a2e;
@@ -193,6 +195,7 @@
             background: #9c27b0;
             color: white;
         }
+
         .products-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -262,6 +265,7 @@
             margin-bottom: 6px;
             background: rgba(255,255,255,0.05);
         }
+
         .cart-panel {
             background: rgba(255,255,255,0.03);
             border-radius: 16px;
@@ -306,6 +310,7 @@
             min-width: 80px;
             font-size: 0.8rem;
         }
+
         .order-card {
             background: rgba(255,255,255,0.04);
             border-radius: 16px;
@@ -364,32 +369,20 @@
             font-size: 0.7rem;
             cursor: pointer;
         }
+
         .pickup-code {
-            font-size: 1.8rem;
+            font-size: 2.2rem;
             font-weight: bold;
             color: #f5a623;
             font-family: monospace;
-            letter-spacing: 6px;
+            letter-spacing: 8px;
             background: rgba(255,255,255,0.05);
             padding: 12px;
             border-radius: 12px;
             margin: 8px 0;
             text-align: center;
         }
-        .qr-container {
-            background: white;
-            padding: 12px;
-            border-radius: 16px;
-            display: inline-block;
-            margin: 8px 0;
-            text-align: center;
-        }
-        .qr-container canvas,
-        .qr-container img {
-            display: block;
-            margin: 0 auto;
-            max-width: 100%;
-        }
+
         .tabs {
             display: flex;
             gap: 6px;
@@ -410,6 +403,7 @@
             color: #f5a623;
             border-color: #f5a623;
         }
+
         .toast {
             position: fixed;
             bottom: 20px;
@@ -440,6 +434,7 @@
         .toast.info {
             background: #2196F3;
         }
+
         .delivery-select {
             background: rgba(255,255,255,0.03);
             border-radius: 12px;
@@ -472,6 +467,7 @@
         .delivery-address.show {
             display: block;
         }
+
         .scan-area {
             background: rgba(255,255,255,0.03);
             border-radius: 16px;
@@ -495,28 +491,7 @@
         .scan-area input:focus {
             border-color: #f5a623;
         }
-        .scan-area .scan-btn {
-            width: 100%;
-            padding: 12px;
-            border-radius: 30px;
-            border: none;
-            background: #f5a623;
-            color: #1a1a2e;
-            font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
-            margin-top: 8px;
-        }
-        .scan-area .scan-btn:active {
-            transform: scale(0.97);
-        }
-        .scan-area video {
-            width: 100%;
-            border-radius: 16px;
-            margin-top: 8px;
-            max-height: 300px;
-            object-fit: cover;
-        }
+
         .wallet {
             background: rgba(255,255,255,0.03);
             border-radius: 16px;
@@ -542,6 +517,7 @@
             font-size: 0.6rem;
             color: #555;
         }
+
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -670,6 +646,7 @@
             color: #555;
             font-size: 0.65rem;
         }
+
         .deposit-amounts {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -746,6 +723,19 @@
             margin-bottom: 4px;
         }
 
+        .order-photo {
+            max-width: 80px;
+            max-height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-right: 8px;
+        }
+        .order-item-with-photo {
+            display: flex;
+            align-items: center;
+            margin: 4px 0;
+        }
+
         @media (max-width: 480px) {
             .products-grid {
                 grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
@@ -760,34 +750,6 @@
             .deposit-amounts {
                 grid-template-columns: repeat(3, 1fr);
             }
-            .qr-container canvas,
-            .qr-container img {
-                width: 120px !important;
-                height: 120px !important;
-            }
-            .scan-area video {
-                max-height: 200px;
-            }
-        }
-
-        /* Стили для фото товара в заказе */
-        .order-photo {
-            max-width: 80px;
-            max-height: 80px;
-            border-radius: 8px;
-            object-fit: cover;
-            margin-right: 8px;
-        }
-        .order-photos {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin: 6px 0;
-        }
-        .order-item-with-photo {
-            display: flex;
-            align-items: center;
-            margin: 4px 0;
         }
     </style>
 </head>
@@ -929,7 +891,7 @@
                 </div>
 
                 <div style="background:rgba(255,255,255,0.03);border-radius:16px;padding:16px;margin-bottom:16px;border:1px solid rgba(255,255,255,0.05);">
-                    <h4 style="color:#f5a623;margin-bottom:10px;">➕ Добавить товар с фото</h4>
+                    <h4 style="color:#f5a623;margin-bottom:10px;">➕ Добавить товар</h4>
                     <div class="form-group">
                         <label>Название товара</label>
                         <input type="text" id="productName" placeholder="Введите название">
@@ -993,12 +955,8 @@
                 </div>
 
                 <div class="scan-area">
-                    <h4 style="color:#f5a623;margin-bottom:8px;">📷 Сканирование QR-кода</h4>
-                    <input type="text" id="pvzScanInput" placeholder="Введите код или отсканируйте QR">
-                    <button class="scan-btn" onclick="startQRScanner()">
-                        <i class="fas fa-camera"></i> 📷 Сканировать QR
-                    </button>
-                    <video id="qrVideo" autoplay playsinline style="display:none;"></video>
+                    <h4 style="color:#f5a623;margin-bottom:8px;">🔑 Введите код клиента</h4>
+                    <input type="text" id="pvzScanInput" placeholder="6-значный код" maxlength="6" oninput="pvzScanQR(this.value)">
                     <div id="pvzScanResult" style="margin-top:8px;"></div>
                 </div>
 
@@ -1040,7 +998,7 @@
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО ДЛЯ ТОВАРА С ФОТО -->
+    <!-- МОДАЛЬНОЕ ОКНО ДЛЯ ТОВАРА -->
     <div id="productModal" class="modal-overlay hidden" onclick="if(event.target===this) closeProductModal()">
         <div class="modal-content">
             <button class="close-modal" onclick="closeProductModal()">✕</button>
@@ -1313,7 +1271,7 @@
             });
         }
 
-        // ========== МОДАЛЬНОЕ ОКНО ТОВАРА С ФОТО ==========
+        // ========== МОДАЛЬНОЕ ОКНО ТОВАРА ==========
         window.openProductModal = function(productId) {
             currentProductId = productId;
             selectedRating = 0;
@@ -1327,7 +1285,6 @@
             document.getElementById('modalProductSeller').textContent = '🏪 ' + (product.sellerName || 'Продавец');
             document.getElementById('modalProductPrice').textContent = product.price.toLocaleString() + ' ₽';
 
-            // Фото товара
             const photoContainer = document.getElementById('modalProductPhoto');
             if (product.photo) {
                 photoContainer.innerHTML = `<img src="${product.photo}" style="max-width:100%;max-height:200px;border-radius:12px;object-fit:cover;">`;
@@ -1362,7 +1319,6 @@
             });
         };
 
-        // Превью фото для отзыва
         document.getElementById('reviewPhoto').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -1376,7 +1332,6 @@
             }
         });
 
-        // Превью фото для товара
         document.getElementById('productPhoto').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -1412,7 +1367,6 @@
 
             const reviewId = 'rev_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
 
-            // Загружаем фото если есть
             if (reviewPhotoFile) {
                 uploadPhoto(reviewPhotoFile, 'reviews/' + currentProductId + '/' + reviewId).then((photoUrl) => {
                     saveReview(reviewId, text, photoUrl);
@@ -1777,7 +1731,7 @@
             });
         }
 
-        // ========== ЗАКАЗЫ КЛИЕНТА С QR И ФОТО ==========
+        // ========== ЗАКАЗЫ КЛИЕНТА С КОДОМ ==========
         function renderClientOrders() {
             const container = document.getElementById('clientOrders');
             db.ref('orders').orderByChild('userId').equalTo(currentUser.id).on('value', (sn) => {
@@ -1811,33 +1765,11 @@
                         <div style="font-weight:bold;">${o.total.toLocaleString()} ₽</div>
                         ${o.type === 'pvz' ? `<div>🏪 ПВЗ №${o.pvzNumber}<br>📍 ${o.address}</div>` : `<div>📍 ${o.address}${o.courierName ? '<br>🚚 Курьер: ' + o.courierName : ''}</div>`}
                         ${o.code ? `<div class="pickup-code">Код: ${o.code}</div>` : ''}
-                        ${o.type === 'pvz' && o.status !== 'delivered' ? `
-                            <div class="qr-container" id="qr_${o.id}"></div>
-                        ` : ''}
                         ${o.hasAdult && !o.adultConfirmed ? `<div style="color:#ff4444;font-weight:bold;">🔞 Требуется подтверждение 18+ на ПВЗ</div>` : ''}
                         ${o.status === 'courier_arrived' ? `<div style="color:#4CAF50;font-size:0.8rem;">🚪 Курьер прибыл! Назовите код</div>` : ''}
                         ${o.status === 'ready' ? `<div style="color:#4CAF50;font-size:0.8rem;">✅ Готов к выдаче</div>` : ''}
                     </div>
                 `).join('');
-
-                // Генерация QR-кодов
-                filtered.forEach(o => {
-                    if (o.type === 'pvz' && o.status !== 'delivered' && o.code) {
-                        const qrContainer = document.getElementById('qr_' + o.id);
-                        if (qrContainer) {
-                            qrContainer.innerHTML = '';
-                            try {
-                                new QRCode(qrContainer, {
-                                    text: 'WHOPPER:' + o.id + ':' + o.code,
-                                    width: 150,
-                                    height: 150
-                                });
-                            } catch(e) {
-                                console.log('QR ошибка', o.id);
-                            }
-                        }
-                    }
-                });
             });
         }
 
@@ -1938,7 +1870,6 @@
 
             const productId = 'prod_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
 
-            // Загружаем фото если есть
             if (productPhotoFile) {
                 uploadPhoto(productPhotoFile, 'products/' + productId).then((photoUrl) => {
                     saveProduct(productId, name, price, description, adult, photoUrl);
@@ -2396,68 +2327,6 @@
             });
         };
 
-        // ========== QR-СКАНЕР ==========
-        window.startQRScanner = function() {
-            const video = document.getElementById('qrVideo');
-            const resultDiv = document.getElementById('pvzScanResult');
-
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-                    .then(function(stream) {
-                        video.srcObject = stream;
-                        video.style.display = 'block';
-                        video.setAttribute('playsinline', '');
-                        // Запуск сканирования через jsQR
-                        const script = document.createElement('script');
-                        script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
-                        script.onload = function() {
-                            scanQRCode(video, resultDiv, stream);
-                        };
-                        document.head.appendChild(script);
-                        showToast('📷 Наведите камеру на QR-код', 'info');
-                    })
-                    .catch(function(err) {
-                        showToast('❌ Не удалось открыть камеру', 'error');
-                        console.error(err);
-                    });
-            } else {
-                showToast('❌ Камера не поддерживается', 'error');
-            }
-        };
-
-        function scanQRCode(video, resultDiv, stream) {
-            if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                const canvas = document.createElement('canvas');
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-                if (window.jsQR) {
-                    const code = jsQR(imageData.data, imageData.width, imageData.height);
-                    if (code && code.data) {
-                        const result = code.data;
-                        if (result.startsWith('WHOPPER:')) {
-                            const parts = result.split(':');
-                            if (parts.length >= 3) {
-                                document.getElementById('pvzScanInput').value = parts[2];
-                                pvzScanQR(parts[2]);
-                                stream.getTracks().forEach(track => track.stop());
-                                video.style.display = 'none';
-                                return;
-                            }
-                        }
-                    }
-                }
-                requestAnimationFrame(() => scanQRCode(video, resultDiv, stream));
-            } else {
-                video.addEventListener('loadeddata', () => {
-                    scanQRCode(video, resultDiv, stream);
-                });
-            }
-        }
-
         // ========== СТАТУСЫ ==========
         function getStatusText(status) {
             const map = {
@@ -2537,9 +2406,9 @@
         }
 
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
-        console.log('🛍️ WHOPPER MARKET С ФОТО');
+        console.log('🛍️ WHOPPER MARKET');
         console.log('📸 Фото товаров, отзывов и заказов сохраняются');
-        console.log('📷 QR-коды работают на всех устройствах');
+        console.log('🔑 Коды заказов сохраняются и видны всем');
         loadPVZList();
         loadCouriers();
         loadProducts();
