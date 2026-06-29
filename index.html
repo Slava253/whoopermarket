@@ -13,7 +13,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', -apple-system, sans-serif;
+            font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
         body {
             background: #0f0f1a;
@@ -125,6 +125,7 @@
             font-size: 0.9rem;
             outline: none;
             font-family: inherit;
+            -webkit-appearance: none;
         }
         .auth-box .form-group textarea {
             border-radius: 16px;
@@ -235,6 +236,7 @@
             font-weight: bold;
             cursor: pointer;
             font-size: 0.7rem;
+            -webkit-tap-highlight-color: transparent;
         }
         .product-card .seller {
             font-size: 0.6rem;
@@ -311,7 +313,6 @@
             font-size: 0.8rem;
         }
 
-        /* ===== ЗАКАЗЫ В АКТИВНЫХ И ИСТОРИИ ===== */
         .order-card {
             background: rgba(255,255,255,0.04);
             border-radius: 16px;
@@ -328,7 +329,8 @@
         }
         .order-card .order-number {
             color: #f5a623;
-            font-size: 1rem;
+            font-size: 0.9rem;
+            word-break: break-all;
         }
         .order-card .order-status {
             font-size: 0.65rem;
@@ -378,6 +380,7 @@
         }
         .order-card .order-items-list .item-name {
             flex: 1;
+            font-size: 0.8rem;
         }
         .order-card .order-items-list .item-qty {
             color: #666;
@@ -385,7 +388,7 @@
         }
         .order-card .order-total {
             font-weight: bold;
-            font-size: 1rem;
+            font-size: 0.95rem;
             margin-top: 6px;
             padding-top: 6px;
             border-top: 1px solid rgba(255,255,255,0.05);
@@ -430,6 +433,7 @@
             margin: 8px 0;
             text-align: center;
             border: 2px solid rgba(245,166,35,0.2);
+            word-break: break-all;
         }
 
         .tabs {
@@ -446,6 +450,7 @@
             font-size: 0.75rem;
             color: #888;
             border: 1px solid transparent;
+            -webkit-tap-highlight-color: transparent;
         }
         .tab.active {
             background: rgba(245,166,35,0.15);
@@ -499,6 +504,7 @@
             color: white;
             font-size: 0.9rem;
             outline: none;
+            -webkit-appearance: none;
         }
         .delivery-select select option {
             background: #1a1a2e;
@@ -536,6 +542,7 @@
             letter-spacing: 2px;
             font-family: monospace;
             outline: none;
+            -webkit-appearance: none;
         }
         .scan-area input:focus {
             border-color: #f5a623;
@@ -552,6 +559,7 @@
             align-items: center;
             cursor: pointer;
             transition: 0.2s;
+            -webkit-tap-highlight-color: transparent;
         }
         .wallet:hover {
             background: rgba(255,255,255,0.06);
@@ -579,6 +587,7 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
+            -webkit-overflow-scrolling: touch;
         }
         .modal-content {
             background: #1a1a2e;
@@ -589,6 +598,7 @@
             max-height: 90vh;
             overflow-y: auto;
             border: 1px solid rgba(255,255,255,0.08);
+            -webkit-overflow-scrolling: touch;
         }
         .modal-content h3 {
             color: #f5a623;
@@ -627,6 +637,7 @@
             min-height: 80px;
             resize: vertical;
             margin: 10px 0;
+            -webkit-appearance: none;
         }
         .modal-content .review-text:focus {
             border-color: #f5a623;
@@ -636,6 +647,7 @@
             align-items: center;
             gap: 10px;
             margin: 8px 0;
+            flex-wrap: wrap;
         }
         .modal-content .file-input-wrapper input[type="file"] {
             display: none;
@@ -648,6 +660,7 @@
             border: 1px dashed #555;
             font-size: 0.8rem;
             color: #aaa;
+            -webkit-tap-highlight-color: transparent;
         }
         .modal-content .file-input-wrapper .file-label:hover {
             border-color: #f5a623;
@@ -663,6 +676,7 @@
             margin-top: 10px;
             max-height: 200px;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
         .reviews-list .review-item {
             background: rgba(255,255,255,0.03);
@@ -712,6 +726,7 @@
             cursor: pointer;
             transition: 0.2s;
             font-size: 1rem;
+            -webkit-tap-highlight-color: transparent;
         }
         .deposit-amounts button:hover {
             border-color: #f5a623;
@@ -738,6 +753,7 @@
             color: white;
             font-size: 1rem;
             outline: none;
+            -webkit-appearance: none;
         }
         .deposit-custom input:focus {
             border-color: #f5a623;
@@ -750,6 +766,7 @@
             color: #1a1a2e;
             font-weight: bold;
             cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
         }
         .deposit-instruction {
             background: rgba(255,255,255,0.03);
@@ -1199,7 +1216,7 @@
             t._timeout = setTimeout(() => t.classList.remove('show'), 2500);
         }
 
-        // ========== ФУНКЦИИ ДЛЯ ФОТО (БЫСТРАЯ ЗАГРУЗКА) ==========
+        // ========== ФУНКЦИИ ДЛЯ ФОТО (УНИВЕРСАЛЬНЫЕ) ==========
         function previewProductPhoto(event) {
             const file = event.target.files[0];
             if (file) {
@@ -1227,35 +1244,32 @@
         function uploadPhoto(file, path) {
             return new Promise((resolve, reject) => {
                 if (!file) { resolve(null); return; }
-                // Сжимаем фото для быстрой загрузки
+
+                // Используем FileReader для всех устройств (включая iPhone)
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    const img = new Image();
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
-                        const maxSize = 800;
-                        if (width > maxSize || height > maxSize) {
-                            const ratio = Math.min(maxSize / width, maxSize / height);
-                            width = Math.round(width * ratio);
-                            height = Math.round(height * ratio);
-                        }
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        // Конвертируем в JPEG с качеством 70% для меньшего размера
-                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                        const blob = dataURLToBlob(dataUrl);
-                        const ref = storage.ref('photos/' + path + '/' + Date.now() + '.jpg');
-                        ref.put(blob).then((snapshot) => {
-                            return snapshot.ref.getDownloadURL();
-                        }).then((url) => {
-                            resolve(url);
-                        }).catch((err) => { reject(err); });
-                    };
-                    img.src = e.target.result;
+                    const dataUrl = e.target.result;
+                    // Для iPhone и других устройств используем просто base64
+                    const ref = storage.ref('photos/' + path + '/' + Date.now() + '.jpg');
+                    // Конвертируем dataURL в blob
+                    fetch(dataUrl)
+                        .then(res => res.blob())
+                        .then(blob => {
+                            ref.put(blob).then((snapshot) => {
+                                return snapshot.ref.getDownloadURL();
+                            }).then((url) => {
+                                resolve(url);
+                            }).catch((err) => { reject(err); });
+                        })
+                        .catch(() => {
+                            // fallback: пробуем напрямую
+                            const blob = dataURLToBlob(dataUrl);
+                            ref.put(blob).then((snapshot) => {
+                                return snapshot.ref.getDownloadURL();
+                            }).then((url) => {
+                                resolve(url);
+                            }).catch((err) => { reject(err); });
+                        });
                 };
                 reader.readAsDataURL(file);
             });
@@ -1846,8 +1860,9 @@
                             `).join('')}
                         </div>
                         <div class="order-total">
-                            Итого: ${o.total.toLocaleString()} ₽
-                            ${o.type === 'pvz' ? ` 🏪 ПВЗ №${o.pvzNumber}` : ` 🚚 ${o.address}`}
+                            💰 ${o.total.toLocaleString()} ₽
+                            ${o.type === 'pvz' ? ` 🏪 ПВЗ №${o.pvzNumber}` : ` 📍 ${o.address}`}
+                            ${o.courierName ? ` 🚚 ${o.courierName}` : ''}
                         </div>
                         ${o.code ? `<div class="order-code">🔑 ${o.code}</div>` : ''}
                         ${o.hasAdult && !o.adultConfirmed ? `<div style="color:#ff4444;font-weight:bold;font-size:0.8rem;">🔞 Требуется подтверждение 18+ на ПВЗ</div>` : ''}
@@ -2138,7 +2153,7 @@
                             </div>
                         `).join('')}
                     </div>
-                    <div class="order-total">Итого: ${o.total.toLocaleString()} ₽</div>
+                    <div class="order-total">💰 ${o.total.toLocaleString()} ₽</div>
                     <div>👤 ${o.userName}</div>
                     ${o.hasAdult ? `<div style="color:#ff4444;font-weight:bold;">🔞 Требуется подтверждение 18+</div>` : ''}
                     <div class="order-code">🔑 ${o.code}</div>
@@ -2355,7 +2370,7 @@
                                 </div>
                             `).join('')}
                         </div>
-                        <div class="order-total">${o.total.toLocaleString()} ₽</div>
+                        <div class="order-total">💰 ${o.total.toLocaleString()} ₽</div>
                         <div>🏪 ПВЗ №${o.pvzNumber}</div>
                         <div class="order-code">🔑 ${o.code}</div>
                         <div class="order-actions">
@@ -2382,7 +2397,7 @@
                                 </div>
                             `).join('')}
                         </div>
-                        <div class="order-total">${o.total.toLocaleString()} ₽</div>
+                        <div class="order-total">💰 ${o.total.toLocaleString()} ₽</div>
                         <div>📍 ${o.address}</div>
                         <div>👤 ${o.userName}</div>
                         <div class="order-code">🔑 ${o.code}</div>
@@ -2515,7 +2530,7 @@
 
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
         console.log('🛍️ WHOPPER MARKET');
-        console.log('📸 Фото загружаются быстро (сжатие)');
+        console.log('📸 Фото загружаются быстро (iPhone/Android/ПК)');
         console.log('🔑 КОДЫ РАБОТАЮТ И СОХРАНЯЮТСЯ!');
         loadPVZList();
         loadCouriers();
