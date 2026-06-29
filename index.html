@@ -311,6 +311,7 @@
             font-size: 0.8rem;
         }
 
+        /* ===== ЗАКАЗЫ В АКТИВНЫХ И ИСТОРИИ ===== */
         .order-card {
             background: rgba(255,255,255,0.04);
             border-radius: 16px;
@@ -324,6 +325,10 @@
             font-weight: bold;
             margin-bottom: 6px;
             font-size: 0.9rem;
+        }
+        .order-card .order-number {
+            color: #f5a623;
+            font-size: 1rem;
         }
         .order-card .order-status {
             font-size: 0.65rem;
@@ -350,10 +355,53 @@
             background: #ff4444;
             color: white;
         }
-        .order-card .order-items {
+        .order-card .order-items-list {
             font-size: 0.8rem;
             color: #aaa;
             margin: 6px 0;
+            padding: 6px 0;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .order-card .order-items-list .item-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 0;
+        }
+        .order-card .order-items-list .item-photo {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: rgba(255,255,255,0.05);
+            flex-shrink: 0;
+        }
+        .order-card .order-items-list .item-name {
+            flex: 1;
+        }
+        .order-card .order-items-list .item-qty {
+            color: #666;
+            font-size: 0.7rem;
+        }
+        .order-card .order-total {
+            font-weight: bold;
+            font-size: 1rem;
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .order-card .order-code {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #f5a623;
+            font-family: monospace;
+            letter-spacing: 6px;
+            background: rgba(255,255,255,0.05);
+            padding: 8px;
+            border-radius: 12px;
+            margin: 6px 0;
+            text-align: center;
+            border: 1px dashed rgba(245,166,35,0.2);
         }
         .order-card .order-actions {
             display: flex;
@@ -371,7 +419,7 @@
         }
 
         .pickup-code {
-            font-size: 2.5rem;
+            font-size: 2.2rem;
             font-weight: bold;
             color: #f5a623;
             font-family: monospace;
@@ -724,17 +772,20 @@
             margin-bottom: 4px;
         }
 
-        .order-photo {
-            max-width: 60px;
-            max-height: 60px;
+        .order-photo-small {
+            width: 40px;
+            height: 40px;
             border-radius: 8px;
             object-fit: cover;
             margin-right: 8px;
+            flex-shrink: 0;
+            background: rgba(255,255,255,0.05);
         }
-        .order-item-with-photo {
+        .order-item-row {
             display: flex;
             align-items: center;
-            margin: 4px 0;
+            padding: 4px 0;
+            gap: 8px;
         }
 
         @media (max-width: 480px) {
@@ -755,6 +806,10 @@
                 font-size: 1.8rem;
                 letter-spacing: 4px;
                 padding: 12px;
+            }
+            .order-card .order-code {
+                font-size: 1.2rem;
+                letter-spacing: 4px;
             }
         }
     </style>
@@ -1120,12 +1175,18 @@
 
         // ========== НАЧАЛЬНЫЕ ТОВАРЫ ==========
         const defaultProducts = [
-            { id: 'default_1', name: 'Смартфон X Pro', price: 49990, description: 'Флагманский смартфон', sellerName: 'WHOPPER Shop', adult: false },
-            { id: 'default_2', name: 'Наушники Pro Max', price: 8990, description: 'Беспроводные наушники', sellerName: 'WHOPPER Shop', adult: false },
-            { id: 'default_3', name: 'Фитнес-браслет 5', price: 3990, description: 'Трекер активности', sellerName: 'WHOPPER Shop', adult: false },
-            { id: 'default_4', name: 'Игровая мышь RGB', price: 2590, description: 'Игровая мышь с 8 кнопками', sellerName: 'WHOPPER Shop', adult: false },
-            { id: 'default_5', name: 'Электронная сигарета', price: 3490, description: 'Заряжается от USB', sellerName: 'WHOPPER Shop', adult: true },
-            { id: 'default_6', name: 'Коллекционный алкоголь', price: 15990, description: 'Элитный напиток', sellerName: 'WHOPPER Shop', adult: true },
+            { id: 'default_1', name: 'Смартфон X Pro', price: 49990, description: 'Флагманский смартфон', sellerName: 'WHOPPER Shop',
+                adult: false },
+            { id: 'default_2', name: 'Наушники Pro Max', price: 8990, description: 'Беспроводные наушники',
+                sellerName: 'WHOPPER Shop', adult: false },
+            { id: 'default_3', name: 'Фитнес-браслет 5', price: 3990, description: 'Трекер активности',
+                sellerName: 'WHOPPER Shop', adult: false },
+            { id: 'default_4', name: 'Игровая мышь RGB', price: 2590, description: 'Игровая мышь с 8 кнопками',
+                sellerName: 'WHOPPER Shop', adult: false },
+            { id: 'default_5', name: 'Электронная сигарета', price: 3490, description: 'Заряжается от USB',
+                sellerName: 'WHOPPER Shop', adult: true },
+            { id: 'default_6', name: 'Коллекционный алкоголь', price: 15990, description: 'Элитный напиток',
+                sellerName: 'WHOPPER Shop', adult: true },
         ];
 
         // ========== ТОСТ ==========
@@ -1138,7 +1199,7 @@
             t._timeout = setTimeout(() => t.classList.remove('show'), 2500);
         }
 
-        // ========== ФУНКЦИИ ДЛЯ ФОТО ==========
+        // ========== ФУНКЦИИ ДЛЯ ФОТО (БЫСТРАЯ ЗАГРУЗКА) ==========
         function previewProductPhoto(event) {
             const file = event.target.files[0];
             if (file) {
@@ -1166,13 +1227,50 @@
         function uploadPhoto(file, path) {
             return new Promise((resolve, reject) => {
                 if (!file) { resolve(null); return; }
-                const ref = storage.ref('photos/' + path + '/' + Date.now() + '_' + file.name);
-                ref.put(file).then((snapshot) => {
-                    return snapshot.ref.getDownloadURL();
-                }).then((url) => {
-                    resolve(url);
-                }).catch((err) => { reject(err); });
+                // Сжимаем фото для быстрой загрузки
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        const maxSize = 800;
+                        if (width > maxSize || height > maxSize) {
+                            const ratio = Math.min(maxSize / width, maxSize / height);
+                            width = Math.round(width * ratio);
+                            height = Math.round(height * ratio);
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        // Конвертируем в JPEG с качеством 70% для меньшего размера
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        const blob = dataURLToBlob(dataUrl);
+                        const ref = storage.ref('photos/' + path + '/' + Date.now() + '.jpg');
+                        ref.put(blob).then((snapshot) => {
+                            return snapshot.ref.getDownloadURL();
+                        }).then((url) => {
+                            resolve(url);
+                        }).catch((err) => { reject(err); });
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
             });
+        }
+
+        function dataURLToBlob(dataURL) {
+            const parts = dataURL.split(',');
+            const mime = parts[0].match(/:(.*?);/)[1];
+            const bstr = atob(parts[1]);
+            const n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            for (let i = 0; i < n; i++) {
+                u8arr[i] = bstr.charCodeAt(i);
+            }
+            return new Blob([u8arr], { type: mime });
         }
 
         // ========== ПЕРЕКЛЮЧЕНИЕ РОЛЕЙ ==========
@@ -1714,7 +1812,7 @@
             });
         }
 
-        // ========== ЗАКАЗЫ КЛИЕНТА (С КОДОМ) ==========
+        // ========== ЗАКАЗЫ КЛИЕНТА (С НОМЕРОМ И ТОВАРАМИ) ==========
         function renderClientOrders() {
             const container = document.getElementById('clientOrders');
             db.ref('orders').orderByChild('userId').equalTo(currentUser.id).on('value', (sn) => {
@@ -1727,28 +1825,32 @@
                     orders;
 
                 if (filtered.length === 0) {
-                    container.innerHTML = '<div style="text-align:center;color:#555;padding:20px;">Нет заказов</div>';
+                    container.innerHTML = '<div style="text-align:center;color:#555;padding:30px;">📭 Нет заказов</div>';
                     return;
                 }
 
                 container.innerHTML = filtered.map(o => `
                     <div class="order-card">
                         <div class="order-header">
-                            <span>#${o.id}</span>
+                            <span class="order-number">🆔 ${o.id}</span>
                             <span class="order-status ${getStatusClass(o.status)}">${getStatusText(o.status)}</span>
                         </div>
-                        <div class="order-items">
+                        <div class="order-items-list">
                             ${o.items.map(i => `
-                                <div class="order-item-with-photo">
-                                    ${i.photo ? `<img src="${i.photo}" class="order-photo" loading="lazy" onerror="this.style.display='none'">` : ''}
-                                    <span>${i.name} x${i.qty}${i.adult ? ' 🔞' : ''}</span>
+                                <div class="item-row">
+                                    ${i.photo ? `<img src="${i.photo}" class="item-photo" loading="lazy" onerror="this.style.display='none'">` : ''}
+                                    <span class="item-name">${i.name}${i.adult ? ' 🔞' : ''}</span>
+                                    <span class="item-qty">x${i.qty}</span>
+                                    <span style="color:#f5a623;">${(i.price * i.qty).toLocaleString()} ₽</span>
                                 </div>
                             `).join('')}
                         </div>
-                        <div style="font-weight:bold;">${o.total.toLocaleString()} ₽</div>
-                        ${o.type === 'pvz' ? `<div>🏪 ПВЗ №${o.pvzNumber}<br>📍 ${o.address}</div>` : `<div>📍 ${o.address}${o.courierName ? '<br>🚚 Курьер: ' + o.courierName : ''}</div>`}
-                        <div class="pickup-code">🔑 ${o.code}</div>
-                        ${o.hasAdult && !o.adultConfirmed ? `<div style="color:#ff4444;font-weight:bold;">🔞 Требуется подтверждение 18+ на ПВЗ</div>` : ''}
+                        <div class="order-total">
+                            Итого: ${o.total.toLocaleString()} ₽
+                            ${o.type === 'pvz' ? ` 🏪 ПВЗ №${o.pvzNumber}` : ` 🚚 ${o.address}`}
+                        </div>
+                        ${o.code ? `<div class="order-code">🔑 ${o.code}</div>` : ''}
+                        ${o.hasAdult && !o.adultConfirmed ? `<div style="color:#ff4444;font-weight:bold;font-size:0.8rem;">🔞 Требуется подтверждение 18+ на ПВЗ</div>` : ''}
                         ${o.status === 'courier_arrived' ? `<div style="color:#4CAF50;font-size:0.8rem;">🚪 Курьер прибыл! Назовите код</div>` : ''}
                         ${o.status === 'ready' ? `<div style="color:#4CAF50;font-size:0.8rem;">✅ Готов к выдаче</div>` : ''}
                     </div>
@@ -2023,21 +2125,23 @@
             container.innerHTML = filtered.map(o => `
                 <div class="order-card">
                     <div class="order-header">
-                        <span>#${o.id}</span>
+                        <span class="order-number">🆔 ${o.id}</span>
                         <span class="order-status ${getStatusClass(o.status)}">${getStatusText(o.status)}</span>
                     </div>
-                    <div class="order-items">
+                    <div class="order-items-list">
                         ${o.items.map(i => `
-                            <div class="order-item-with-photo">
-                                ${i.photo ? `<img src="${i.photo}" class="order-photo" loading="lazy" onerror="this.style.display='none'">` : ''}
-                                <span>${i.name} x${i.qty}${i.adult ? ' 🔞' : ''}</span>
+                            <div class="item-row">
+                                ${i.photo ? `<img src="${i.photo}" class="item-photo" loading="lazy" onerror="this.style.display='none'">` : ''}
+                                <span class="item-name">${i.name}${i.adult ? ' 🔞' : ''}</span>
+                                <span class="item-qty">x${i.qty}</span>
+                                <span style="color:#f5a623;">${(i.price * i.qty).toLocaleString()} ₽</span>
                             </div>
                         `).join('')}
                     </div>
-                    <div style="font-weight:bold;">${o.total.toLocaleString()} ₽</div>
+                    <div class="order-total">Итого: ${o.total.toLocaleString()} ₽</div>
                     <div>👤 ${o.userName}</div>
                     ${o.hasAdult ? `<div style="color:#ff4444;font-weight:bold;">🔞 Требуется подтверждение 18+</div>` : ''}
-                    <div class="pickup-code">🔑 ${o.code}</div>
+                    <div class="order-code">🔑 ${o.code}</div>
                     ${o.courierName ? `<div style="font-size:0.8rem;color:#888;">🚚 Курьер: ${o.courierName}</div>` : ''}
                     <div class="order-actions">
                         ${o.status === 'to_pvz' ? `<button class="btn-success" onclick="pvzReady('${o.id}')">✅ Готов к выдаче</button>` : ''}
@@ -2239,13 +2343,21 @@
                 html += toPickup.map(o => `
                     <div class="order-card">
                         <div class="order-header">
-                            <span>#${o.id}</span>
+                            <span class="order-number">🆔 ${o.id}</span>
                             <span class="order-status status-waiting">⏳ Ожидает</span>
                         </div>
-                        <div class="order-items">${o.items.map(i => `${i.name} x${i.qty}`).join(', ')}</div>
-                        <div style="font-weight:bold;">${o.total.toLocaleString()} ₽</div>
+                        <div class="order-items-list">
+                            ${o.items.map(i => `
+                                <div class="item-row">
+                                    ${i.photo ? `<img src="${i.photo}" class="item-photo" loading="lazy" onerror="this.style.display='none'">` : ''}
+                                    <span class="item-name">${i.name}</span>
+                                    <span class="item-qty">x${i.qty}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="order-total">${o.total.toLocaleString()} ₽</div>
                         <div>🏪 ПВЗ №${o.pvzNumber}</div>
-                        <div class="pickup-code">🔑 ${o.code}</div>
+                        <div class="order-code">🔑 ${o.code}</div>
                         <div class="order-actions">
                             <button class="btn-primary" onclick="courierPickup('${o.id}')">📦 Еду забирать</button>
                         </div>
@@ -2258,14 +2370,22 @@
                 html += deliveries.map(o => `
                     <div class="order-card">
                         <div class="order-header">
-                            <span>#${o.id}</span>
+                            <span class="order-number">🆔 ${o.id}</span>
                             <span class="order-status ${getStatusClass(o.status)}">${getStatusText(o.status)}</span>
                         </div>
-                        <div class="order-items">${o.items.map(i => `${i.name} x${i.qty}${i.adult ? ' 🔞' : ''}`).join(', ')}</div>
-                        <div style="font-weight:bold;">${o.total.toLocaleString()} ₽</div>
+                        <div class="order-items-list">
+                            ${o.items.map(i => `
+                                <div class="item-row">
+                                    ${i.photo ? `<img src="${i.photo}" class="item-photo" loading="lazy" onerror="this.style.display='none'">` : ''}
+                                    <span class="item-name">${i.name}</span>
+                                    <span class="item-qty">x${i.qty}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="order-total">${o.total.toLocaleString()} ₽</div>
                         <div>📍 ${o.address}</div>
                         <div>👤 ${o.userName}</div>
-                        <div class="pickup-code">🔑 ${o.code}</div>
+                        <div class="order-code">🔑 ${o.code}</div>
                         <div class="order-actions">
                             ${o.status === 'with_courier' ? `<button class="btn-success" onclick="courierArrived('${o.id}')">🚪 Прибыл</button>` : ''}
                             ${o.status === 'courier_arrived' ? `<button class="btn-success" onclick="courierDeliver('${o.id}')">📤 Выдать</button>` : ''}
@@ -2395,8 +2515,8 @@
 
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
         console.log('🛍️ WHOPPER MARKET');
-        console.log('📸 Фото товаров и отзывов сохраняются');
-        console.log('🔑 КОДЫ ЗАКАЗОВ РАБОТАЮТ И СОХРАНЯЮТСЯ!');
+        console.log('📸 Фото загружаются быстро (сжатие)');
+        console.log('🔑 КОДЫ РАБОТАЮТ И СОХРАНЯЮТСЯ!');
         loadPVZList();
         loadCouriers();
         loadProducts();
