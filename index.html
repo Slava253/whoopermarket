@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>🛍️ WHOPPER</title>
+    <title>🛍️ WHOPPER MARKET</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -53,6 +53,10 @@
             padding: 4px 12px;
             border-radius: 30px;
         }
+        .header .user-badge i {
+            color: #f5a623;
+            margin-right: 4px;
+        }
 
         .role-selector {
             display: flex;
@@ -70,6 +74,7 @@
             cursor: pointer;
             font-weight: bold;
             font-size: 0.55rem;
+            transition: 0.2s;
             text-align: center;
             min-width: 45px;
         }
@@ -77,6 +82,9 @@
             border-color: #f5a623;
             color: #f5a623;
             background: rgba(245,166,35,0.1);
+        }
+        .role-btn:active {
+            transform: scale(0.95);
         }
         .role-btn i {
             display: block;
@@ -153,13 +161,17 @@
             background: rgba(255,255,255,0.08);
             color: white;
         }
-        .btn-purple {
-            background: #9c27b0;
-            color: white;
-        }
         .btn-warning {
             background: #ff9800;
             color: #1a1a2e;
+        }
+        .btn-admin {
+            background: #6c1b7a;
+            color: white;
+        }
+        .btn-purple {
+            background: #9c27b0;
+            color: white;
         }
 
         .products-grid {
@@ -328,6 +340,10 @@
             background: rgba(255,255,255,0.05);
             flex-shrink: 0;
         }
+        .order-card .order-items-list .item-name {
+            flex: 1;
+            font-size: 0.75rem;
+        }
         .order-card .order-total {
             font-weight: bold;
             font-size: 0.85rem;
@@ -429,6 +445,9 @@
             font-family: monospace;
             outline: none;
         }
+        .scan-area input:focus {
+            border-color: #f5a623;
+        }
 
         .modal-overlay {
             position: fixed;
@@ -492,6 +511,9 @@
             resize: vertical;
             margin: 8px 0;
         }
+        .modal-content .review-text:focus {
+            border-color: #f5a623;
+        }
         .modal-content .file-input-wrapper input[type="file"] {
             display: none;
         }
@@ -528,6 +550,10 @@
             color: #f5a623;
             font-size: 0.75rem;
         }
+        .reviews-list .review-item .review-rating {
+            color: #f5a623;
+            font-size: 0.75rem;
+        }
         .reviews-list .review-item .review-text {
             color: #aaa;
             font-size: 0.8rem;
@@ -539,6 +565,21 @@
             border-radius: 6px;
             margin-top: 4px;
             object-fit: cover;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+        .order-actions button {
+            padding: 4px 10px;
+            border-radius: 30px;
+            border: none;
+            font-weight: bold;
+            font-size: 0.65rem;
+            cursor: pointer;
         }
 
         .delivery-select {
@@ -570,6 +611,37 @@
             display: block;
         }
 
+        .support-ticket {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-left: 4px solid #2196F3;
+        }
+        .support-ticket .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .support-ticket .ticket-status {
+            font-size: 0.6rem;
+            padding: 2px 10px;
+            border-radius: 30px;
+        }
+        .status-open {
+            background: #ff9800;
+            color: white;
+        }
+        .status-answered {
+            background: #4CAF50;
+            color: white;
+        }
+        .status-closed {
+            background: #999;
+            color: white;
+        }
+
         .admin-user-item {
             background: rgba(255,255,255,0.03);
             border-radius: 10px;
@@ -579,6 +651,9 @@
             justify-content: space-between;
             align-items: center;
             font-size: 0.8rem;
+        }
+        .admin-user-item .user-info {
+            flex: 1;
         }
         .admin-user-item .user-info .name {
             font-weight: bold;
@@ -610,6 +685,11 @@
             .role-btn i {
                 font-size: 0.8rem;
             }
+            .order-card .order-code {
+                font-size: 1.3rem;
+                letter-spacing: 4px;
+                padding: 8px;
+            }
         }
     </style>
 </head>
@@ -636,6 +716,9 @@
             <button class="role-btn" data-role="courier" onclick="switchRole('courier')">
                 <i class="fas fa-truck"></i> Курьер
             </button>
+            <button class="role-btn" data-role="support" onclick="switchRole('support')">
+                <i class="fas fa-headset"></i> Поддержка
+            </button>
             <button class="role-btn" data-role="admin" onclick="switchRole('admin')">
                 <i class="fas fa-user-cog"></i> Админ
             </button>
@@ -644,7 +727,7 @@
         <!-- КЛИЕНТ -->
         <div id="clientPanel">
             <div id="clientAuth" class="auth-box">
-                <h3>👤 Вход</h3>
+                <h3>👤 Вход для клиента</h3>
                 <div class="form-group"><label>Телефон</label><input type="tel" id="clientPhone" placeholder="+7 999 999 99 99"></div>
                 <div class="form-group"><label>Имя</label><input type="text" id="clientName" placeholder="Ваше имя"></div>
                 <div class="auth-actions">
@@ -657,10 +740,14 @@
                     <span><i class="fas fa-wallet"></i> Кошелёк</span>
                     <span class="amount" id="clientWallet">0 ₽</span>
                 </div>
+
                 <div class="tabs" style="margin-bottom:10px;">
                     <button class="tab active" data-ctab="shop" onclick="switchClientTab2('shop')">🛍️ Магазин</button>
                     <button class="tab" data-ctab="orders" onclick="switchClientTab2('orders')">📦 Заказы</button>
+                    <button class="tab" data-ctab="support" onclick="switchClientTab2('support')">💬 Поддержка</button>
+                    <button class="tab" data-ctab="returns" onclick="switchClientTab2('returns')">🔄 Возвраты</button>
                 </div>
+
                 <div id="clientShopTab">
                     <div class="products-grid" id="productsGrid"></div>
                     <div class="cart-panel" id="cartPanel">
@@ -673,6 +760,7 @@
                         </div>
                     </div>
                 </div>
+
                 <div id="clientOrdersTab" class="hidden">
                     <div class="tabs" style="margin-bottom:10px;">
                         <button class="tab active" data-tab="active" onclick="switchClientTab('active')">Активные</button>
@@ -680,6 +768,23 @@
                     </div>
                     <div id="clientOrders"></div>
                 </div>
+
+                <div id="clientSupportTab" class="hidden">
+                    <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;">
+                        <h4 style="color:#f5a623;margin-bottom:8px;">✍️ Задать вопрос</h4>
+                        <div class="form-group"><label>Тема</label><input type="text" id="supportTopic" placeholder="Тема вопроса"></div>
+                        <div class="form-group"><label>Вопрос</label><textarea id="supportText" placeholder="Опишите проблему"></textarea></div>
+                        <button class="btn-primary" onclick="sendSupport()">📤 Отправить</button>
+                    </div>
+                    <h4 style="color:#f5a623;margin-bottom:8px;font-size:0.9rem;">📋 Мои обращения</h4>
+                    <div id="clientSupportTickets"></div>
+                </div>
+
+                <div id="clientReturnsTab" class="hidden">
+                    <h4 style="color:#f5a623;margin-bottom:8px;font-size:0.9rem;">🔄 Возвраты</h4>
+                    <div id="clientReturns"></div>
+                </div>
+
                 <div id="checkoutModal" class="hidden" style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.08);">
                     <h3 style="color:#f5a623;margin-bottom:10px;">📦 Оформление</h3>
                     <div class="delivery-select">
@@ -720,15 +825,23 @@
                 </div>
             </div>
             <div id="sellerContent" class="hidden">
+                <div class="wallet" onclick="openDepositModal('seller')">
+                    <span><i class="fas fa-wallet"></i> Кошелёк</span>
+                    <span class="amount" id="sellerWallet">0 ₽</span>
+                </div>
                 <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;">
                     <h4 style="color:#f5a623;margin-bottom:8px;">➕ Добавить товар</h4>
                     <div class="form-group"><label>Название</label><input type="text" id="productName" placeholder="Название"></div>
                     <div class="form-group"><label>Цена</label><input type="number" id="productPrice" placeholder="999"></div>
+                    <div class="form-group"><label>Описание</label><input type="text" id="productDesc" placeholder="Описание"></div>
                     <div class="form-group"><label>Фото</label><input type="file" id="productPhoto" accept="image/*"></div>
+                    <div class="form-group"><div class="checkbox"><input type="checkbox" id="productAdult"><label>🔞 18+</label></div></div>
                     <button class="btn-success" onclick="addProduct()" style="width:100%;padding:8px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">➕ Добавить</button>
                 </div>
                 <h4 style="color:#f5a623;margin-bottom:8px;font-size:0.9rem;">📦 Мои товары</h4>
                 <div id="sellerProducts"></div>
+                <h4 style="color:#f5a623;margin:12px 0 8px;font-size:0.9rem;">📋 Заказы</h4>
+                <div id="sellerOrders"></div>
             </div>
         </div>
 
@@ -736,7 +849,7 @@
         <div id="pvzPanel" class="hidden">
             <div id="pvzAuth" class="auth-box">
                 <h3>🏪 Вход ПВЗ</h3>
-                <div class="form-group"><label>Номер</label><input type="number" id="pvzLogin" placeholder="17"></div>
+                <div class="form-group"><label>Номер ПВЗ</label><input type="number" id="pvzLogin" placeholder="Например: 17"></div>
                 <div class="form-group"><label>Пароль</label><input type="password" id="pvzPassword" placeholder="Пароль"></div>
                 <div class="auth-actions">
                     <button class="btn-primary" onclick="pvzLogin()">Войти</button>
@@ -746,6 +859,7 @@
                 <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
                     <button class="btn-primary" onclick="pvzAction('receive')">📥 Приём</button>
                     <button class="btn-success" onclick="pvzAction('issue')">📤 Выдача</button>
+                    <button class="btn-info" onclick="pvzAction('courier')">🚚 Курьер</button>
                 </div>
                 <div class="scan-area">
                     <h4 style="color:#f5a623;margin-bottom:6px;font-size:0.85rem;">🔑 Поиск по коду</h4>
@@ -767,9 +881,35 @@
                 </div>
             </div>
             <div id="courierContent" class="hidden">
-                <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;text-align:center;color:#555;">
-                    🚚 Раздел курьера
+                <div class="wallet" onclick="openDepositModal('courier')">
+                    <span><i class="fas fa-wallet"></i> Заработано</span>
+                    <span class="amount" id="courierWallet">0 ₽</span>
                 </div>
+                <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
+                    <button class="btn-primary" onclick="courierAction('orders')">📦 Заказы</button>
+                    <button class="btn-success" onclick="courierAction('deliveries')">🚚 Доставки</button>
+                </div>
+                <div id="courierOrders"></div>
+            </div>
+        </div>
+
+        <!-- ПОДДЕРЖКА -->
+        <div id="supportPanel" class="hidden">
+            <div id="supportAuth" class="auth-box">
+                <h3>🎧 Вход поддержки</h3>
+                <div class="form-group"><label>Логин</label><input type="text" id="supportLogin" placeholder="Логин"></div>
+                <div class="form-group"><label>Пароль</label><input type="password" id="supportPassword" placeholder="Пароль"></div>
+                <div class="auth-actions">
+                    <button class="btn-primary" onclick="supportLogin()">Войти</button>
+                </div>
+            </div>
+            <div id="supportContent" class="hidden">
+                <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
+                    <button class="btn-primary" onclick="supportAction('open')">📩 Открытые</button>
+                    <button class="btn-success" onclick="supportAction('answered')">✅ Отвеченные</button>
+                    <button class="btn-info" onclick="supportAction('closed')">🔒 Закрытые</button>
+                </div>
+                <div id="supportTickets"></div>
             </div>
         </div>
 
@@ -780,7 +920,7 @@
                 <div class="form-group"><label>Логин</label><input type="text" id="adminLogin" placeholder="Логин"></div>
                 <div class="form-group"><label>Пароль</label><input type="password" id="adminPassword" placeholder="Пароль"></div>
                 <div class="auth-actions">
-                    <button class="btn-primary" onclick="adminLogin()" style="width:100%;padding:8px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">Войти</button>
+                    <button class="btn-admin" onclick="adminLogin()" style="width:100%;padding:8px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">Войти</button>
                 </div>
             </div>
             <div id="adminContent" class="hidden">
@@ -788,21 +928,25 @@
                     <button class="tab active" data-atab="users" onclick="switchAdminTab('users')">👥 Пользователи</button>
                     <button class="tab" data-atab="create" onclick="switchAdminTab('create')">➕ Создать</button>
                 </div>
+
                 <div id="adminUsersTab">
                     <div class="tabs" style="margin-bottom:10px;">
                         <button class="tab active" data-utab="pvz" onclick="switchAdminUsersTab('pvz')">🏪 ПВЗ</button>
                         <button class="tab" data-utab="couriers" onclick="switchAdminUsersTab('couriers')">🚚 Курьеры</button>
+                        <button class="tab" data-utab="support" onclick="switchAdminUsersTab('support')">🎧 Поддержка</button>
                     </div>
                     <div id="adminUsersList"></div>
                 </div>
+
                 <div id="adminCreateTab" class="hidden">
-                    <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;">
-                        <h4 style="color:#f5a623;margin-bottom:8px;">➕ Создать</h4>
+                    <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;">
+                        <h4 style="color:#f5a623;margin-bottom:8px;">➕ Создать аккаунт</h4>
                         <div class="form-group">
                             <label>Тип</label>
                             <select id="adminCreateType" style="width:100%;padding:8px 12px;border-radius:30px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.05);color:white;font-size:0.85rem;outline:none;">
                                 <option value="pvz">🏪 ПВЗ</option>
                                 <option value="courier">🚚 Курьер</option>
+                                <option value="support">🎧 Поддержка</option>
                             </select>
                         </div>
                         <div id="adminCreateFields"></div>
@@ -822,6 +966,7 @@
             <div id="modalProductPrice" style="color:#f5a623;font-size:1.3rem;font-weight:bold;margin:6px 0;">0 ₽</div>
             <div id="modalProductPhoto" style="margin:6px 0;"></div>
             <div id="modalProductDesc" style="color:#aaa;font-size:0.85rem;margin:6px 0;"></div>
+            <div id="modalProductAdult" style="color:#ff4444;font-weight:bold;display:none;">🔞 18+</div>
             <div id="modalProductRating" style="margin:8px 0;">
                 <span style="color:#888;font-size:0.8rem;">Рейтинг: </span>
                 <span style="color:#f5a623;" id="modalRatingStars"></span>
@@ -855,26 +1000,35 @@
         <div class="modal-content">
             <button class="close-modal" onclick="closeDepositModal()">✕</button>
             <h3><i class="fas fa-wallet"></i> Пополнение</h3>
-            <div style="padding:10px;background:rgba(255,255,255,0.03);border-radius:12px;display:flex;justify-content:space-between;color:#888;font-size:0.85rem;margin:10px 0;">
-                <span>Баланс:</span>
-                <span style="color:#f5a623;font-weight:bold;" id="depositCurrentBalance">0 ₽</span>
+            <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:12px;margin:12px 0;">
+                <h4 style="color:#f5a623;font-size:0.85rem;">📖 Как пополнить?</h4>
+                <ol style="padding-left:18px;color:#aaa;font-size:0.8rem;line-height:1.5;">
+                    <li>Выберите сумму</li>
+                    <li>Нажмите «Пополнить»</li>
+                    <li>Средства зачислятся мгновенно</li>
+                </ol>
             </div>
             <div class="deposit-amounts" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0;">
-                <button onclick="depositAmount(100)" style="padding:8px;border-radius:30px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:white;font-weight:bold;cursor:pointer;">100 ₽</button>
-                <button onclick="depositAmount(500)" style="padding:8px;border-radius:30px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:white;font-weight:bold;cursor:pointer;">500 ₽</button>
-                <button onclick="depositAmount(1000)" style="padding:8px;border-radius:30px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:white;font-weight:bold;cursor:pointer;">1 000 ₽</button>
-                <button onclick="depositAmount(3000)" style="padding:8px;border-radius:30px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:white;font-weight:bold;cursor:pointer;">3 000 ₽</button>
-                <button onclick="depositAmount(5000)" style="padding:8px;border-radius:30px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:white;font-weight:bold;cursor:pointer;">5 000 ₽</button>
-                <button onclick="depositAmount(10000)" style="padding:8px;border-radius:30px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:white;font-weight:bold;cursor:pointer;">10 000 ₽</button>
+                <button onclick="selectDepositAmount(100)" style="padding:8px;border-radius:30px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:white;font-weight:bold;cursor:pointer;">100 ₽</button>
+                <button onclick="selectDepositAmount(500)" style="padding:8px;border-radius:30px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:white;font-weight:bold;cursor:pointer;">500 ₽</button>
+                <button onclick="selectDepositAmount(1000)" style="padding:8px;border-radius:30px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:white;font-weight:bold;cursor:pointer;">1 000 ₽</button>
+                <button onclick="selectDepositAmount(3000)" style="padding:8px;border-radius:30px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:white;font-weight:bold;cursor:pointer;">3 000 ₽</button>
+                <button onclick="selectDepositAmount(5000)" style="padding:8px;border-radius:30px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:white;font-weight:bold;cursor:pointer;">5 000 ₽</button>
+                <button onclick="selectDepositAmount(10000)" style="padding:8px;border-radius:30px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:white;font-weight:bold;cursor:pointer;">10 000 ₽</button>
             </div>
             <div style="display:flex;gap:6px;margin:10px 0;">
                 <input type="number" id="depositCustomAmount" placeholder="Своя сумма" style="flex:1;padding:8px;border-radius:30px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.05);color:white;outline:none;">
                 <button onclick="depositCustom()" style="padding:8px 20px;border-radius:30px;border:none;background:#f5a623;color:#1a1a2e;font-weight:bold;cursor:pointer;">Пополнить</button>
             </div>
+            <div style="padding:10px;background:rgba(255,255,255,0.03);border-radius:12px;display:flex;justify-content:space-between;color:#888;font-size:0.85rem;">
+                <span>Баланс:</span>
+                <span style="color:#f5a623;font-weight:bold;" id="depositCurrentBalance">0 ₽</span>
+            </div>
         </div>
     </div>
 
     <script>
+        // ========== FIREBASE ==========
         const firebaseConfig = {
             apiKey: "AIzaSyBlZ5ZtyTXgtXxSJAx1jOxwhTrzlHRJmo",
             authDomain: "bk-cashier.firebaseapp.com",
@@ -902,12 +1056,12 @@
         let currentRole = 'client';
 
         const defaultProducts = [
-            { id: 'default_1', name: 'Смартфон X Pro', price: 49990, sellerName: 'WHOPPER Shop' },
-            { id: 'default_2', name: 'Наушники Pro Max', price: 8990, sellerName: 'WHOPPER Shop' },
-            { id: 'default_3', name: 'Фитнес-браслет 5', price: 3990, sellerName: 'WHOPPER Shop' },
-            { id: 'default_4', name: 'Игровая мышь RGB', price: 2590, sellerName: 'WHOPPER Shop' },
-            { id: 'default_5', name: 'Электронная сигарета', price: 3490, sellerName: 'WHOPPER Shop' },
-            { id: 'default_6', name: 'Коллекционный алкоголь', price: 15990, sellerName: 'WHOPPER Shop' },
+            { id: 'default_1', name: 'Смартфон X Pro', price: 49990, sellerName: 'WHOPPER Shop', adult: false },
+            { id: 'default_2', name: 'Наушники Pro Max', price: 8990, sellerName: 'WHOPPER Shop', adult: false },
+            { id: 'default_3', name: 'Фитнес-браслет 5', price: 3990, sellerName: 'WHOPPER Shop', adult: false },
+            { id: 'default_4', name: 'Игровая мышь RGB', price: 2590, sellerName: 'WHOPPER Shop', adult: false },
+            { id: 'default_5', name: 'Электронная сигарета', price: 3490, sellerName: 'WHOPPER Shop', adult: true },
+            { id: 'default_6', name: 'Коллекционный алкоголь', price: 15990, sellerName: 'WHOPPER Shop', adult: true },
         ];
 
         function showToast(msg) {
@@ -934,8 +1088,12 @@
         window.switchRole = function(role) {
             currentRole = role;
             document.querySelectorAll('.role-btn').forEach(b => b.classList.toggle('active', b.dataset.role === role));
-            document.querySelectorAll('#clientPanel, #sellerPanel, #pvzPanel, #courierPanel, #adminPanel')
-                .forEach(el => el.classList.add('hidden'));
+            document.getElementById('clientPanel').classList.add('hidden');
+            document.getElementById('sellerPanel').classList.add('hidden');
+            document.getElementById('pvzPanel').classList.add('hidden');
+            document.getElementById('courierPanel').classList.add('hidden');
+            document.getElementById('supportPanel').classList.add('hidden');
+            document.getElementById('adminPanel').classList.add('hidden');
 
             if (role === 'client') {
                 document.getElementById('clientPanel').classList.remove('hidden');
@@ -943,6 +1101,7 @@
                 document.getElementById('clientAuth').classList.remove('hidden');
                 loadPVZList();
                 loadProducts();
+                loadSupport();
             } else if (role === 'seller') {
                 document.getElementById('sellerPanel').classList.remove('hidden');
                 document.getElementById('sellerContent').classList.add('hidden');
@@ -957,6 +1116,11 @@
                 document.getElementById('courierContent').classList.add('hidden');
                 document.getElementById('courierAuth').classList.remove('hidden');
                 loadCouriers();
+            } else if (role === 'support') {
+                document.getElementById('supportPanel').classList.remove('hidden');
+                document.getElementById('supportContent').classList.add('hidden');
+                document.getElementById('supportAuth').classList.remove('hidden');
+                loadSupport();
             } else if (role === 'admin') {
                 document.getElementById('adminPanel').classList.remove('hidden');
                 document.getElementById('adminContent').classList.add('hidden');
@@ -975,6 +1139,7 @@
                             price: p.price,
                             sellerName: p.sellerName,
                             sellerId: 'default_seller',
+                            adult: p.adult || false,
                             isDefault: true,
                             photo: null,
                             createdAt: Date.now()
@@ -993,6 +1158,7 @@
                         price: data.price,
                         sellerId: data.sellerId,
                         sellerName: data.sellerName || 'Продавец',
+                        adult: data.adult || false,
                         isDefault: data.isDefault || false,
                         photo: data.photo || null
                     });
@@ -1016,6 +1182,7 @@
             }
             grid.innerHTML = products.map(p => `
                 <div class="product-card" onclick="openProductModal('${p.id}')">
+                    ${p.adult ? '<span class="age-18">🔞 18+</span>' : ''}
                     ${p.photo ? `<img src="${p.photo}" class="product-photo" loading="lazy" onerror="this.style.display='none'">` : ''}
                     <div class="name">${p.name}</div>
                     <div class="price">${p.price.toLocaleString()} ₽</div>
@@ -1043,7 +1210,9 @@
                 `<img src="${product.photo}" style="max-width:100%;max-height:150px;border-radius:10px;object-fit:cover;">` :
                 '';
 
-            document.getElementById('modalProductDesc').textContent = '';
+            document.getElementById('modalProductDesc').textContent = product.description || '';
+            const adultEl = document.getElementById('modalProductAdult');
+            if (product.adult) { adultEl.style.display = 'block'; } else { adultEl.style.display = 'none'; }
 
             document.querySelectorAll('#modalStars .star').forEach(s => s.classList.remove('active'));
             document.getElementById('modalReviewText').value = '';
@@ -1178,6 +1347,7 @@
             renderCart();
             loadPVZList();
             loadProducts();
+            loadSupport();
             switchClientTab2('shop');
         }
 
@@ -1231,7 +1401,11 @@
                 .ctab === tab));
             document.getElementById('clientShopTab').classList.toggle('hidden', tab !== 'shop');
             document.getElementById('clientOrdersTab').classList.toggle('hidden', tab !== 'orders');
+            document.getElementById('clientSupportTab').classList.toggle('hidden', tab !== 'support');
+            document.getElementById('clientReturnsTab').classList.toggle('hidden', tab !== 'returns');
             if (tab === 'orders') renderClientOrders();
+            if (tab === 'support') renderClientSupportTickets();
+            if (tab === 'returns') renderClientReturns();
         };
 
         // ========== ОФОРМЛЕНИЕ ==========
@@ -1287,6 +1461,12 @@
                 return;
             }
 
+            const hasAdult = cart.some(i => i.adult);
+            if (hasAdult && type !== 'pvz') {
+                showToast('❌ 18+ только в ПВЗ');
+                return;
+            }
+
             if (type === 'pvz') {
                 const pvzNumber = document.getElementById('pvzSelect').value;
                 if (!pvzNumber) { showToast('❌ Выберите ПВЗ'); return; }
@@ -1310,14 +1490,17 @@
                 userId: currentUser.id,
                 userName: currentUser.name,
                 phone: currentUser.phone,
-                items: cart.map(i => ({ id: i.id, name: i.name, price: i.price, qty: i.qty, photo: i.photo || null })),
+                items: cart.map(i => ({ id: i.id, name: i.name, price: i.price, qty: i.qty, adult: i.adult || false,
+                    photo: i.photo || null })),
                 total: total,
                 type: type,
                 address: type === 'courier' ? address : pvzAddress,
                 pvzNumber: type === 'pvz' ? address : null,
                 code: code,
                 status: type === 'pvz' ? 'to_pvz' : 'to_courier',
-                createdAt: Date.now()
+                createdAt: Date.now(),
+                hasAdult: cart.some(i => i.adult),
+                adultConfirmed: false
             };
 
             const newWallet = (currentUser.wallet || 0) - total;
@@ -1361,7 +1544,7 @@
                             ${o.items.map(i => `
                                 <div class="item-row">
                                     ${i.photo ? `<img src="${i.photo}" class="item-photo" loading="lazy" onerror="this.style.display='none'">` : ''}
-                                    <span class="item-name">${i.name}</span>
+                                    <span class="item-name">${i.name}${i.adult ? ' 🔞' : ''}</span>
                                     <span class="item-qty">x${i.qty}</span>
                                     <span style="color:#f5a623;">${(i.price * i.qty).toLocaleString()} ₽</span>
                                 </div>
@@ -1370,6 +1553,13 @@
                         <div class="order-total">💰 ${o.total.toLocaleString()} ₽ ${o.type === 'pvz' ? `🏪 ПВЗ №${o.pvzNumber}` : `📍 ${o.address}`}</div>
                         <div class="order-code">🔑 ${o.code}</div>
                         ${o.status === 'ready' ? `<div style="color:#4CAF50;font-size:0.7rem;">✅ Готов к выдаче</div>` : ''}
+                        ${o.status === 'courier_arrived' ? `<div style="color:#4CAF50;font-size:0.7rem;">🚪 Курьер прибыл</div>` : ''}
+                        ${o.hasAdult && !o.adultConfirmed ? `<div style="color:#ff4444;font-size:0.7rem;">🔞 18+</div>` : ''}
+                        ${o.status !== 'delivered' && o.status !== 'return' ? `
+                            <div class="order-actions">
+                                <button class="btn-warning" onclick="requestReturn('${o.id}')">🔄 Возврат</button>
+                            </div>
+                        ` : ''}
                     </div>
                 `).join('');
             });
@@ -1380,6 +1570,263 @@
             document.querySelectorAll('#clientOrdersTab .tab').forEach(t => t.classList.toggle('active', t.dataset.tab ===
                 tab));
             renderClientOrders();
+        };
+
+        // ========== ВОЗВРАТЫ ==========
+        window.requestReturn = function(orderId) {
+            if (!confirm('Оформить возврат по заказу #' + orderId + '?')) return;
+
+            const returnId = 'RET_' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4)
+            .toUpperCase();
+
+            db.ref('orders/' + orderId).once('value', (sn) => {
+                const order = sn.val();
+                if (!order) { showToast('❌ Заказ не найден'); return; }
+
+                db.ref('returns/' + returnId).set({
+                    id: returnId,
+                    orderId: orderId,
+                    userId: currentUser.id,
+                    userName: currentUser.name,
+                    items: order.items,
+                    total: order.total,
+                    status: 'pending',
+                    createdAt: Date.now()
+                }).then(() => {
+                    showToast('✅ Заявка на возврат отправлена');
+                    renderClientReturns();
+                });
+            });
+        };
+
+        function renderClientReturns() {
+            const container = document.getElementById('clientReturns');
+            db.ref('returns').orderByChild('userId').equalTo(currentUser.id).on('value', (sn) => {
+                const items = [];
+                sn.forEach(child => items.push({ id: child.key, ...child.val() }));
+                items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+                if (items.length === 0) {
+                    container.innerHTML =
+                        '<div style="text-align:center;color:#555;padding:15px;font-size:0.85rem;">Нет заявок на возврат</div>';
+                    return;
+                }
+
+                container.innerHTML = items.map(r => `
+                    <div class="order-card" style="border-left-color: ${r.status === 'approved' ? '#4CAF50' : r.status === 'rejected' ? '#ff4444' : '#ff9800'};">
+                        <div class="order-header">
+                            <span class="order-number">🔄 ${r.id}</span>
+                            <span class="order-status ${r.status === 'approved' ? 'status-ready' : r.status === 'rejected' ? 'status-return' : 'status-waiting'}">
+                                ${r.status === 'pending' ? '⏳ Ожидает' : r.status === 'approved' ? '✅ Одобрен' : '❌ Отклонен'}
+                            </span>
+                        </div>
+                        <div class="order-items-list">
+                            ${(r.items || []).map(i => `
+                                <div class="item-row">
+                                    <span class="item-name">${i.name} x${i.qty}</span>
+                                    <span style="color:#f5a623;">${(i.price * i.qty).toLocaleString()} ₽</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="order-total">💰 ${r.total || 0} ₽</div>
+                        <div style="font-size:0.7rem;color:#888;">${new Date(r.createdAt).toLocaleDateString()}</div>
+                    </div>
+                `).join('');
+            });
+        }
+
+        // ========== ПОДДЕРЖКА ==========
+        function loadSupport() {
+            db.ref('support').on('value', (sn) => {
+                if (currentRole === 'client' && document.getElementById('clientSupportTab')) {
+                    renderClientSupportTickets();
+                }
+                if (currentRole === 'support' && document.getElementById('supportTickets')) {
+                    supportAction('open');
+                }
+            });
+        }
+
+        window.sendSupport = function() {
+            if (!currentUser.id || currentUser.type !== 'client') {
+                showToast('❌ Войдите как клиент');
+                return;
+            }
+            const topic = document.getElementById('supportTopic').value.trim();
+            const text = document.getElementById('supportText').value.trim();
+            if (!topic || !text) { showToast('❌ Заполните тему и вопрос'); return; }
+
+            let operatorId = null;
+            let operatorName = null;
+
+            db.ref('support_operators').once('value', (sn) => {
+                const ops = [];
+                sn.forEach(child => ops.push({ id: child.key, ...child.val() }));
+                if (ops.length > 0) {
+                    const op = ops.reduce((a, b) => (a.openTickets || 0) < (b.openTickets || 0) ? a : b);
+                    operatorId = op.id;
+                    operatorName = op.name;
+                    db.ref('support_operators/' + operatorId + '/openTickets').transaction(current => (current || 0) +
+                    1);
+                } else {
+                    showToast('❌ Нет доступных операторов');
+                    return;
+                }
+
+                const ticketId = 'TICKET_' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2,
+                    4).toUpperCase();
+                db.ref('support/' + ticketId).set({
+                    id: ticketId,
+                    userId: currentUser.id,
+                    userName: currentUser.name,
+                    topic: topic,
+                    text: text,
+                    status: 'open',
+                    operatorId: operatorId,
+                    operatorName: operatorName || 'Оператор',
+                    answer: '',
+                    createdAt: Date.now()
+                }).then(() => {
+                    showToast('✅ Вопрос отправлен!');
+                    document.getElementById('supportTopic').value = '';
+                    document.getElementById('supportText').value = '';
+                    renderClientSupportTickets();
+                });
+            });
+        };
+
+        function renderClientSupportTickets() {
+            const container = document.getElementById('clientSupportTickets');
+            if (!container) return;
+
+            db.ref('support').orderByChild('userId').equalTo(currentUser.id).on('value', (sn) => {
+                const tickets = [];
+                sn.forEach(child => tickets.push({ id: child.key, ...child.val() }));
+                tickets.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+                if (tickets.length === 0) {
+                    container.innerHTML =
+                        '<div style="text-align:center;color:#555;padding:15px;font-size:0.85rem;">Нет обращений</div>';
+                    return;
+                }
+
+                container.innerHTML = tickets.map(t => `
+                    <div class="support-ticket">
+                        <div class="ticket-header">
+                            <span>${t.topic}</span>
+                            <span class="ticket-status ${t.status === 'open' ? 'status-open' : t.status === 'answered' ? 'status-answered' : 'status-closed'}">
+                                ${t.status === 'open' ? '⏳ Ожидает' : t.status === 'answered' ? '✅ Отвечен' : '🔒 Закрыт'}
+                            </span>
+                        </div>
+                        <div class="ticket-text">${t.text}</div>
+                        ${t.answer ? `<div class="ticket-answer">📩 ${t.answer}</div>` : ''}
+                        <div style="font-size:0.6rem;color:#555;">${new Date(t.createdAt).toLocaleDateString()}</div>
+                    </div>
+                `).join('');
+            });
+        }
+
+        // ========== ПОДДЕРЖКА (СОТРУДНИК) ==========
+        window.supportLogin = function() {
+            const login = document.getElementById('supportLogin').value.trim();
+            const password = document.getElementById('supportPassword').value.trim();
+
+            if (!login || !password) { showToast('❌ Заполните поля'); return; }
+
+            db.ref('support_operators').orderByChild('login').equalTo(login).once('value', (sn) => {
+                if (sn.exists()) {
+                    let found = false;
+                    sn.forEach(child => {
+                        const data = child.val();
+                        if (data.password === password) {
+                            currentUser = {
+                                id: child.key,
+                                name: data.name,
+                                type: 'support',
+                                wallet: 0
+                            };
+                            found = true;
+                            showToast('👋 Добро пожаловать!');
+                            document.getElementById('supportAuth').classList.add('hidden');
+                            document.getElementById('supportContent').classList.remove('hidden');
+                            document.getElementById('userNameDisplay').textContent = currentUser.name + ' 🎧';
+                            supportAction('open');
+                            loadSupport();
+                        }
+                    });
+                    if (!found) showToast('❌ Неверный пароль');
+                } else {
+                    showToast('❌ Оператор не найден');
+                }
+            });
+        };
+
+        window.supportAction = function(status) {
+            const container = document.getElementById('supportTickets');
+
+            db.ref('support').orderByChild('status').equalTo(status).on('value', (sn) => {
+                const tickets = [];
+                sn.forEach(child => tickets.push({ id: child.key, ...child.val() }));
+                tickets.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+                if (tickets.length === 0) {
+                    container.innerHTML =
+                        '<div style="text-align:center;color:#555;padding:15px;font-size:0.85rem;">Нет тикетов</div>';
+                    return;
+                }
+
+                container.innerHTML = tickets.map(t => `
+                    <div class="support-ticket">
+                        <div class="ticket-header">
+                            <span>${t.topic}</span>
+                            <span class="ticket-status ${t.status === 'open' ? 'status-open' : t.status === 'answered' ? 'status-answered' : 'status-closed'}">
+                                ${t.status === 'open' ? '⏳ Ожидает' : t.status === 'answered' ? '✅ Отвечен' : '🔒 Закрыт'}
+                            </span>
+                        </div>
+                        <div style="font-size:0.75rem;color:#888;">👤 ${t.userName}</div>
+                        <div class="ticket-text">${t.text}</div>
+                        ${t.answer ? `<div class="ticket-answer">📩 ${t.answer}</div>` : ''}
+                        <div style="font-size:0.6rem;color:#555;">${new Date(t.createdAt).toLocaleDateString()}</div>
+                        ${t.status === 'open' ? `
+                            <div style="margin-top:6px;">
+                                <div class="form-group"><label>Ответ</label><input type="text" id="answer_${t.id}" placeholder="Напишите ответ" style="width:100%;padding:6px 12px;border-radius:30px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.05);color:white;font-size:0.8rem;outline:none;"></div>
+                                <button class="btn-success" onclick="answerTicket('${t.id}')" style="padding:4px 12px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;font-size:0.7rem;">📤 Ответить</button>
+                                <button class="btn-danger" onclick="closeTicket('${t.id}')" style="padding:4px 12px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;font-size:0.7rem;margin-left:4px;">🔒 Закрыть</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+            });
+        };
+
+        window.answerTicket = function(ticketId) {
+            const answerInput = document.getElementById('answer_' + ticketId);
+            if (!answerInput) return;
+            const answer = answerInput.value.trim();
+            if (!answer) { showToast('❌ Напишите ответ'); return; }
+
+            db.ref('support/' + ticketId).update({
+                answer: answer,
+                status: 'answered'
+            }).then(() => {
+                showToast('✅ Ответ отправлен');
+                db.ref('support/' + ticketId).once('value', (sn) => {
+                    const ticket = sn.val();
+                    if (ticket.operatorId) {
+                        db.ref('support_operators/' + ticket.operatorId + '/openTickets').transaction(current => Math
+                            .max(0, (current || 1) - 1));
+                    }
+                });
+                supportAction('open');
+            });
+        };
+
+        window.closeTicket = function(ticketId) {
+            if (!confirm('Закрыть тикет?')) return;
+            db.ref('support/' + ticketId).update({ status: 'closed' }).then(() => {
+                showToast('🔒 Тикет закрыт');
+                supportAction('open');
+            });
         };
 
         // ========== ПРОДАВЕЦ ==========
@@ -1411,6 +1858,7 @@
                 document.getElementById('sellerAuth').classList.add('hidden');
                 document.getElementById('sellerContent').classList.remove('hidden');
                 document.getElementById('userNameDisplay').textContent = currentUser.shopName + ' 🏪';
+                document.getElementById('sellerWallet').textContent = (currentUser.wallet || 0).toLocaleString() + ' ₽';
                 renderSellerProducts();
                 loadProducts();
             });
@@ -1440,6 +1888,8 @@
                             document.getElementById('sellerAuth').classList.add('hidden');
                             document.getElementById('sellerContent').classList.remove('hidden');
                             document.getElementById('userNameDisplay').textContent = currentUser.shopName + ' 🏪';
+                            document.getElementById('sellerWallet').textContent = (currentUser.wallet || 0)
+                            .toLocaleString() + ' ₽';
                             renderSellerProducts();
                             loadProducts();
                         }
@@ -1454,6 +1904,9 @@
         window.addProduct = function() {
             const name = document.getElementById('productName').value.trim();
             const price = parseInt(document.getElementById('productPrice').value);
+            const description = document.getElementById('productDesc').value.trim();
+            const adult = document.getElementById('productAdult').checked;
+
             if (!name || !price || price <= 0) {
                 showToast('❌ Заполните название и цену');
                 return;
@@ -1467,8 +1920,10 @@
                     id: productId,
                     name: name,
                     price: price,
+                    description: description,
                     sellerId: currentUser.id,
                     sellerName: currentUser.shopName,
+                    adult: adult,
                     isDefault: false,
                     photo: photoUrl || null,
                     createdAt: Date.now()
@@ -1476,6 +1931,8 @@
                     showToast('✅ Товар добавлен!');
                     document.getElementById('productName').value = '';
                     document.getElementById('productPrice').value = '';
+                    document.getElementById('productDesc').value = '';
+                    document.getElementById('productAdult').checked = false;
                     document.getElementById('productPhoto').value = '';
                     loadProducts();
                 });
@@ -1501,7 +1958,7 @@
                     <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:8px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
                         <div>
                             ${p.photo ? `<img src="${p.photo}" style="width:30px;height:30px;border-radius:6px;object-fit:cover;vertical-align:middle;margin-right:6px;">` : ''}
-                            <span style="font-weight:bold;font-size:0.8rem;">${p.name}</span>
+                            <span style="font-weight:bold;font-size:0.8rem;">${p.name} ${p.adult ? '🔞' : ''}</span>
                             <span style="color:#f5a623;font-size:0.8rem;">${p.price} ₽</span>
                         </div>
                         <button class="btn-danger" onclick="deleteProduct('${p.id}')" style="padding:4px 10px;border:none;border-radius:30px;cursor:pointer;font-size:0.7rem;">✕</button>
@@ -1559,6 +2016,8 @@
                 ordersRef.orderByChild('status').equalTo('to_pvz').on('value', renderPVZOrders);
             } else if (action === 'issue') {
                 ordersRef.orderByChild('status').equalTo('ready').on('value', renderPVZOrders);
+            } else if (action === 'courier') {
+                ordersRef.orderByChild('status').equalTo('with_courier').on('value', renderPVZOrders);
             }
         };
 
@@ -1584,7 +2043,7 @@
                         ${o.items.map(i => `
                             <div class="item-row">
                                 ${i.photo ? `<img src="${i.photo}" class="item-photo" loading="lazy" onerror="this.style.display='none'">` : ''}
-                                <span class="item-name">${i.name}</span>
+                                <span class="item-name">${i.name}${i.adult ? ' 🔞' : ''}</span>
                                 <span class="item-qty">x${i.qty}</span>
                                 <span style="color:#f5a623;">${(i.price * i.qty).toLocaleString()} ₽</span>
                             </div>
@@ -1593,14 +2052,24 @@
                     <div class="order-total">💰 ${o.total.toLocaleString()} ₽</div>
                     <div style="font-size:0.75rem;color:#888;">👤 ${o.userName}</div>
                     <div class="order-code">🔑 ${o.code}</div>
+                    ${o.hasAdult && !o.adultConfirmed ? `<div style="color:#ff4444;font-weight:bold;font-size:0.7rem;">🔞 Требуется подтверждение 18+</div>` : ''}
                     <div class="order-actions">
                         ${o.status === 'to_pvz' ? `<button class="btn-success" onclick="pvzReady('${o.id}')">✅ Готов к выдаче</button>` : ''}
+                        ${o.status === 'ready' && o.hasAdult && !o.adultConfirmed ? `<button class="btn-purple" onclick="pvzConfirmAdult('${o.id}')">🔞 Подтвердить 18+</button>` : ''}
                         ${o.status === 'ready' ? `<button class="btn-primary" onclick="pvzIssue('${o.id}')">📤 Выдать</button>` : ''}
+                        ${o.status === 'with_courier' ? `<button class="btn-info" onclick="pvzGiveCourier('${o.id}')">🚚 Передать курьеру</button>` : ''}
                         ${o.status === 'ready' ? `<button class="btn-danger" onclick="pvzReturn('${o.id}')">🔄 Возврат</button>` : ''}
                     </div>
                 </div>
             `).join('');
         }
+
+        window.pvzConfirmAdult = function(orderId) {
+            if (!confirm('🔞 Подтвердить, что клиенту есть 18+?')) return;
+            db.ref('orders/' + orderId).update({ adultConfirmed: true });
+            showToast('✅ Подтверждение 18+ выполнено');
+            pvzAction('issue');
+        };
 
         window.pvzReady = function(orderId) {
             db.ref('orders/' + orderId).update({ status: 'ready' });
@@ -1626,6 +2095,10 @@
                 if (!order) { showToast('❌ Заказ не найден'); return; }
 
                 if (order.code === code) {
+                    if (order.hasAdult && !order.adultConfirmed) {
+                        if (!confirm('🔞 Товар 18+. Подтвердить выдачу?')) return;
+                        db.ref('orders/' + orderId).update({ adultConfirmed: true });
+                    }
                     db.ref('orders/' + orderId).update({ status: 'delivered' });
                     showToast('✅ Заказ выдан!');
                     document.getElementById('pvzScanResult').innerHTML = '';
@@ -1650,13 +2123,19 @@
                     const order = child.val();
                     if (order.pvzNumber === currentUser.pvzNumber) {
                         found = true;
+                        let adultWarning = '';
+                        if (order.hasAdult && !order.adultConfirmed) {
+                            adultWarning =
+                                '<div style="color:#ff4444;font-weight:bold;margin-top:5px;">🔞 Требуется подтверждение 18+</div>';
+                        }
                         result.innerHTML = `
                             <div style="background:rgba(76,175,80,0.15);padding:12px;border-radius:12px;border:1px solid #4CAF50;">
                                 <div style="color:#4CAF50;font-weight:bold;">✅ Заказ найден!</div>
                                 <div>👤 ${order.userName}</div>
-                                <div>📦 ${order.items.map(i => `${i.name} x${i.qty}`).join(', ')}</div>
+                                <div>📦 ${order.items.map(i => `${i.name} x${i.qty}${i.adult ? ' 🔞' : ''}`).join(', ')}</div>
                                 <div style="font-weight:bold;">${order.total} ₽</div>
                                 <div style="font-size:0.8rem;color:#888;">Код: ${order.code}</div>
+                                ${adultWarning}
                                 ${order.status === 'ready' ? 
                                     `<button onclick="verifyAndIssue('${order.id}', '${order.code}')" style="margin-top:8px;padding:8px 20px;border-radius:30px;border:none;background:#4CAF50;color:white;font-weight:bold;cursor:pointer;">📤 Выдать</button>` : 
                                     `<div style="color:#ff9800;font-size:0.8rem;">Статус: ${getStatusText(order.status)}</div>`
@@ -1676,6 +2155,12 @@
             db.ref('orders/' + orderId).update({ status: 'return' });
             showToast('🔄 Возврат оформлен');
             pvzAction('issue');
+        };
+
+        window.pvzGiveCourier = function(orderId) {
+            db.ref('orders/' + orderId).update({ status: 'delivered' });
+            showToast('🚚 Заказ передан курьеру');
+            pvzAction('courier');
         };
 
         // ========== КУРЬЕР ==========
@@ -1702,11 +2187,116 @@
                             document.getElementById('courierAuth').classList.add('hidden');
                             document.getElementById('courierContent').classList.remove('hidden');
                             document.getElementById('userNameDisplay').textContent = currentUser.name + ' 🚚';
+                            document.getElementById('courierWallet').textContent = (currentUser.wallet || 0)
+                            .toLocaleString() + ' ₽';
+                            courierAction('orders');
+                            loadCouriers();
                         }
                     });
                     if (!found) showToast('❌ Неверный пароль');
                 } else {
                     showToast('❌ Курьер не найден');
+                }
+            });
+        };
+
+        window.courierAction = function(action) {
+            const container = document.getElementById('courierOrders');
+
+            if (action === 'orders') {
+                db.ref('orders').orderByChild('courierId').equalTo(currentUser.id).on('value', renderCourierOrders);
+            } else if (action === 'deliveries') {
+                db.ref('orders').orderByChild('courierId').equalTo(currentUser.id).on('value', renderCourierOrders);
+            }
+        };
+
+        function renderCourierOrders(sn) {
+            const container = document.getElementById('courierOrders');
+            const orders = [];
+            sn.forEach(child => orders.push({ id: child.key, ...child.val() }));
+
+            const deliveries = orders.filter(o => o.status === 'with_courier' || o.status === 'courier_arrived');
+            const toPickup = orders.filter(o => o.status === 'to_courier');
+
+            let html = '';
+
+            if (toPickup.length > 0) {
+                html += '<h4 style="color:#f5a623;font-size:0.85rem;margin:6px 0;">📦 Забрать из ПВЗ</h4>';
+                html += toPickup.map(o => `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <span class="order-number">🆔 ${o.id}</span>
+                            <span class="order-status status-waiting">⏳ Ожидает</span>
+                        </div>
+                        <div class="order-items-list">
+                            ${o.items.map(i => `<div class="item-row"><span class="item-name">${i.name}</span><span class="item-qty">x${i.qty}</span></div>`).join('')}
+                        </div>
+                        <div class="order-total">💰 ${o.total.toLocaleString()} ₽</div>
+                        <div>🏪 ПВЗ №${o.pvzNumber}</div>
+                        <div class="order-code">🔑 ${o.code}</div>
+                        <div class="order-actions">
+                            <button class="btn-primary" onclick="courierPickup('${o.id}')">📦 Забрать</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            if (deliveries.length > 0) {
+                html += '<h4 style="color:#f5a623;font-size:0.85rem;margin:6px 0;">🚚 Доставка</h4>';
+                html += deliveries.map(o => `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <span class="order-number">🆔 ${o.id}</span>
+                            <span class="order-status ${getStatusClass(o.status)}">${getStatusText(o.status)}</span>
+                        </div>
+                        <div class="order-items-list">
+                            ${o.items.map(i => `<div class="item-row"><span class="item-name">${i.name}</span><span class="item-qty">x${i.qty}</span></div>`).join('')}
+                        </div>
+                        <div class="order-total">💰 ${o.total.toLocaleString()} ₽</div>
+                        <div>📍 ${o.address}</div>
+                        <div>👤 ${o.userName}</div>
+                        <div class="order-code">🔑 ${o.code}</div>
+                        <div class="order-actions">
+                            ${o.status === 'with_courier' ? `<button class="btn-success" onclick="courierArrived('${o.id}')">🚪 Прибыл</button>` : ''}
+                            ${o.status === 'courier_arrived' ? `<button class="btn-success" onclick="courierDeliver('${o.id}')">📤 Выдать</button>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            if (!html) {
+                html = '<div style="text-align:center;color:#555;padding:15px;font-size:0.8rem;">Нет заказов</div>';
+            }
+
+            container.innerHTML = html;
+        }
+
+        window.courierPickup = function(orderId) {
+            db.ref('orders/' + orderId).update({ status: 'with_courier' });
+            showToast('📦 Заказ взят');
+            courierAction('orders');
+        };
+
+        window.courierArrived = function(orderId) {
+            db.ref('orders/' + orderId).update({ status: 'courier_arrived' });
+            showToast('🚪 Прибыл');
+            courierAction('orders');
+        };
+
+        window.courierDeliver = function(orderId) {
+            const code = prompt('Код:');
+            if (!code) return;
+
+            db.ref('orders/' + orderId).once('value', (sn) => {
+                const order = sn.val();
+                if (order.code === code) {
+                    db.ref('orders/' + orderId).update({ status: 'delivered' });
+                    const fee = Math.max(50, Math.round(order.total * 0.05));
+                    db.ref('couriers/' + currentUser.id + '/wallet').transaction(current => (current || 0) + fee);
+                    showToast(`✅ Выдан! +${fee} ₽`);
+                    courierAction('orders');
+                } else {
+                    showToast('❌ Неверный код');
                 }
             });
         };
@@ -1750,6 +2340,7 @@
 
             if (type === 'pvz') ref = db.ref('pvz');
             else if (type === 'couriers') ref = db.ref('couriers');
+            else if (type === 'support') ref = db.ref('support_operators');
 
             ref.on('value', (sn) => {
                 const items = [];
@@ -1773,15 +2364,50 @@
         }
 
         window.adminDeleteUser = function(type, id) {
-            if (!confirm('Удалить пользователя?')) return;
+            if (!confirm('Удалить пользователя? При удалении ПВЗ все заказы будут отменены с возвратом денег')) return;
             let ref;
             if (type === 'pvz') ref = db.ref('pvz/' + id);
             else if (type === 'couriers') ref = db.ref('couriers/' + id);
+            else if (type === 'support') ref = db.ref('support_operators/' + id);
 
-            ref.remove().then(() => {
-                showToast('✅ Пользователь удалён');
-                loadAdminUsers(type);
-            });
+            if (type === 'pvz') {
+                db.ref('pvz/' + id).once('value', (sn) => {
+                    const pvzData = sn.val();
+                    if (pvzData && pvzData.number) {
+                        db.ref('orders').orderByChild('pvzNumber').equalTo(pvzData.number).once('value', (ordersSn) => {
+                            const updates = {};
+                            ordersSn.forEach(orderChild => {
+                                const order = orderChild.val();
+                                if (order.status !== 'delivered' && order.status !== 'return') {
+                                    if (order.userId && order.total) {
+                                        db.ref('users/' + order.userId + '/wallet').transaction(current =>
+                                            (current || 0) + order.total
+                                        );
+                                    }
+                                    updates[orderChild.key] = null;
+                                }
+                            });
+                            if (Object.keys(updates).length > 0) {
+                                db.ref('orders').update(updates);
+                            }
+                            ref.remove().then(() => {
+                                showToast('✅ ПВЗ и все его заказы удалены, деньги возвращены');
+                                loadAdminUsers(type);
+                            });
+                        });
+                    } else {
+                        ref.remove().then(() => {
+                            showToast('✅ Пользователь удалён');
+                            loadAdminUsers(type);
+                        });
+                    }
+                });
+            } else {
+                ref.remove().then(() => {
+                    showToast('✅ Пользователь удалён');
+                    loadAdminUsers(type);
+                });
+            }
         };
 
         function adminCreateFields() {
@@ -1790,11 +2416,17 @@
 
             if (type === 'pvz') {
                 container.innerHTML = `
-                    <div class="form-group"><label>Номер</label><input type="number" id="adminCreateNumber" placeholder="17"></div>
+                    <div class="form-group"><label>Номер</label><input type="number" id="adminCreateNumber" placeholder="Например: 17"></div>
                     <div class="form-group"><label>Пароль</label><input type="password" id="adminCreatePassword" placeholder="Пароль"></div>
                     <div class="form-group"><label>Адрес</label><input type="text" id="adminCreateAddress" placeholder="Адрес ПВЗ"></div>
                 `;
             } else if (type === 'courier') {
+                container.innerHTML = `
+                    <div class="form-group"><label>ФИО</label><input type="text" id="adminCreateName" placeholder="Иванов Иван"></div>
+                    <div class="form-group"><label>Логин</label><input type="text" id="adminCreateLogin" placeholder="Логин"></div>
+                    <div class="form-group"><label>Пароль</label><input type="password" id="adminCreatePassword" placeholder="Пароль"></div>
+                `;
+            } else if (type === 'support') {
                 container.innerHTML = `
                     <div class="form-group"><label>ФИО</label><input type="text" id="adminCreateName" placeholder="Иванов Иван"></div>
                     <div class="form-group"><label>Логин</label><input type="text" id="adminCreateLogin" placeholder="Логин"></div>
@@ -1853,6 +2485,29 @@
                     showToast('✅ Курьер ' + name + ' создан!');
                     switchAdminUsersTab('couriers');
                 });
+            } else if (type === 'support') {
+                const name = document.getElementById('adminCreateName').value.trim();
+                const login = document.getElementById('adminCreateLogin').value.trim();
+                const password = document.getElementById('adminCreatePassword').value.trim();
+
+                if (!name || !login || !password) {
+                    showToast('❌ Заполните все поля');
+                    return;
+                }
+
+                const opId = 'OP_' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4)
+                .toUpperCase();
+                db.ref('support_operators/' + opId).set({
+                    id: opId,
+                    name: name,
+                    login: login,
+                    password: password,
+                    openTickets: 0,
+                    createdAt: Date.now()
+                }).then(() => {
+                    showToast('✅ Оператор ' + name + ' создан!');
+                    switchAdminUsersTab('support');
+                });
             }
         };
 
@@ -1863,6 +2518,8 @@
                 'ready': '✅ Готов к выдаче',
                 'delivered': '📦 Выдан',
                 'to_courier': '⏳ Ожидает курьера',
+                'with_courier': '🚚 У курьера',
+                'courier_arrived': '🚪 Курьер прибыл',
                 'return': '🔄 Возврат'
             };
             return map[status] || status;
@@ -1874,6 +2531,8 @@
                 'ready': 'status-ready',
                 'delivered': 'status-delivered',
                 'to_courier': 'status-waiting',
+                'with_courier': 'status-courier',
+                'courier_arrived': 'status-courier',
                 'return': 'status-return'
             };
             return map[status] || 'status-waiting';
@@ -1923,29 +2582,6 @@
         }
 
         // ========== ПОПОЛНЕНИЕ ==========
-        window.depositAmount = function(amount) {
-            if (!currentUser.id) { showToast('❌ Войдите'); return; }
-            const newBalance = (currentUser.wallet || 0) + amount;
-            let path = '';
-            if (currentRole === 'client') { path = 'users/' + currentUser.id + '/wallet'; } else if (currentRole ===
-                'seller') { path = 'sellers/' + currentUser.id + '/wallet'; } else if (currentRole === 'courier') {
-                path = 'couriers/' + currentUser.id + '/wallet'; }
-
-            db.ref(path).set(newBalance).then(() => {
-                currentUser.wallet = newBalance;
-                updateWalletDisplay();
-                showToast(`✅ +${amount} ₽`);
-                document.getElementById('depositCurrentBalance').textContent = newBalance.toLocaleString() + ' ₽';
-                setTimeout(() => closeDepositModal(), 500);
-            });
-        };
-
-        window.depositCustom = function() {
-            const amount = parseInt(document.getElementById('depositCustomAmount').value);
-            if (!amount || amount <= 0) { showToast('❌ Введите сумму'); return; }
-            window.depositAmount(amount);
-        };
-
         window.openDepositModal = function(target) {
             if (!currentUser.id) { showToast('❌ Войдите'); return; }
             depositTarget = target;
@@ -1958,6 +2594,39 @@
         window.closeDepositModal = function() {
             document.getElementById('depositModal').classList.add('hidden');
         };
+
+        window.selectDepositAmount = function(amount) {
+            document.querySelectorAll('.deposit-amounts button').forEach(b => b.style.borderColor = 'rgba(255,255,255,0.08)');
+            document.querySelectorAll('.deposit-amounts button').forEach(b => {
+                if (parseInt(b.textContent.replace(/[^0-9]/g, '')) === amount) {
+                    b.style.borderColor = '#f5a623';
+                }
+            });
+            document.getElementById('depositCustomAmount').value = '';
+            depositAmount(amount);
+        };
+
+        window.depositCustom = function() {
+            const amount = parseInt(document.getElementById('depositCustomAmount').value);
+            if (!amount || amount <= 0) { showToast('❌ Введите сумму'); return; }
+            depositAmount(amount);
+        };
+
+        function depositAmount(amount) {
+            const newBalance = (currentUser.wallet || 0) + amount;
+            let path = '';
+            if (depositTarget === 'client') { path = 'users/' + currentUser.id + '/wallet'; } else if (depositTarget ===
+                'seller') { path = 'sellers/' + currentUser.id + '/wallet'; } else if (depositTarget === 'courier') {
+                path = 'couriers/' + currentUser.id + '/wallet'; }
+
+            db.ref(path).set(newBalance).then(() => {
+                currentUser.wallet = newBalance;
+                updateWalletDisplay();
+                showToast(`✅ +${amount.toLocaleString()} ₽`);
+                document.getElementById('depositCurrentBalance').textContent = newBalance.toLocaleString() + ' ₽';
+                setTimeout(() => closeDepositModal(), 800);
+            });
+        }
 
         function updateWalletDisplay() {
             if (currentRole === 'client') {
@@ -1975,6 +2644,7 @@
         loadPVZList();
         loadCouriers();
         loadProducts();
+        loadSupport();
         adminCreateFields();
     </script>
 </body>
