@@ -283,6 +283,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        /* ===== ОСНОВНОЙ КАРТОЧКИ ЗАКАЗА ===== */
         .order-card {
             background: rgba(255,255,255,0.04);
             border-radius: 14px;
@@ -355,18 +356,19 @@
             padding-top: 4px;
             border-top: 1px solid rgba(255,255,255,0.05);
         }
+        /* КОД ЗАКАЗА - БОЛЬШОЙ И ЗАМЕТНЫЙ */
         .order-card .order-code {
-            font-size: 1.3rem;
+            font-size: 1.8rem;
             font-weight: bold;
             color: #f5a623;
             font-family: monospace;
-            letter-spacing: 4px;
-            background: rgba(255,255,255,0.05);
-            padding: 6px;
-            border-radius: 10px;
-            margin: 4px 0;
+            letter-spacing: 8px;
+            background: rgba(255,255,255,0.08);
+            padding: 10px;
+            border-radius: 12px;
+            margin: 6px 0;
             text-align: center;
-            border: 1px dashed rgba(245,166,35,0.2);
+            border: 2px solid rgba(245,166,35,0.25);
         }
 
         .tabs {
@@ -676,6 +678,11 @@
             }
             .role-btn i {
                 font-size: 0.8rem;
+            }
+            .order-card .order-code {
+                font-size: 1.3rem;
+                letter-spacing: 4px;
+                padding: 8px;
             }
         }
     </style>
@@ -1458,7 +1465,7 @@
             });
         }
 
-        // ========== ЗАКАЗЫ КЛИЕНТА ==========
+        // ========== ЗАКАЗЫ КЛИЕНТА (С КОДОМ) ==========
         function renderClientOrders() {
             const container = document.getElementById('clientOrders');
             db.ref('orders').orderByChild('userId').equalTo(currentUser.id).on('value', (sn) => {
@@ -1492,6 +1499,7 @@
                             `).join('')}
                         </div>
                         <div class="order-total">💰 ${o.total.toLocaleString()} ₽ ${o.type === 'pvz' ? `🏪 ПВЗ №${o.pvzNumber}` : `📍 ${o.address}`}</div>
+                        <!-- КОД ЗАКАЗА - БОЛЬШОЙ И ЗАМЕТНЫЙ -->
                         <div class="order-code">🔑 ${o.code}</div>
                         ${o.status === 'ready' ? `<div style="color:#4CAF50;font-size:0.7rem;">✅ Готов к выдаче</div>` : ''}
                         ${o.status === 'courier_arrived' ? `<div style="color:#4CAF50;font-size:0.7rem;">🚪 Курьер прибыл</div>` : ''}
@@ -1601,7 +1609,6 @@
             const text = document.getElementById('supportText').value.trim();
             if (!topic || !text) { showToast('❌ Заполните тему и вопрос'); return; }
 
-            // Назначаем оператора автоматически
             let operatorId = null;
             let operatorName = null;
 
@@ -1609,7 +1616,6 @@
                 const ops = [];
                 sn.forEach(child => ops.push({ id: child.key, ...child.val() }));
                 if (ops.length > 0) {
-                    // Выбираем оператора с наименьшим количеством открытых тикетов
                     const op = ops.reduce((a, b) => (a.openTickets || 0) < (b.openTickets || 0) ? a : b);
                     operatorId = op.id;
                     operatorName = op.name;
@@ -1783,7 +1789,6 @@
                 status: 'answered'
             }).then(() => {
                 showToast('✅ Ответ отправлен');
-                // Уменьшаем счетчик открытых тикетов у оператора
                 db.ref('support/' + ticketId).once('value', (sn) => {
                     const ticket = sn.val();
                     if (ticket.operatorId) {
