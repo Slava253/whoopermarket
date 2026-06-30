@@ -179,7 +179,8 @@
         }
         .ticket-card .ticket-number {
             color: #f5a623;
-            font-size: 0.8rem;
+            font-size: 0.9rem;
+            font-weight: bold;
         }
         .ticket-card .ticket-status {
             font-size: 0.6rem;
@@ -533,8 +534,12 @@
             <div id="cashierContent" class="hidden">
                 <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;">
                     <h4 style="color:#f5a623;margin-bottom:8px;">🎫 Продажа билета</h4>
-                    <div class="form-group"><label>Телефон пассажира</label><input type="tel" id="cashierPhone" placeholder="+7 999 999 99 99"></div>
-                    <div class="form-group"><label>Имя пассажира</label><input type="text" id="cashierName" placeholder="Имя пассажира"></div>
+                    <div class="form-group"><label>Телефон пассажира</label>
+                        <input type="tel" id="cashierPhone" placeholder="+7 999 999 99 99" oninput="cashierFindUser(this.value)">
+                    </div>
+                    <div class="form-group"><label>Имя пассажира</label>
+                        <input type="text" id="cashierName" placeholder="Имя пассажира" readonly style="background:rgba(255,255,255,0.03);">
+                    </div>
                     <div class="form-group"><label>Станция назначения</label>
                         <select id="cashierStation">
                             <option value="Павелецкий вокзал">Павелецкий вокзал</option>
@@ -738,6 +743,10 @@
             return dir === 'roundtrip' ? 'Туда-обратно' : 'Туда';
         }
 
+        function generateTicketNumber() {
+            return String(Math.floor(1000 + Math.random() * 9000));
+        }
+
         // ========== ПЕРЕКЛЮЧЕНИЕ РОЛЕЙ ==========
         window.switchRole = function(role) {
             currentRole = role;
@@ -846,7 +855,7 @@
                 container.innerHTML = filtered.map(t => `
                     <div class="ticket-card">
                         <div class="ticket-header">
-                            <span class="ticket-number">🎫 ${t.id}</span>
+                            <span class="ticket-number">🎫 №${t.ticketNumber || t.id}</span>
                             <span class="ticket-status ${t.status === 'active' ? 'status-active' : 'status-expired'}">
                                 ${t.status === 'active' ? '✅ Действителен' : '❌ Недействителен'}
                             </span>
@@ -863,7 +872,7 @@
                             setTimeout(() => {
                                 try {
                                     new QRCode(document.getElementById('qr_${t.id}'), {
-                                        text: '${t.id}',
+                                        text: '${t.ticketNumber || t.id}',
                                         width: 120,
                                         height: 120
                                     });
@@ -911,6 +920,26 @@
             });
         };
 
+        window.cashierFindUser = function(phone) {
+            const nameField = document.getElementById('cashierName');
+            if (!phone || phone.length < 10) {
+                nameField.value = '';
+                nameField.placeholder = 'Имя пассажира';
+                return;
+            }
+
+            db.ref('users').orderByChild('phone').equalTo(phone).once('value', (sn) => {
+                if (sn.exists()) {
+                    sn.forEach(child => {
+                        nameField.value = child.val().name;
+                    });
+                } else {
+                    nameField.value = '';
+                    nameField.placeholder = 'Новый пассажир';
+                }
+            });
+        };
+
         window.cashierSellTicket = function() {
             const phone = document.getElementById('cashierPhone').value.trim();
             const name = document.getElementById('cashierName').value.trim();
@@ -919,6 +948,7 @@
             const direction = document.getElementById('cashierDirection').value;
 
             if (!phone || !name) { showToast('Введите телефон и имя пассажира'); return; }
+            if (phone.length < 10) { showToast('Введите полный номер телефона'); return; }
 
             db.ref('users').orderByChild('phone').equalTo(phone).once('value', (sn) => {
                 let userId;
@@ -935,11 +965,41 @@
                         createdAt: Date.now()
                     });
                 }
-                createTicket(userId, name, phone, station, type, direction);
-                showToast('✅ Билет продан!');
+
+                const ticketNumber = generateTicketNumber();
+                createTicketWithNumber(userId, name, phone, station, type, direction, ticketNumber);
+
+                // Очищаем поля
+                document.getElementById('cashierPhone').value = '';
+                document.getElementById('cashierName').value = '';
+                document.getElementById('cashierName').placeholder = 'Имя пассажира';
+
+                showToast('✅ Билет №' + ticketNumber + ' продан!');
                 loadCashierTickets();
             });
         };
+
+        function createTicketWithNumber(userId, name, phone, station, type, direction, ticketNumber) {
+            const ticketId = 'TKT' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4)
+            .toUpperCase();
+            const price = getTicketPrice(type);
+            const expiresAt = Date.now() + 24 * 60 * 60 * 1000;
+
+            db.ref('tickets/' + ticketId).set({
+                id: ticketId,
+                ticketNumber: ticketNumber,
+                userId: userId,
+                passengerName: name,
+                phone: phone,
+                station: station,
+                type: type,
+                direction: direction,
+                price: price,
+                status: 'active',
+                createdAt: Date.now(),
+                expiresAt: expiresAt
+            });
+        }
 
         function loadCashierTickets() {
             const container = document.getElementById('cashierTickets');
@@ -956,7 +1016,7 @@
                 container.innerHTML = tickets.map(t => `
                     <div class="ticket-card">
                         <div class="ticket-header">
-                            <span class="ticket-number">🎫 ${t.id}</span>
+                            <span class="ticket-number">🎫 №${t.ticketNumber || t.id}</span>
                             <span class="ticket-status ${t.status === 'active' ? 'status-active' : 'status-expired'}">
                                 ${t.status === 'active' ? '✅ Действителен' : '❌ Недействителен'}
                             </span>
@@ -1007,85 +1067,62 @@
         };
 
         window.controllerSetStation = function() {
-            const station = prompt('Введите конечную станцию (например: Узуново):');
+            const station = prompt('Введите конечную станцию:');
             if (station && allStations.includes(station)) {
                 controllerStation = station;
                 showToast('📍 Конечная станция: ' + station);
             } else if (station) {
-                showToast('❌ Станция не найдена в списке');
+                showToast('❌ Станция не найдена');
             }
         };
 
         window.controllerScanTicket = function() {
             document.getElementById('controllerScanInput').focus();
-            showToast('📷 Отсканируйте QR-код или введите код вручную');
+            showToast('📷 Введите номер билета');
         };
 
         window.controllerCheckTicket = function(code) {
             const resultDiv = document.getElementById('controllerScanResult');
-            if (!code || code.length < 5) {
+            if (!code || code.length < 4) {
                 resultDiv.style.display = 'none';
                 return;
             }
 
-            db.ref('tickets/' + code).once('value', (sn) => {
-                const ticket = sn.val();
-                if (!ticket) {
+            // Ищем по номеру билета
+            db.ref('tickets').orderByChild('ticketNumber').equalTo(code).once('value', (sn) => {
+                let found = false;
+                sn.forEach(child => {
+                    const ticket = child.val();
+                    found = true;
+                    const now = Date.now();
+                    const isValid = ticket.status === 'active' && ticket.expiresAt > now;
+
+                    resultDiv.style.display = 'block';
+                    resultDiv.className = 'scan-result ' + (isValid ? 'success' : 'error');
+                    resultDiv.innerHTML = `
+                        <div style="font-weight:bold;">${isValid ? '✅ БИЛЕТ ДЕЙСТВИТЕЛЕН' : '❌ БИЛЕТ НЕДЕЙСТВИТЕЛЕН'}</div>
+                        <div>🎫 №${ticket.ticketNumber || ticket.id}</div>
+                        <div>🚆 ${ticket.station}</div>
+                        <div>🧑 ${ticket.passengerName}</div>
+                        <div>📱 ${ticket.phone}</div>
+                        <div>🎫 ${getTypeName(ticket.type)}</div>
+                        <div>🔄 ${getDirectionName(ticket.direction)}</div>
+                        <div>💰 ${ticket.price} ₽</div>
+                        <div>⏳ Действует до: ${new Date(ticket.expiresAt).toLocaleString()}</div>
+                        ${!isValid ? '<div style="color:#ff4444;">Срок действия истёк</div>' : ''}
+                        ${controllerStation ? '<div style="color:#4CAF50;">📍 Конечная: ' + controllerStation + '</div>' : ''}
+                    `;
+                });
+
+                if (!found) {
                     resultDiv.style.display = 'block';
                     resultDiv.className = 'scan-result error';
                     resultDiv.innerHTML = '❌ Билет не найден';
-                    return;
                 }
-
-                const now = Date.now();
-                const isValid = ticket.status === 'active' && ticket.expiresAt > now;
-
-                resultDiv.style.display = 'block';
-                resultDiv.className = 'scan-result ' + (isValid ? 'success' : 'error');
-                resultDiv.innerHTML = `
-                    <div style="font-weight:bold;">${isValid ? '✅ БИЛЕТ ДЕЙСТВИТЕЛЕН' : '❌ БИЛЕТ НЕДЕЙСТВИТЕЛЕН'}</div>
-                    <div>🎫 ${ticket.id}</div>
-                    <div>🚆 ${ticket.station}</div>
-                    <div>🧑 ${ticket.passengerName}</div>
-                    <div>📱 ${ticket.phone}</div>
-                    <div>🎫 ${getTypeName(ticket.type)}</div>
-                    <div>🔄 ${getDirectionName(ticket.direction)}</div>
-                    <div>💰 ${ticket.price} ₽</div>
-                    <div>⏳ Действует до: ${new Date(ticket.expiresAt).toLocaleString()}</div>
-                    ${!isValid ? '<div style="color:#ff4444;">Срок действия истёк</div>' : ''}
-                    ${controllerStation ? '<div style="color:#4CAF50;">📍 Конечная: ' + controllerStation + '</div>' : ''}
-                `;
             });
         };
 
-        function loadControllerTickets() {
-            // Контролёр видит последние билеты для проверки
-        }
-
-        // ========== СОЗДАНИЕ БИЛЕТА ==========
-        function createTicket(userId, name, phone, station, type, direction) {
-            const ticketId = 'TKT' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4)
-            .toUpperCase();
-            const price = getTicketPrice(type);
-            const expiresAt = Date.now() + 24 * 60 * 60 * 1000; // 24 часа
-
-            db.ref('tickets/' + ticketId).set({
-                id: ticketId,
-                userId: userId,
-                passengerName: name,
-                phone: phone,
-                station: station,
-                type: type,
-                direction: direction,
-                price: price,
-                status: 'active',
-                createdAt: Date.now(),
-                expiresAt: expiresAt
-            }).then(() => {
-                showToast('🎫 Билет ' + ticketId + ' создан!');
-                if (currentRole === 'passenger') renderPassengerTickets();
-            });
-        }
+        function loadControllerTickets() {}
 
         // ========== АДМИН ==========
         window.adminLogin = function() {
@@ -1226,12 +1263,17 @@
             }
         };
 
+        // ========== СОЗДАНИЕ БИЛЕТА (общая функция) ==========
+        function createTicket(userId, name, phone, station, type, direction) {
+            const ticketNumber = generateTicketNumber();
+            createTicketWithNumber(userId, name, phone, station, type, direction, ticketNumber);
+        }
+
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
         console.log('🚆 ЖД Павелецкое направление');
         console.log('👑 Админ: логин 2203, пароль 2347');
         console.log('📍 Все станции по схеме Павелецкого направления');
 
-        // Заполняем поля админа при создании
         setTimeout(() => adminCreateFields(), 100);
     </script>
 </body>
