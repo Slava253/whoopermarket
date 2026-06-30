@@ -20,8 +20,6 @@
             min-height: 100vh;
             padding: 10px;
             color: white;
-            -webkit-user-select: none;
-            user-select: none;
         }
         .container {
             max-width: 500px;
@@ -79,7 +77,6 @@
             transition: 0.2s;
             text-align: center;
             min-width: 45px;
-            -webkit-tap-highlight-color: transparent;
         }
         .role-btn.active {
             border-color: #f5a623;
@@ -126,7 +123,6 @@
             color: white;
             font-size: 0.85rem;
             outline: none;
-            -webkit-appearance: none;
             font-family: inherit;
         }
         .auth-box .form-group textarea {
@@ -151,7 +147,6 @@
             font-weight: bold;
             cursor: pointer;
             font-size: 0.75rem;
-            -webkit-tap-highlight-color: transparent;
         }
 
         .btn-primary {
@@ -201,7 +196,6 @@
             border: 1px solid rgba(255,255,255,0.05);
             cursor: pointer;
             position: relative;
-            -webkit-tap-highlight-color: transparent;
         }
         .product-card:active {
             transform: scale(0.97);
@@ -226,7 +220,6 @@
             font-weight: bold;
             cursor: pointer;
             font-size: 0.65rem;
-            -webkit-tap-highlight-color: transparent;
         }
         .product-card .age-18 {
             position: absolute;
@@ -292,7 +285,6 @@
             cursor: pointer;
             min-width: 70px;
             font-size: 0.75rem;
-            -webkit-tap-highlight-color: transparent;
         }
 
         .order-card {
@@ -395,7 +387,6 @@
             font-size: 0.7rem;
             color: #888;
             border: 1px solid transparent;
-            -webkit-tap-highlight-color: transparent;
         }
         .tab.active {
             background: rgba(245,166,35,0.15);
@@ -435,7 +426,6 @@
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
         }
         .wallet .amount {
             font-size: 1.1rem;
@@ -462,7 +452,6 @@
             letter-spacing: 2px;
             font-family: monospace;
             outline: none;
-            -webkit-appearance: none;
         }
         .scan-area input:focus {
             border-color: #f5a623;
@@ -529,7 +518,6 @@
             min-height: 60px;
             resize: vertical;
             margin: 8px 0;
-            -webkit-appearance: none;
         }
         .modal-content .review-text:focus {
             border-color: #f5a623;
@@ -546,7 +534,6 @@
             font-size: 0.75rem;
             color: #aaa;
             display: inline-block;
-            -webkit-tap-highlight-color: transparent;
         }
         .modal-content .preview-photo {
             max-width: 80px;
@@ -601,7 +588,6 @@
             font-weight: bold;
             font-size: 0.65rem;
             cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
         }
 
         .delivery-select {
@@ -619,7 +605,6 @@
             color: white;
             font-size: 0.85rem;
             outline: none;
-            -webkit-appearance: none;
         }
         .delivery-address {
             margin-top: 6px;
@@ -750,7 +735,7 @@
         <!-- ========== КЛИЕНТ ========== -->
         <div id="clientPanel">
             <div id="clientAuth" class="auth-box">
-                <h3>👤 Вход для клиента</h3>
+                <h3>👤 Вход</h3>
                 <div class="form-group"><label>Телефон</label><input type="tel" id="clientPhone" placeholder="+7 999 999 99 99"></div>
                 <div class="form-group"><label>Имя</label><input type="text" id="clientName" placeholder="Ваше имя"></div>
                 <div class="auth-actions">
@@ -795,7 +780,7 @@
                 <div id="clientSupportTab" class="hidden">
                     <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;">
                         <h4 style="color:#f5a623;margin-bottom:8px;">✍️ Задать вопрос</h4>
-                        <div class="form-group"><label>Тема</label><input type="text" id="supportTopic" placeholder="Тема вопроса"></div>
+                        <div class="form-group"><label>Тема</label><input type="text" id="supportTopic" placeholder="Тема"></div>
                         <div class="form-group"><label>Вопрос</label><textarea id="supportText" placeholder="Опишите проблему"></textarea></div>
                         <button class="btn-primary" onclick="sendSupport()">📤 Отправить</button>
                     </div>
@@ -868,7 +853,7 @@
             </div>
         </div>
 
-        <!-- ========== ПВЗ (ИСПРАВЛЕННЫЙ) ========== -->
+        <!-- ========== ПВЗ ========== -->
         <div id="pvzPanel" class="hidden">
             <div id="pvzAuth" class="auth-box">
                 <h3>🏪 Вход ПВЗ</h3>
@@ -966,7 +951,7 @@
                         <h4 style="color:#f5a623;margin-bottom:8px;">➕ Создать аккаунт</h4>
                         <div class="form-group">
                             <label>Тип</label>
-                            <select id="adminCreateType" style="width:100%;padding:8px 12px;border-radius:30px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.05);color:white;font-size:0.85rem;outline:none;-webkit-appearance:none;">
+                            <select id="adminCreateType" style="width:100%;padding:8px 12px;border-radius:30px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.05);color:white;font-size:0.85rem;outline:none;">
                                 <option value="pvz">🏪 ПВЗ</option>
                                 <option value="courier">🚚 Курьер</option>
                                 <option value="support">🎧 Поддержка</option>
@@ -1040,7 +1025,7 @@
                 <button onclick="selectDepositAmount(10000)" style="padding:8px;border-radius:30px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:white;font-weight:bold;cursor:pointer;">10 000 ₽</button>
             </div>
             <div style="display:flex;gap:6px;margin:10px 0;">
-                <input type="number" id="depositCustomAmount" placeholder="Своя сумма" style="flex:1;padding:8px;border-radius:30px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.05);color:white;outline:none;-webkit-appearance:none;">
+                <input type="number" id="depositCustomAmount" placeholder="Своя сумма" style="flex:1;padding:8px;border-radius:30px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.05);color:white;outline:none;">
                 <button onclick="depositCustom()" style="padding:8px 20px;border-radius:30px;border:none;background:#f5a623;color:#1a1a2e;font-weight:bold;cursor:pointer;">Пополнить</button>
             </div>
             <div style="padding:10px;background:rgba(255,255,255,0.03);border-radius:12px;display:flex;justify-content:space-between;color:#888;font-size:0.85rem;">
@@ -1066,18 +1051,17 @@
         const storage = firebase.storage();
 
         // ========== ПЕРЕМЕННЫЕ ==========
-        let currentRole = 'client';
         let currentUser = { id: null, name: null, type: 'client', phone: null, pvzNumber: null, shopName: null, wallet: 0 };
         let cart = [];
         let clientTab = 'active';
         let allPVZ = [];
         let allCouriers = [];
-        let allSupport = [];
         let currentProductId = null;
         let selectedRating = 0;
         let depositTarget = 'client';
         let clientTab2 = 'shop';
         let adminUsersTab = 'pvz';
+        let currentRole = 'client';
 
         const defaultProducts = [
             { id: 'default_1', name: 'Смартфон X Pro', price: 49990, sellerName: 'WHOPPER Shop', adult: false },
@@ -1112,12 +1096,7 @@
         window.switchRole = function(role) {
             currentRole = role;
             document.querySelectorAll('.role-btn').forEach(b => b.classList.toggle('active', b.dataset.role === role));
-            document.getElementById('clientPanel').classList.add('hidden');
-            document.getElementById('sellerPanel').classList.add('hidden');
-            document.getElementById('pvzPanel').classList.add('hidden');
-            document.getElementById('courierPanel').classList.add('hidden');
-            document.getElementById('supportPanel').classList.add('hidden');
-            document.getElementById('adminPanel').classList.add('hidden');
+            document.querySelectorAll('.role-panel').forEach(p => p.classList.add('hidden'));
 
             if (role === 'client') {
                 document.getElementById('clientPanel').classList.remove('hidden');
@@ -1125,7 +1104,6 @@
                 document.getElementById('clientAuth').classList.remove('hidden');
                 loadPVZList();
                 loadProducts();
-                loadSupport();
             } else if (role === 'seller') {
                 document.getElementById('sellerPanel').classList.remove('hidden');
                 document.getElementById('sellerContent').classList.add('hidden');
@@ -1144,7 +1122,6 @@
                 document.getElementById('supportPanel').classList.remove('hidden');
                 document.getElementById('supportContent').classList.add('hidden');
                 document.getElementById('supportAuth').classList.remove('hidden');
-                loadSupport();
             } else if (role === 'admin') {
                 document.getElementById('adminPanel').classList.remove('hidden');
                 document.getElementById('adminContent').classList.add('hidden');
@@ -1371,7 +1348,6 @@
             renderCart();
             loadPVZList();
             loadProducts();
-            loadSupport();
             switchClientTab2('shop');
         }
 
@@ -1660,21 +1636,6 @@
         }
 
         // ========== ПОДДЕРЖКА ==========
-        function loadSupport() {
-            db.ref('support').on('value', (sn) => {
-                allSupport = [];
-                sn.forEach(child => {
-                    allSupport.push({ id: child.key, ...child.val() });
-                });
-                if (currentRole === 'client' && document.getElementById('clientSupportTab')) {
-                    renderClientSupportTickets();
-                }
-                if (currentRole === 'support' && document.getElementById('supportTickets')) {
-                    supportAction('open');
-                }
-            });
-        }
-
         window.sendSupport = function() {
             if (!currentUser.id || currentUser.type !== 'client') {
                 showToast('❌ Войдите как клиент');
@@ -1779,7 +1740,6 @@
                             document.getElementById('supportContent').classList.remove('hidden');
                             document.getElementById('userNameDisplay').textContent = currentUser.name + ' 🎧';
                             supportAction('open');
-                            loadSupport();
                         }
                     });
                     if (!found) showToast('❌ Неверный пароль');
@@ -2001,7 +1961,7 @@
             showToast('🗑️ Удалено');
         };
 
-        // ========== ПВЗ (ИСПРАВЛЕННЫЙ) ==========
+        // ========== ПВЗ ==========
         window.pvzLogin = function() {
             const login = document.getElementById('pvzLogin').value.trim();
             const password = document.getElementById('pvzPassword').value.trim();
@@ -2040,24 +2000,12 @@
             const container = document.getElementById('pvzOrders');
             const ordersRef = db.ref('orders');
 
-            // Очищаем старые слушатели
-            if (window._pvzListener) {
-                window._pvzListener();
-                window._pvzListener = null;
-            }
-
-            let query;
             if (action === 'receive') {
-                query = ordersRef.orderByChild('status').equalTo('to_pvz');
+                ordersRef.orderByChild('status').equalTo('to_pvz').on('value', renderPVZOrders);
             } else if (action === 'issue') {
-                query = ordersRef.orderByChild('status').equalTo('ready');
+                ordersRef.orderByChild('status').equalTo('ready').on('value', renderPVZOrders);
             } else if (action === 'courier') {
-                query = ordersRef.orderByChild('status').equalTo('with_courier');
-            }
-
-            if (query) {
-                const listener = query.on('value', renderPVZOrders);
-                window._pvzListener = () => query.off('value', listener);
+                ordersRef.orderByChild('status').equalTo('with_courier').on('value', renderPVZOrders);
             }
         };
 
@@ -2066,7 +2014,6 @@
             const orders = [];
             sn.forEach(child => orders.push({ id: child.key, ...child.val() }));
 
-            // Фильтруем по номеру ПВЗ
             const filtered = orders.filter(o => o.pvzNumber === currentUser.pvzNumber);
 
             if (filtered.length === 0) {
@@ -2411,35 +2358,28 @@
             else if (type === 'couriers') ref = db.ref('couriers/' + id);
             else if (type === 'support') ref = db.ref('support_operators/' + id);
 
-            // Если удаляем ПВЗ - возвращаем деньги клиентам
             if (type === 'pvz') {
-                // Находим номер ПВЗ
                 db.ref('pvz/' + id).once('value', (sn) => {
                     const pvzData = sn.val();
                     if (pvzData && pvzData.number) {
-                        // Находим все заказы этого ПВЗ
                         db.ref('orders').orderByChild('pvzNumber').equalTo(pvzData.number).once('value', (ordersSn) => {
                             const updates = {};
                             ordersSn.forEach(orderChild => {
                                 const order = orderChild.val();
                                 if (order.status !== 'delivered' && order.status !== 'return') {
-                                    // Возвращаем деньги клиенту
                                     if (order.userId && order.total) {
                                         db.ref('users/' + order.userId + '/wallet').transaction(current =>
                                             (current || 0) + order.total
                                         );
                                     }
-                                    // Удаляем заказ
                                     updates[orderChild.key] = null;
                                 }
                             });
-                            // Удаляем все заказы
                             if (Object.keys(updates).length > 0) {
                                 db.ref('orders').update(updates);
                             }
-                            // Удаляем сам ПВЗ
                             ref.remove().then(() => {
-                                showToast('✅ ПВЗ и все его заказы удалены, деньги возвращены клиентам');
+                                showToast('✅ ПВЗ и все его заказы удалены, деньги возвращены');
                                 loadAdminUsers(type);
                             });
                         });
@@ -2464,7 +2404,7 @@
 
             if (type === 'pvz') {
                 container.innerHTML = `
-                    <div class="form-group"><label>Номер ПВЗ</label><input type="number" id="adminCreateNumber" placeholder="Например: 17"></div>
+                    <div class="form-group"><label>Номер</label><input type="number" id="adminCreateNumber" placeholder="Например: 17"></div>
                     <div class="form-group"><label>Пароль</label><input type="password" id="adminCreatePassword" placeholder="Пароль"></div>
                     <div class="form-group"><label>Адрес</label><input type="text" id="adminCreateAddress" placeholder="Адрес ПВЗ"></div>
                 `;
@@ -2497,7 +2437,7 @@
                     showToast('❌ Заполните все поля');
                     return;
                 }
-                if (!/^\d+$/.test(number)) { showToast('❌ Номер ПВЗ только цифры'); return; }
+                if (!/^\d+$/.test(number)) { showToast('❌ Номер только цифры'); return; }
 
                 const pvzId = 'PVZ_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
                 db.ref('pvz/' + pvzId).set({
@@ -2692,8 +2632,13 @@
         loadPVZList();
         loadCouriers();
         loadProducts();
-        loadSupport();
         adminCreateFields();
+
+        // Добавляем role-panel класс для всех панелей
+        document.querySelectorAll('#clientPanel, #sellerPanel, #pvzPanel, #courierPanel, #supportPanel, #adminPanel')
+            .forEach(el => el.classList.add('role-panel'));
+        document.querySelectorAll('.role-panel').forEach(el => el.classList.add('hidden'));
+        document.getElementById('clientPanel').classList.remove('hidden');
     </script>
 </body>
 </html>
