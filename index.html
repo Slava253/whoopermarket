@@ -16,10 +16,10 @@
             font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
         }
         body {
-            background: #0a0a1a;
+            background: #0a0e1a;
             min-height: 100vh;
             padding: 10px;
-            color: white;
+            color: #e8e8e8;
         }
         .container {
             max-width: 500px;
@@ -28,31 +28,41 @@
         .hidden {
             display: none !important;
         }
+
+        /* ===== ШАПКА ===== */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 14px;
-            background: rgba(255,255,255,0.05);
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
             border-radius: 16px;
             margin-bottom: 12px;
+            border: 1px solid rgba(245, 166, 35, 0.15);
         }
         .header .logo {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: bold;
             color: #f5a623;
         }
         .header .logo i {
-            margin-right: 6px;
+            margin-right: 8px;
+            color: #f5a623;
         }
         .header .user-badge {
-            font-size: 0.7rem;
-            color: #888;
-            background: rgba(255,255,255,0.05);
+            font-size: 0.65rem;
+            color: #aaa;
+            background: rgba(255, 255, 255, 0.05);
             padding: 4px 12px;
             border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .header .user-badge i {
+            color: #f5a623;
+            margin-right: 4px;
         }
 
+        /* ===== ВЫБОР РОЛИ ===== */
         .role-selector {
             display: flex;
             gap: 6px;
@@ -63,19 +73,20 @@
             flex: 1;
             padding: 8px 4px;
             border-radius: 12px;
-            border: 2px solid rgba(255,255,255,0.08);
-            background: rgba(255,255,255,0.03);
-            color: #888;
+            border: 2px solid rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.02);
+            color: #666;
             cursor: pointer;
             font-weight: bold;
             font-size: 0.5rem;
             text-align: center;
             min-width: 45px;
+            transition: 0.2s;
         }
         .role-btn.active {
             border-color: #f5a623;
             color: #f5a623;
-            background: rgba(245,166,35,0.1);
+            background: rgba(245, 166, 35, 0.08);
         }
         .role-btn i {
             display: block;
@@ -83,12 +94,13 @@
             margin-bottom: 2px;
         }
 
+        /* ===== АВТОРИЗАЦИЯ ===== */
         .auth-box {
-            background: rgba(255,255,255,0.03);
+            background: rgba(255, 255, 255, 0.02);
             border-radius: 16px;
-            padding: 16px;
+            padding: 18px;
             margin-bottom: 12px;
-            border: 1px solid rgba(255,255,255,0.05);
+            border: 1px solid rgba(255, 255, 255, 0.04);
         }
         .auth-box h3 {
             margin-bottom: 10px;
@@ -100,24 +112,26 @@
         }
         .auth-box .form-group label {
             display: block;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: #888;
             margin-bottom: 3px;
+            letter-spacing: 0.5px;
         }
         .auth-box .form-group input,
         .auth-box .form-group select {
             width: 100%;
-            padding: 8px 12px;
+            padding: 8px 14px;
             border-radius: 30px;
-            border: 1px solid rgba(255,255,255,0.08);
-            background: rgba(255,255,255,0.05);
-            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.03);
+            color: #e8e8e8;
             font-size: 0.85rem;
             outline: none;
+            transition: 0.2s;
         }
         .auth-box .form-group select option {
             background: #1a1a2e;
-            color: white;
+            color: #e8e8e8;
         }
         .auth-box .form-group input:focus,
         .auth-box .form-group select:focus {
@@ -136,6 +150,10 @@
             font-weight: bold;
             cursor: pointer;
             font-size: 0.75rem;
+            transition: 0.15s;
+        }
+        .auth-box .auth-actions button:active {
+            transform: scale(0.97);
         }
 
         .btn-primary {
@@ -143,71 +161,85 @@
             color: #1a1a2e;
         }
         .btn-success {
-            background: #4CAF50;
+            background: #2e7d32;
             color: white;
         }
         .btn-danger {
-            background: #ff4444;
+            background: #c62828;
             color: white;
         }
         .btn-info {
-            background: #2196F3;
+            background: #0d47a1;
             color: white;
         }
         .btn-secondary {
-            background: rgba(255,255,255,0.08);
-            color: white;
+            background: rgba(255, 255, 255, 0.06);
+            color: #aaa;
         }
         .btn-admin {
             background: #6c1b7a;
             color: white;
         }
 
+        /* ===== КАРТОЧКА БИЛЕТА ===== */
         .ticket-card {
-            background: rgba(255,255,255,0.04);
+            background: rgba(255, 255, 255, 0.03);
             border-radius: 14px;
-            padding: 12px;
-            margin-bottom: 8px;
+            padding: 14px;
+            margin-bottom: 10px;
             border-left: 4px solid #f5a623;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: 0.2s;
+        }
+        .ticket-card:hover {
+            background: rgba(255, 255, 255, 0.05);
         }
         .ticket-card .ticket-header {
             display: flex;
             justify-content: space-between;
-            font-weight: bold;
-            margin-bottom: 4px;
-            font-size: 0.8rem;
+            align-items: center;
+            margin-bottom: 6px;
         }
         .ticket-card .ticket-number {
             color: #f5a623;
-            font-size: 0.9rem;
+            font-size: 1rem;
             font-weight: bold;
+            font-family: 'Courier New', monospace;
         }
         .ticket-card .ticket-status {
             font-size: 0.6rem;
-            padding: 2px 10px;
+            padding: 3px 12px;
             border-radius: 30px;
+            font-weight: bold;
         }
         .status-active {
-            background: #4CAF50;
-            color: white;
+            background: rgba(46, 125, 50, 0.25);
+            color: #4CAF50;
+            border: 1px solid rgba(46, 125, 50, 0.3);
         }
         .status-expired {
-            background: #ff4444;
-            color: white;
-        }
-        .ticket-card .ticket-info {
-            font-size: 0.8rem;
-            color: #aaa;
-            margin: 4px 0;
+            background: rgba(198, 40, 40, 0.2);
+            color: #ef5350;
+            border: 1px solid rgba(198, 40, 40, 0.2);
         }
         .ticket-card .ticket-route {
             font-weight: bold;
             font-size: 1rem;
             color: #f5a623;
+            margin: 4px 0;
+        }
+        .ticket-card .ticket-info {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin: 3px 0;
+        }
+        .ticket-card .ticket-info i {
+            width: 18px;
+            color: #f5a623;
         }
         .ticket-card .qr-container {
             background: white;
-            padding: 10px;
+            padding: 8px;
             border-radius: 12px;
             display: inline-block;
             margin: 6px 0;
@@ -217,6 +249,7 @@
             margin: 0 auto;
         }
 
+        /* ===== ТАБЫ ===== */
         .tabs {
             display: flex;
             gap: 6px;
@@ -224,26 +257,28 @@
             flex-wrap: wrap;
         }
         .tab {
-            padding: 6px 14px;
+            padding: 6px 16px;
             border-radius: 30px;
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.03);
             cursor: pointer;
             font-size: 0.7rem;
             color: #888;
             border: 1px solid transparent;
+            transition: 0.2s;
         }
         .tab.active {
-            background: rgba(245,166,35,0.15);
+            background: rgba(245, 166, 35, 0.1);
             color: #f5a623;
-            border-color: #f5a623;
+            border-color: rgba(245, 166, 35, 0.2);
         }
 
+        /* ===== TOAST ===== */
         .toast {
             position: fixed;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: #333;
+            background: rgba(26, 26, 46, 0.95);
             color: white;
             padding: 10px 20px;
             border-radius: 40px;
@@ -255,25 +290,27 @@
             max-width: 90%;
             text-align: center;
             font-size: 0.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
         .toast.show {
             opacity: 1;
         }
 
+        /* ===== СКАНЕР ===== */
         .scan-area {
-            background: rgba(255,255,255,0.03);
+            background: rgba(255, 255, 255, 0.02);
             border-radius: 14px;
-            padding: 12px;
+            padding: 14px;
             margin-bottom: 10px;
-            border: 2px dashed rgba(255,255,255,0.08);
+            border: 2px dashed rgba(255, 255, 255, 0.06);
         }
         .scan-area input {
             width: 100%;
             padding: 10px;
             border-radius: 30px;
-            border: 1px solid rgba(255,255,255,0.08);
-            background: rgba(255,255,255,0.05);
-            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.03);
+            color: #e8e8e8;
             font-size: 0.9rem;
             text-align: center;
             letter-spacing: 2px;
@@ -285,21 +322,25 @@
         }
         .scan-area .scan-result {
             margin-top: 8px;
-            padding: 10px;
+            padding: 12px;
             border-radius: 12px;
             font-size: 0.85rem;
+            display: none;
         }
         .scan-area .scan-result.success {
-            background: rgba(76,175,80,0.15);
-            border: 1px solid #4CAF50;
+            display: block;
+            background: rgba(46, 125, 50, 0.1);
+            border: 1px solid rgba(46, 125, 50, 0.2);
         }
         .scan-area .scan-result.error {
-            background: rgba(255,68,68,0.15);
-            border: 1px solid #ff4444;
+            display: block;
+            background: rgba(198, 40, 40, 0.1);
+            border: 1px solid rgba(198, 40, 40, 0.2);
         }
 
+        /* ===== АДМИН ===== */
         .admin-user-item {
-            background: rgba(255,255,255,0.03);
+            background: rgba(255, 255, 255, 0.02);
             border-radius: 10px;
             padding: 8px 12px;
             margin-bottom: 6px;
@@ -307,6 +348,7 @@
             justify-content: space-between;
             align-items: center;
             font-size: 0.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.03);
         }
         .admin-user-item .user-info .name {
             font-weight: bold;
@@ -317,25 +359,89 @@
             font-size: 0.65rem;
         }
         .admin-user-item .delete-btn {
-            background: #ff4444;
-            color: white;
-            border: none;
+            background: rgba(198, 40, 40, 0.15);
+            color: #ef5350;
+            border: 1px solid rgba(198, 40, 40, 0.15);
             padding: 4px 12px;
             border-radius: 30px;
             cursor: pointer;
             font-size: 0.65rem;
             font-weight: bold;
+            transition: 0.15s;
+        }
+        .admin-user-item .delete-btn:active {
+            transform: scale(0.95);
         }
 
-        .station-badge {
-            display: inline-block;
-            padding: 2px 10px;
-            border-radius: 30px;
-            font-size: 0.6rem;
-            background: rgba(245,166,35,0.2);
+        /* ===== БЛОК ПОКУПКИ ===== */
+        .buy-block {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .buy-block h4 {
             color: #f5a623;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        .buy-block .form-group {
+            margin-bottom: 8px;
+        }
+        .buy-block .form-group label {
+            display: block;
+            font-size: 0.65rem;
+            color: #888;
+            margin-bottom: 3px;
+        }
+        .buy-block .form-group input,
+        .buy-block .form-group select {
+            width: 100%;
+            padding: 8px 14px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.03);
+            color: #e8e8e8;
+            font-size: 0.85rem;
+            outline: none;
+        }
+        .buy-block .form-group select option {
+            background: #1a1a2e;
+            color: #e8e8e8;
+        }
+        .buy-block .form-group input:focus,
+        .buy-block .form-group select:focus {
+            border-color: #f5a623;
+        }
+        .buy-block .form-group input[readonly] {
+            background: rgba(255, 255, 255, 0.02);
+            color: #888;
         }
 
+        /* ===== КНОПКИ ДЕЙСТВИЙ ===== */
+        .action-buttons {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        .action-buttons button {
+            flex: 1;
+            padding: 8px 12px;
+            border-radius: 30px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.7rem;
+            min-width: 80px;
+            transition: 0.15s;
+        }
+        .action-buttons button:active {
+            transform: scale(0.97);
+        }
+
+        /* ===== АДАПТИВ ===== */
         @media (max-width: 400px) {
             .role-btn {
                 font-size: 0.45rem;
@@ -356,11 +462,13 @@
     <div id="toast" class="toast"></div>
 
     <div class="container" id="app">
+        <!-- ШАПКА -->
         <div class="header">
             <div class="logo"><i class="fas fa-train"></i> ЖД Павелецкое</div>
             <div class="user-badge" id="userBadge"><i class="fas fa-user"></i> <span id="userNameDisplay">Гость</span></div>
         </div>
 
+        <!-- ВЫБОР РОЛИ -->
         <div class="role-selector" id="roleSelector">
             <button class="role-btn active" data-role="passenger" onclick="switchRole('passenger')">
                 <i class="fas fa-user"></i> Пассажир
@@ -376,7 +484,7 @@
             </button>
         </div>
 
-        <!-- ПАССАЖИР -->
+        <!-- ===== ПАССАЖИР ===== -->
         <div id="passengerPanel">
             <div id="passengerAuth" class="auth-box">
                 <h3>👤 Вход пассажира</h3>
@@ -388,8 +496,8 @@
                 </div>
             </div>
             <div id="passengerContent" class="hidden">
-                <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;">
-                    <h4 style="color:#f5a623;margin-bottom:8px;">🎫 Купить билет</h4>
+                <div class="buy-block">
+                    <h4>🎫 Купить билет</h4>
                     <div class="form-group"><label>Станция назначения</label>
                         <select id="passengerStation">
                             <option value="Павелецкий вокзал">Павелецкий вокзал</option>
@@ -462,7 +570,7 @@
                     </div>
                     <button class="btn-primary" onclick="passengerBuyTicket()" style="width:100%;padding:10px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">🎫 Купить билет</button>
                 </div>
-                <div class="tabs" style="margin-bottom:10px;">
+                <div class="tabs">
                     <button class="tab active" data-ptab="active" onclick="switchPassengerTab('active')">Активные</button>
                     <button class="tab" data-ptab="history" onclick="switchPassengerTab('history')">История</button>
                 </div>
@@ -470,7 +578,7 @@
             </div>
         </div>
 
-        <!-- КАССИР -->
+        <!-- ===== КАССИР ===== -->
         <div id="cashierPanel" class="hidden">
             <div id="cashierAuth" class="auth-box">
                 <h3>🎫 Вход кассира</h3>
@@ -532,13 +640,13 @@
                 </div>
             </div>
             <div id="cashierContent" class="hidden">
-                <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;">
-                    <h4 style="color:#f5a623;margin-bottom:8px;">🎫 Продажа билета</h4>
+                <div class="buy-block">
+                    <h4>🎫 Продажа билета</h4>
                     <div class="form-group"><label>Телефон пассажира</label>
                         <input type="tel" id="cashierPhone" placeholder="+7 999 999 99 99" oninput="cashierFindUser(this.value)">
                     </div>
                     <div class="form-group"><label>Имя пассажира</label>
-                        <input type="text" id="cashierName" placeholder="Имя пассажира" readonly style="background:rgba(255,255,255,0.03);">
+                        <input type="text" id="cashierName" placeholder="Имя пассажира" readonly style="background:rgba(255,255,255,0.02);color:#888;">
                     </div>
                     <div class="form-group"><label>Станция назначения</label>
                         <select id="cashierStation">
@@ -617,7 +725,7 @@
             </div>
         </div>
 
-        <!-- КОНТРОЛЁР -->
+        <!-- ===== КОНТРОЛЁР ===== -->
         <div id="controllerPanel" class="hidden">
             <div id="controllerAuth" class="auth-box">
                 <h3>🔍 Вход контролёра</h3>
@@ -628,20 +736,103 @@
                 </div>
             </div>
             <div id="controllerContent" class="hidden">
-                <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
-                    <button class="btn-primary" onclick="controllerSetStation()">📍 Выбрать конечную</button>
-                    <button class="btn-info" onclick="controllerScanTicket()">📷 Сканировать билет</button>
+                <div class="action-buttons">
+                    <button class="btn-primary" onclick="controllerSetStation()">📍 Конечная</button>
+                    <button class="btn-info" onclick="controllerScanTicket()">📷 Сканировать</button>
                 </div>
+
+                <!-- БЛОК ПРОДАЖИ ДЛЯ КОНТРОЛЁРА -->
+                <div class="buy-block">
+                    <h4>🎫 Оформить билет (контролёр)</h4>
+                    <div class="form-group"><label>Телефон пассажира</label>
+                        <input type="tel" id="controllerSellPhone" placeholder="+7 999 999 99 99" oninput="controllerFindUser(this.value)">
+                    </div>
+                    <div class="form-group"><label>Имя пассажира</label>
+                        <input type="text" id="controllerSellName" placeholder="Имя пассажира" readonly style="background:rgba(255,255,255,0.02);color:#888;">
+                    </div>
+                    <div class="form-group"><label>Станция назначения</label>
+                        <select id="controllerSellStation">
+                            <option value="Павелецкий вокзал">Павелецкий вокзал</option>
+                            <option value="Дербеневская">Дербеневская</option>
+                            <option value="Тульская">Тульская</option>
+                            <option value="Верхние Котлы">Верхние Котлы</option>
+                            <option value="Нагатинская">Нагатинская</option>
+                            <option value="Варшавская">Варшавская</option>
+                            <option value="Чертаново">Чертаново</option>
+                            <option value="Котляково">Котляково</option>
+                            <option value="Бирюлейко-Тов.">Бирюлейко-Тов.</option>
+                            <option value="Бирюлейко-Пасс.">Бирюлейко-Пасс.</option>
+                            <option value="Булатниково">Булатниково</option>
+                            <option value="Расторгуево">Расторгуево</option>
+                            <option value="Калинина">Калинина</option>
+                            <option value="Ленинская">Ленинская</option>
+                            <option value="32 км">32 км</option>
+                            <option value="Домодедово">Домодедово</option>
+                            <option value="Взлётная">Взлётная</option>
+                            <option value="Востряково">Востряково</option>
+                            <option value="Белые столбы">Белые столбы</option>
+                            <option value="52 км">52 км</option>
+                            <option value="Барыбино">Барыбино</option>
+                            <option value="Вельяминово">Вельяминово</option>
+                            <option value="Привалово">Привалово</option>
+                            <option value="328 км">328 км</option>
+                            <option value="332 км">332 км</option>
+                            <option value="Малино">Малино</option>
+                            <option value="341 км">341 км</option>
+                            <option value="Шугарово">Шугарово</option>
+                            <option value="85 км">85 км</option>
+                            <option value="Жилёво">Жилёво</option>
+                            <option value="Ситенка">Ситенка</option>
+                            <option value="Ступино">Ступино</option>
+                            <option value="Акри">Акри</option>
+                            <option value="Белопесоцкий">Белопесоцкий</option>
+                            <option value="Кашира">Кашира</option>
+                            <option value="Тесна">Тесна</option>
+                            <option value="Ожерелье">Ожерелье</option>
+                            <option value="121 км">121 км</option>
+                            <option value="Пурлово">Пурлово</option>
+                            <option value="131 км">131 км</option>
+                            <option value="Топканово">Топканово</option>
+                            <option value="137 км">137 км</option>
+                            <option value="Богатищево">Богатищево</option>
+                            <option value="146 км">146 км</option>
+                            <option value="Коровино">Коровино</option>
+                            <option value="152 км">152 км</option>
+                            <option value="Узуново">Узуново</option>
+                            <option value="Авиационная">Авиационная</option>
+                            <option value="Космос">Космос</option>
+                            <option value="Аэропорт Домодедово">Аэропорт Домодедово</option>
+                            <option value="Яганово">Яганово</option>
+                            <option value="Сотниково">Сотниково</option>
+                            <option value="Кольчево">Кольчево</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Тип билета</label>
+                        <select id="controllerSellType">
+                            <option value="full">Обычный (100₽)</option>
+                            <option value="social">Социальная карта (0₽)</option>
+                            <option value="student">Карта москвича/школьника (50₽)</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Направление</label>
+                        <select id="controllerSellDirection">
+                            <option value="oneway">Туда</option>
+                            <option value="roundtrip">Туда-обратно</option>
+                        </select>
+                    </div>
+                    <button class="btn-success" onclick="controllerSellTicket()" style="width:100%;padding:10px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">🎫 Оформить билет</button>
+                </div>
+
                 <div class="scan-area">
-                    <h4 style="color:#f5a623;margin-bottom:6px;font-size:0.85rem;">🔍 Введите код билета</h4>
-                    <input type="text" id="controllerScanInput" placeholder="Код билета" oninput="controllerCheckTicket(this.value)">
-                    <div id="controllerScanResult" class="scan-result" style="display:none;"></div>
+                    <h4 style="color:#f5a623;margin-bottom:6px;font-size:0.85rem;">🔍 Проверка билета</h4>
+                    <input type="text" id="controllerScanInput" placeholder="Введите номер билета" oninput="controllerCheckTicket(this.value)">
+                    <div id="controllerScanResult" class="scan-result"></div>
                 </div>
                 <div id="controllerTickets"></div>
             </div>
         </div>
 
-        <!-- АДМИН -->
+        <!-- ===== АДМИН ===== -->
         <div id="adminPanel" class="hidden">
             <div id="adminAuth" class="auth-box">
                 <h3>🔐 Вход администратора</h3>
@@ -652,23 +843,23 @@
                 </div>
             </div>
             <div id="adminContent" class="hidden">
-                <div class="tabs" style="margin-bottom:10px;">
+                <div class="tabs">
                     <button class="tab active" data-atab="users" onclick="switchAdminTab('users')">👥 Сотрудники</button>
                     <button class="tab" data-atab="create" onclick="switchAdminTab('create')">➕ Создать</button>
                 </div>
                 <div id="adminUsersTab">
-                    <div class="tabs" style="margin-bottom:10px;">
+                    <div class="tabs">
                         <button class="tab active" data-utab="cashiers" onclick="switchAdminUsersTab('cashiers')">🎫 Кассиры</button>
                         <button class="tab" data-utab="controllers" onclick="switchAdminUsersTab('controllers')">🔍 Контролёры</button>
                     </div>
                     <div id="adminUsersList"></div>
                 </div>
                 <div id="adminCreateTab" class="hidden">
-                    <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;">
+                    <div style="background:rgba(255,255,255,0.02);border-radius:14px;padding:14px;">
                         <h4 style="color:#f5a623;margin-bottom:8px;">➕ Создать сотрудника</h4>
                         <div class="form-group">
                             <label>Тип</label>
-                            <select id="adminCreateType" onchange="adminCreateFields()" style="width:100%;padding:8px 12px;border-radius:30px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.05);color:white;font-size:0.85rem;outline:none;">
+                            <select id="adminCreateType" onchange="adminCreateFields()" style="width:100%;padding:8px 12px;border-radius:30px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.03);color:#e8e8e8;font-size:0.85rem;outline:none;">
                                 <option value="cashier">🎫 Кассир</option>
                                 <option value="controller">🔍 Контролёр</option>
                             </select>
@@ -694,7 +885,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // ========== СТАНЦИИ ==========
+        // ===== СТАНЦИИ =====
         const allStations = [
             'Павелецкий вокзал', 'Дербеневская', 'Тульская', 'Верхние Котлы',
             'Нагатинская', 'Варшавская', 'Чертаново', 'Котляково',
@@ -712,7 +903,7 @@
             'Яганово', 'Сотниково', 'Кольчево'
         ];
 
-        // ========== ПЕРЕМЕННЫЕ ==========
+        // ===== ПЕРЕМЕННЫЕ =====
         let currentUser = { id: null, name: null, type: 'passenger', phone: null, role: null, station: null };
         let currentRole = 'passenger';
         let adminUsersTab = 'cashiers';
@@ -747,7 +938,7 @@
             return String(Math.floor(1000 + Math.random() * 9000));
         }
 
-        // ========== ПЕРЕКЛЮЧЕНИЕ РОЛЕЙ ==========
+        // ===== ПЕРЕКЛЮЧЕНИЕ РОЛЕЙ =====
         window.switchRole = function(role) {
             currentRole = role;
             document.querySelectorAll('.role-btn').forEach(b => b.classList.toggle('active', b.dataset.role === role));
@@ -773,7 +964,9 @@
             }
         };
 
-        // ========== ПАССАЖИР ==========
+        // =============================================
+        // ===== ПАССАЖИР =====
+        // =============================================
         window.passengerLogin = function() {
             const phone = document.getElementById('passengerPhone').value.trim();
             if (!phone) { showToast('Введите телефон'); return; }
@@ -825,7 +1018,6 @@
             const station = document.getElementById('passengerStation').value;
             const type = document.getElementById('passengerTicketType').value;
             const direction = document.getElementById('passengerDirection').value;
-
             createTicket(currentUser.id, currentUser.name, currentUser.phone, station, type, direction);
         };
 
@@ -848,7 +1040,8 @@
                     tickets;
 
                 if (filtered.length === 0) {
-                    container.innerHTML = '<div style="text-align:center;color:#555;padding:20px;">Нет билетов</div>';
+                    container.innerHTML =
+                        '<div style="text-align:center;color:#555;padding:20px;font-size:0.85rem;">Нет билетов</div>';
                     return;
                 }
 
@@ -861,12 +1054,12 @@
                             </span>
                         </div>
                         <div class="ticket-route">🚆 ${t.station}</div>
-                        <div class="ticket-info">🧑 ${t.passengerName}</div>
-                        <div class="ticket-info">📱 ${t.phone}</div>
-                        <div class="ticket-info">🎫 ${getTypeName(t.type)}</div>
-                        <div class="ticket-info">🔄 ${getDirectionName(t.direction)}</div>
-                        <div class="ticket-info">💰 ${t.price} ₽</div>
-                        <div class="ticket-info">⏳ Действует до: ${new Date(t.expiresAt).toLocaleString()}</div>
+                        <div class="ticket-info"><i class="fas fa-user"></i> ${t.passengerName}</div>
+                        <div class="ticket-info"><i class="fas fa-phone"></i> ${t.phone}</div>
+                        <div class="ticket-info"><i class="fas fa-ticket-alt"></i> ${getTypeName(t.type)}</div>
+                        <div class="ticket-info"><i class="fas fa-exchange-alt"></i> ${getDirectionName(t.direction)}</div>
+                        <div class="ticket-info"><i class="fas fa-ruble-sign"></i> ${t.price} ₽</div>
+                        <div class="ticket-info"><i class="fas fa-clock"></i> До ${new Date(t.expiresAt).toLocaleString()}</div>
                         <div class="qr-container" id="qr_${t.id}"></div>
                         <script>
                             setTimeout(() => {
@@ -884,7 +1077,9 @@
             });
         }
 
-        // ========== КАССИР ==========
+        // =============================================
+        // ===== КАССИР =====
+        // =============================================
         window.cashierLogin = function() {
             const station = document.getElementById('cashierStationSelect').value;
             const login = document.getElementById('cashierLogin').value.trim();
@@ -969,7 +1164,6 @@
                 const ticketNumber = generateTicketNumber();
                 createTicketWithNumber(userId, name, phone, station, type, direction, ticketNumber);
 
-                // Очищаем поля
                 document.getElementById('cashierPhone').value = '';
                 document.getElementById('cashierName').value = '';
                 document.getElementById('cashierName').placeholder = 'Имя пассажира';
@@ -978,28 +1172,6 @@
                 loadCashierTickets();
             });
         };
-
-        function createTicketWithNumber(userId, name, phone, station, type, direction, ticketNumber) {
-            const ticketId = 'TKT' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4)
-            .toUpperCase();
-            const price = getTicketPrice(type);
-            const expiresAt = Date.now() + 24 * 60 * 60 * 1000;
-
-            db.ref('tickets/' + ticketId).set({
-                id: ticketId,
-                ticketNumber: ticketNumber,
-                userId: userId,
-                passengerName: name,
-                phone: phone,
-                station: station,
-                type: type,
-                direction: direction,
-                price: price,
-                status: 'active',
-                createdAt: Date.now(),
-                expiresAt: expiresAt
-            });
-        }
 
         function loadCashierTickets() {
             const container = document.getElementById('cashierTickets');
@@ -1022,17 +1194,18 @@
                             </span>
                         </div>
                         <div class="ticket-route">🚆 ${t.station}</div>
-                        <div class="ticket-info">🧑 ${t.passengerName}</div>
-                        <div class="ticket-info">📱 ${t.phone}</div>
-                        <div class="ticket-info">🎫 ${getTypeName(t.type)}</div>
-                        <div class="ticket-info">🔄 ${getDirectionName(t.direction)}</div>
-                        <div class="ticket-info">💰 ${t.price} ₽</div>
+                        <div class="ticket-info"><i class="fas fa-user"></i> ${t.passengerName}</div>
+                        <div class="ticket-info"><i class="fas fa-phone"></i> ${t.phone}</div>
+                        <div class="ticket-info"><i class="fas fa-ticket-alt"></i> ${getTypeName(t.type)}</div>
+                        <div class="ticket-info"><i class="fas fa-ruble-sign"></i> ${t.price} ₽</div>
                     </div>
                 `).join('');
             });
         }
 
-        // ========== КОНТРОЛЁР ==========
+        // =============================================
+        // ===== КОНТРОЛЁР (с продажей) =====
+        // =============================================
         window.controllerLogin = function() {
             const login = document.getElementById('controllerLogin').value.trim();
             const password = document.getElementById('controllerPassword').value.trim();
@@ -1056,13 +1229,69 @@
                             document.getElementById('controllerAuth').classList.add('hidden');
                             document.getElementById('controllerContent').classList.remove('hidden');
                             document.getElementById('userNameDisplay').textContent = data.name + ' 🔍';
-                            loadControllerTickets();
                         }
                     });
                     if (!found) showToast('Неверный пароль');
                 } else {
                     showToast('Контролёр не найден');
                 }
+            });
+        };
+
+        window.controllerFindUser = function(phone) {
+            const nameField = document.getElementById('controllerSellName');
+            if (!phone || phone.length < 10) {
+                nameField.value = '';
+                nameField.placeholder = 'Имя пассажира';
+                return;
+            }
+
+            db.ref('users').orderByChild('phone').equalTo(phone).once('value', (sn) => {
+                if (sn.exists()) {
+                    sn.forEach(child => {
+                        nameField.value = child.val().name;
+                    });
+                } else {
+                    nameField.value = '';
+                    nameField.placeholder = 'Новый пассажир';
+                }
+            });
+        };
+
+        window.controllerSellTicket = function() {
+            const phone = document.getElementById('controllerSellPhone').value.trim();
+            const name = document.getElementById('controllerSellName').value.trim();
+            const station = document.getElementById('controllerSellStation').value;
+            const type = document.getElementById('controllerSellType').value;
+            const direction = document.getElementById('controllerSellDirection').value;
+
+            if (!phone || !name) { showToast('Введите телефон и имя пассажира'); return; }
+            if (phone.length < 10) { showToast('Введите полный номер телефона'); return; }
+
+            db.ref('users').orderByChild('phone').equalTo(phone).once('value', (sn) => {
+                let userId;
+                if (sn.exists()) {
+                    sn.forEach(child => { userId = child.key; });
+                    db.ref('users/' + userId + '/name').set(name);
+                } else {
+                    userId = 'user_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
+                    db.ref('users/' + userId).set({
+                        id: userId,
+                        name: name,
+                        phone: phone,
+                        type: 'passenger',
+                        createdAt: Date.now()
+                    });
+                }
+
+                const ticketNumber = generateTicketNumber();
+                createTicketWithNumber(userId, name, phone, station, type, direction, ticketNumber);
+
+                document.getElementById('controllerSellPhone').value = '';
+                document.getElementById('controllerSellName').value = '';
+                document.getElementById('controllerSellName').placeholder = 'Имя пассажира';
+
+                showToast('✅ Билет №' + ticketNumber + ' оформлен!');
             });
         };
 
@@ -1088,7 +1317,6 @@
                 return;
             }
 
-            // Ищем по номеру билета
             db.ref('tickets').orderByChild('ticketNumber').equalTo(code).once('value', (sn) => {
                 let found = false;
                 sn.forEach(child => {
@@ -1100,7 +1328,9 @@
                     resultDiv.style.display = 'block';
                     resultDiv.className = 'scan-result ' + (isValid ? 'success' : 'error');
                     resultDiv.innerHTML = `
-                        <div style="font-weight:bold;">${isValid ? '✅ БИЛЕТ ДЕЙСТВИТЕЛЕН' : '❌ БИЛЕТ НЕДЕЙСТВИТЕЛЕН'}</div>
+                        <div style="font-weight:bold;font-size:1rem;margin-bottom:4px;">
+                            ${isValid ? '✅ БИЛЕТ ДЕЙСТВИТЕЛЕН' : '❌ БИЛЕТ НЕДЕЙСТВИТЕЛЕН'}
+                        </div>
                         <div>🎫 №${ticket.ticketNumber || ticket.id}</div>
                         <div>🚆 ${ticket.station}</div>
                         <div>🧑 ${ticket.passengerName}</div>
@@ -1108,9 +1338,9 @@
                         <div>🎫 ${getTypeName(ticket.type)}</div>
                         <div>🔄 ${getDirectionName(ticket.direction)}</div>
                         <div>💰 ${ticket.price} ₽</div>
-                        <div>⏳ Действует до: ${new Date(ticket.expiresAt).toLocaleString()}</div>
-                        ${!isValid ? '<div style="color:#ff4444;">Срок действия истёк</div>' : ''}
-                        ${controllerStation ? '<div style="color:#4CAF50;">📍 Конечная: ' + controllerStation + '</div>' : ''}
+                        <div style="font-size:0.75rem;color:#888;">⏳ До ${new Date(ticket.expiresAt).toLocaleString()}</div>
+                        ${!isValid ? '<div style="color:#ef5350;margin-top:4px;">Срок действия истёк</div>' : ''}
+                        ${controllerStation ? '<div style="color:#4CAF50;margin-top:4px;">📍 Конечная: ' + controllerStation + '</div>' : ''}
                     `;
                 });
 
@@ -1122,9 +1352,9 @@
             });
         };
 
-        function loadControllerTickets() {}
-
-        // ========== АДМИН ==========
+        // =============================================
+        // ===== АДМИН =====
+        // =============================================
         window.adminLogin = function() {
             const login = document.getElementById('adminLogin').value.trim();
             const password = document.getElementById('adminPassword').value.trim();
@@ -1205,7 +1435,7 @@
                 container.innerHTML = `
                     <div class="form-group"><label>ФИО</label><input type="text" id="adminCreateName" placeholder="Иванов Иван"></div>
                     <div class="form-group"><label>Станция</label>
-                        <select id="adminCreateStation" style="width:100%;padding:8px 12px;border-radius:30px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.05);color:white;font-size:0.85rem;outline:none;">
+                        <select id="adminCreateStation" style="width:100%;padding:8px 12px;border-radius:30px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.03);color:#e8e8e8;font-size:0.85rem;outline:none;">
                             ${allStations.map(s => `<option value="${s}">${s}</option>`).join('')}
                         </select>
                     </div>
@@ -1263,16 +1493,49 @@
             }
         };
 
-        // ========== СОЗДАНИЕ БИЛЕТА (общая функция) ==========
+        // =============================================
+        // ===== ОБЩАЯ ФУНКЦИЯ СОЗДАНИЯ БИЛЕТА =====
+        // =============================================
+        function createTicketWithNumber(userId, name, phone, station, type, direction, ticketNumber) {
+            const ticketId = 'TKT' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4)
+            .toUpperCase();
+            const price = getTicketPrice(type);
+            const expiresAt = Date.now() + 24 * 60 * 60 * 1000;
+
+            db.ref('tickets/' + ticketId).set({
+                id: ticketId,
+                ticketNumber: ticketNumber,
+                userId: userId,
+                passengerName: name,
+                phone: phone,
+                station: station,
+                type: type,
+                direction: direction,
+                price: price,
+                status: 'active',
+                createdAt: Date.now(),
+                expiresAt: expiresAt
+            }).then(() => {
+                // Обновляем список у пассажира если он онлайн
+                if (currentRole === 'passenger' && currentUser.id === userId) {
+                    renderPassengerTickets();
+                }
+            });
+        }
+
         function createTicket(userId, name, phone, station, type, direction) {
             const ticketNumber = generateTicketNumber();
             createTicketWithNumber(userId, name, phone, station, type, direction, ticketNumber);
+            showToast('🎫 Билет №' + ticketNumber + ' создан!');
         }
 
-        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        // =============================================
+        // ===== ИНИЦИАЛИЗАЦИЯ =====
+        // =============================================
         console.log('🚆 ЖД Павелецкое направление');
         console.log('👑 Админ: логин 2203, пароль 2347');
         console.log('📍 Все станции по схеме Павелецкого направления');
+        console.log('🎫 Контролёры теперь могут оформлять билеты!');
 
         setTimeout(() => adminCreateFields(), 100);
     </script>
