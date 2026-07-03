@@ -2,1542 +2,1026 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>🚆 ЖД ПАВЕЛЕЦКОЕ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>ГУ СВС | Государственные услуги</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
         }
+
         body {
-            background: #0a0e1a;
+            background: #f0f4f9;
             min-height: 100vh;
-            padding: 10px;
-            color: #e8e8e8;
-        }
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        .hidden {
-            display: none !important;
-        }
-
-        /* ===== ШАПКА ===== */
-        .header {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            padding: 12px 16px;
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            border-radius: 16px;
-            margin-bottom: 12px;
-            border: 1px solid rgba(245, 166, 35, 0.15);
-        }
-        .header .logo {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: #f5a623;
-        }
-        .header .logo i {
-            margin-right: 8px;
-            color: #f5a623;
-        }
-        .header .user-badge {
-            font-size: 0.65rem;
-            color: #aaa;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 4px 12px;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .header .user-badge i {
-            color: #f5a623;
-            margin-right: 4px;
+            padding: 20px;
         }
 
-        /* ===== ВЫБОР РОЛИ ===== */
-        .role-selector {
-            display: flex;
-            gap: 6px;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-        }
-        .role-btn {
-            flex: 1;
-            padding: 8px 4px;
-            border-radius: 12px;
-            border: 2px solid rgba(255, 255, 255, 0.06);
-            background: rgba(255, 255, 255, 0.02);
-            color: #666;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 0.5rem;
-            text-align: center;
-            min-width: 45px;
-            transition: 0.2s;
-        }
-        .role-btn.active {
-            border-color: #f5a623;
-            color: #f5a623;
-            background: rgba(245, 166, 35, 0.08);
-        }
-        .role-btn i {
-            display: block;
-            font-size: 0.9rem;
-            margin-bottom: 2px;
-        }
-
-        /* ===== АВТОРИЗАЦИЯ ===== */
-        .auth-box {
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 16px;
-            padding: 18px;
-            margin-bottom: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-        }
-        .auth-box h3 {
-            margin-bottom: 10px;
-            color: #f5a623;
-            font-size: 0.95rem;
-        }
-        .auth-box .form-group {
-            margin-bottom: 8px;
-        }
-        .auth-box .form-group label {
-            display: block;
-            font-size: 0.65rem;
-            color: #888;
-            margin-bottom: 3px;
-            letter-spacing: 0.5px;
-        }
-        .auth-box .form-group input,
-        .auth-box .form-group select {
+        .app-container {
+            max-width: 1400px;
             width: 100%;
-            padding: 8px 14px;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            background: rgba(255, 255, 255, 0.03);
-            color: #e8e8e8;
-            font-size: 0.85rem;
-            outline: none;
-            transition: 0.2s;
-        }
-        .auth-box .form-group select option {
-            background: #1a1a2e;
-            color: #e8e8e8;
-        }
-        .auth-box .form-group input:focus,
-        .auth-box .form-group select:focus {
-            border-color: #f5a623;
-        }
-        .auth-box .auth-actions {
-            display: flex;
-            gap: 6px;
-            margin-top: 10px;
-        }
-        .auth-box .auth-actions button {
-            flex: 1;
-            padding: 8px;
-            border-radius: 30px;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 0.75rem;
-            transition: 0.15s;
-        }
-        .auth-box .auth-actions button:active {
-            transform: scale(0.97);
-        }
-
-        .btn-primary {
-            background: #f5a623;
-            color: #1a1a2e;
-        }
-        .btn-success {
-            background: #2e7d32;
-            color: white;
-        }
-        .btn-danger {
-            background: #c62828;
-            color: white;
-        }
-        .btn-info {
-            background: #0d47a1;
-            color: white;
-        }
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.06);
-            color: #aaa;
-        }
-        .btn-admin {
-            background: #6c1b7a;
-            color: white;
-        }
-
-        /* ===== КАРТОЧКА БИЛЕТА ===== */
-        .ticket-card {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 14px;
-            padding: 14px;
-            margin-bottom: 10px;
-            border-left: 4px solid #f5a623;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            transition: 0.2s;
-        }
-        .ticket-card:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-        .ticket-card .ticket-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-        }
-        .ticket-card .ticket-number {
-            color: #f5a623;
-            font-size: 1rem;
-            font-weight: bold;
-            font-family: 'Courier New', monospace;
-        }
-        .ticket-card .ticket-status {
-            font-size: 0.6rem;
-            padding: 3px 12px;
-            border-radius: 30px;
-            font-weight: bold;
-        }
-        .status-active {
-            background: rgba(46, 125, 50, 0.25);
-            color: #4CAF50;
-            border: 1px solid rgba(46, 125, 50, 0.3);
-        }
-        .status-expired {
-            background: rgba(198, 40, 40, 0.2);
-            color: #ef5350;
-            border: 1px solid rgba(198, 40, 40, 0.2);
-        }
-        .ticket-card .ticket-route {
-            font-weight: bold;
-            font-size: 1rem;
-            color: #f5a623;
-            margin: 4px 0;
-        }
-        .ticket-card .ticket-info {
-            font-size: 0.8rem;
-            color: #aaa;
-            margin: 3px 0;
-        }
-        .ticket-card .ticket-info i {
-            width: 18px;
-            color: #f5a623;
-        }
-        .ticket-card .qr-container {
             background: white;
-            padding: 8px;
-            border-radius: 12px;
-            display: inline-block;
-            margin: 6px 0;
-        }
-        .ticket-card .qr-container canvas {
-            display: block;
-            margin: 0 auto;
-        }
-
-        /* ===== ТАБЫ ===== */
-        .tabs {
-            display: flex;
-            gap: 6px;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-        }
-        .tab {
-            padding: 6px 16px;
-            border-radius: 30px;
-            background: rgba(255, 255, 255, 0.03);
-            cursor: pointer;
-            font-size: 0.7rem;
-            color: #888;
-            border: 1px solid transparent;
-            transition: 0.2s;
-        }
-        .tab.active {
-            background: rgba(245, 166, 35, 0.1);
-            color: #f5a623;
-            border-color: rgba(245, 166, 35, 0.2);
-        }
-
-        /* ===== TOAST ===== */
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(26, 26, 46, 0.95);
-            color: white;
-            padding: 10px 20px;
             border-radius: 40px;
-            z-index: 999;
-            opacity: 0;
-            transition: 0.3s;
-            pointer-events: none;
-            font-weight: 600;
-            max-width: 90%;
-            text-align: center;
-            font-size: 0.8rem;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .toast.show {
-            opacity: 1;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.20);
+            overflow: hidden;
         }
 
-        /* ===== СКАНЕР ===== */
-        .scan-area {
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 14px;
-            padding: 14px;
-            margin-bottom: 10px;
-            border: 2px dashed rgba(255, 255, 255, 0.06);
-        }
-        .scan-area input {
-            width: 100%;
-            padding: 10px;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            background: rgba(255, 255, 255, 0.03);
-            color: #e8e8e8;
-            font-size: 0.9rem;
-            text-align: center;
-            letter-spacing: 2px;
-            font-family: monospace;
-            outline: none;
-        }
-        .scan-area input:focus {
-            border-color: #f5a623;
-        }
-        .scan-area .scan-result {
-            margin-top: 8px;
-            padding: 12px;
-            border-radius: 12px;
-            font-size: 0.85rem;
-            display: none;
-        }
-        .scan-area .scan-result.success {
-            display: block;
-            background: rgba(46, 125, 50, 0.1);
-            border: 1px solid rgba(46, 125, 50, 0.2);
-        }
-        .scan-area .scan-result.error {
-            display: block;
-            background: rgba(198, 40, 40, 0.1);
-            border: 1px solid rgba(198, 40, 40, 0.2);
-        }
-
-        /* ===== АДМИН ===== */
-        .admin-user-item {
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 10px;
-            padding: 8px 12px;
-            margin-bottom: 6px;
+        .header {
+            background: linear-gradient(145deg, #0b1e3a, #1a3359);
+            color: white;
+            padding: 16px 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.8rem;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-        }
-        .admin-user-item .user-info .name {
-            font-weight: bold;
-            color: #f5a623;
-        }
-        .admin-user-item .user-info .detail {
-            color: #888;
-            font-size: 0.65rem;
-        }
-        .admin-user-item .delete-btn {
-            background: rgba(198, 40, 40, 0.15);
-            color: #ef5350;
-            border: 1px solid rgba(198, 40, 40, 0.15);
-            padding: 4px 12px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 0.65rem;
-            font-weight: bold;
-            transition: 0.15s;
-        }
-        .admin-user-item .delete-btn:active {
-            transform: scale(0.95);
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
-        /* ===== БЛОК ПОКУПКИ ===== */
-        .buy-block {
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 14px;
-            padding: 14px;
-            margin-bottom: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
+        .logo-area h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #fff, #d4e0ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        .buy-block h4 {
-            color: #f5a623;
-            margin-bottom: 8px;
+
+        .logo-area p {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            -webkit-text-fill-color: #b6cfff;
+        }
+
+        .user-status {
+            background: rgba(255, 255, 255, 0.10);
+            backdrop-filter: blur(4px);
+            padding: 8px 20px;
+            border-radius: 60px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            border: 1px solid rgba(255, 255, 255, 0.06);
             font-size: 0.9rem;
         }
-        .buy-block .form-group {
-            margin-bottom: 8px;
-        }
-        .buy-block .form-group label {
-            display: block;
-            font-size: 0.65rem;
-            color: #888;
-            margin-bottom: 3px;
-        }
-        .buy-block .form-group input,
-        .buy-block .form-group select {
-            width: 100%;
-            padding: 8px 14px;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            background: rgba(255, 255, 255, 0.03);
-            color: #e8e8e8;
-            font-size: 0.85rem;
-            outline: none;
-        }
-        .buy-block .form-group select option {
-            background: #1a1a2e;
-            color: #e8e8e8;
-        }
-        .buy-block .form-group input:focus,
-        .buy-block .form-group select:focus {
-            border-color: #f5a623;
-        }
-        .buy-block .form-group input[readonly] {
-            background: rgba(255, 255, 255, 0.02);
-            color: #888;
+
+        .user-status button {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: white;
+            padding: 4px 16px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: 0.2s;
         }
 
-        /* ===== КНОПКИ ДЕЙСТВИЙ ===== */
-        .action-buttons {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
+        .user-status button:hover {
+            background: rgba(255, 255, 255, 0.25);
         }
-        .action-buttons button {
-            flex: 1;
-            padding: 8px 12px;
-            border-radius: 30px;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
+
+        .main-content {
+            padding: 28px 32px;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 28px;
+            box-shadow: 0 4px 20px rgba(0, 20, 50, 0.04);
+            border: 1px solid #eef2f8;
+            padding: 24px 28px;
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 650;
+            color: #0b1e3a;
+            border-left: 6px solid #f6b83d;
+            padding-left: 18px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .badge {
+            background: #eef4ff;
+            color: #1a3359;
+            border-radius: 40px;
+            padding: 4px 16px;
             font-size: 0.7rem;
-            min-width: 80px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            font-weight: 600;
+            color: #1e2f41;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.8rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 11px 16px;
+            border: 1.5px solid #dae2ec;
+            border-radius: 18px;
+            font-size: 0.92rem;
+            transition: 0.2s;
+            background: #fbfdff;
+            color: #111;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #1a3359;
+            box-shadow: 0 0 0 4px rgba(26, 51, 89, 0.08);
+        }
+
+        button {
+            background: #1a3359;
+            color: white;
+            border: none;
+            padding: 11px 24px;
+            border-radius: 60px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.88rem;
+        }
+
+        button:hover:not(:disabled) {
+            background: #0e2442;
+            transform: scale(0.97);
+            box-shadow: 0 6px 16px rgba(26, 51, 89, 0.25);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .member-list {
+            margin-top: 16px;
+            border-top: 1px solid #e6ecf3;
+            padding-top: 18px;
+        }
+
+        .member-item {
+            background: #f8faff;
+            border-radius: 22px;
+            padding: 14px 20px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            border: 1px solid #eef2f8;
+        }
+
+        .member-info {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .member-photo {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #d9e2ed;
+            border: 2.5px solid #f6b83d;
+        }
+
+        .document-view {
+            background: #faf6ee;
+            border-left: 6px solid #f6b83d;
+            padding: 18px 22px;
+            border-radius: 24px;
+            margin-top: 14px;
+        }
+
+        .document-card {
+            background: white;
+            border-radius: 22px;
+            padding: 16px 20px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            border: 1px solid #eef2f8;
+        }
+
+        .document-card h4 {
+            color: #0b1e3a;
+            margin-bottom: 8px;
+            font-size: 1.05rem;
+        }
+
+        .photo-preview {
+            max-width: 120px;
+            max-height: 120px;
+            border-radius: 16px;
+            object-fit: cover;
+            margin-top: 8px;
+            border: 1px solid #dae2ec;
+        }
+
+        .document-img {
+            max-width: 100%;
+            max-height: 250px;
+            border-radius: 18px;
+            margin-top: 10px;
+            border: 1px solid #e2eaf2;
+            cursor: pointer;
             transition: 0.15s;
         }
-        .action-buttons button:active {
-            transform: scale(0.97);
+        .document-img:hover { opacity: 0.9; }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
-        /* ===== АДАПТИВ ===== */
-        @media (max-width: 400px) {
-            .role-btn {
-                font-size: 0.45rem;
-                padding: 6px 3px;
-            }
-            .role-btn i {
-                font-size: 0.8rem;
-            }
-            .ticket-card .qr-container canvas {
-                width: 100px !important;
-                height: 100px !important;
-            }
+        .camera-btn {
+            background: #3d5a7a;
+            margin-top: 4px;
+            font-size: 0.78rem;
+            padding: 7px 16px;
+        }
+
+        .hidden-file { display: none; }
+
+        .modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            cursor: pointer;
+        }
+        .modal-content {
+            max-width: 92%;
+            max-height: 92%;
+        }
+        .modal-content img {
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 20px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+        }
+        .modal-card {
+            background: white;
+            border-radius: 32px;
+            padding: 28px;
+            max-width: 520px;
+            width: 92%;
+        }
+
+        .success-toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #1d6f2c;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 60px;
+            font-weight: 500;
+            z-index: 1100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: slideFade 2.8s ease forwards;
+        }
+
+        @keyframes slideFade {
+            0% { opacity: 0; transform: translateY(24px); }
+            12% { opacity: 1; transform: translateY(0); }
+            85% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(24px); visibility: hidden; }
+        }
+
+        .small-btn {
+            padding: 5px 14px;
+            font-size: 0.72rem;
+            background: #e6edf6;
+            color: #1a3359;
+            border-radius: 40px;
+            cursor: pointer;
+            border: none;
+            font-weight: 500;
+        }
+        .small-btn.danger {
+            background: #fee9e9;
+            color: #b33a34;
+        }
+        .small-btn:hover { opacity: 0.8; }
+
+        .documents-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 30px;
+            color: #7a8a9e;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #7a8a9e;
+            background: #f8faff;
+            border-radius: 20px;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: #eef4ff;
+            color: #1a3359;
+        }
+
+        @media (max-width: 760px) {
+            .grid-2col { grid-template-columns: 1fr; }
+            .main-content { padding: 18px; }
+            .header { padding: 14px 18px; }
+            .card { padding: 16px 18px; }
+        }
+        @media (max-width: 480px) {
+            .member-item { flex-direction: column; align-items: stretch; }
+            .flex-between { flex-direction: column; align-items: stretch; }
         }
     </style>
 </head>
 <body>
 
-    <div id="toast" class="toast"></div>
-
-    <div class="container" id="app">
-        <!-- ШАПКА -->
+<div id="app">
+    <div class="app-container">
+        <!-- HEADER -->
         <div class="header">
-            <div class="logo"><i class="fas fa-train"></i> ЖД Павелецкое</div>
-            <div class="user-badge" id="userBadge"><i class="fas fa-user"></i> <span id="userNameDisplay">Гость</span></div>
-        </div>
-
-        <!-- ВЫБОР РОЛИ -->
-        <div class="role-selector" id="roleSelector">
-            <button class="role-btn active" data-role="passenger" onclick="switchRole('passenger')">
-                <i class="fas fa-user"></i> Пассажир
-            </button>
-            <button class="role-btn" data-role="cashier" onclick="switchRole('cashier')">
-                <i class="fas fa-ticket-alt"></i> Кассир
-            </button>
-            <button class="role-btn" data-role="controller" onclick="switchRole('controller')">
-                <i class="fas fa-user-check"></i> Контролёр
-            </button>
-            <button class="role-btn" data-role="admin" onclick="switchRole('admin')">
-                <i class="fas fa-user-cog"></i> Админ
-            </button>
-        </div>
-
-        <!-- ===== ПАССАЖИР ===== -->
-        <div id="passengerPanel">
-            <div id="passengerAuth" class="auth-box">
-                <h3>👤 Вход пассажира</h3>
-                <div class="form-group"><label>Телефон</label><input type="tel" id="passengerPhone" placeholder="+7 999 999 99 99"></div>
-                <div class="form-group"><label>Имя</label><input type="text" id="passengerName" placeholder="Ваше имя"></div>
-                <div class="auth-actions">
-                    <button class="btn-primary" onclick="passengerLogin()">Войти</button>
-                    <button class="btn-success" onclick="passengerRegister()">Регистрация</button>
-                </div>
+            <div class="logo-area">
+                <h1>ГУ СВС</h1>
+                <p>Государственные услуги • Система управления</p>
             </div>
-            <div id="passengerContent" class="hidden">
-                <div class="buy-block">
-                    <h4>🎫 Купить билет</h4>
-                    <div class="form-group"><label>Станция назначения</label>
-                        <select id="passengerStation">
-                            <option value="Павелецкий вокзал">Павелецкий вокзал</option>
-                            <option value="Дербеневская">Дербеневская</option>
-                            <option value="Тульская">Тульская</option>
-                            <option value="Верхние Котлы">Верхние Котлы</option>
-                            <option value="Нагатинская">Нагатинская</option>
-                            <option value="Варшавская">Варшавская</option>
-                            <option value="Чертаново">Чертаново</option>
-                            <option value="Котляково">Котляково</option>
-                            <option value="Бирюлейко-Тов.">Бирюлейко-Тов.</option>
-                            <option value="Бирюлейко-Пасс.">Бирюлейко-Пасс.</option>
-                            <option value="Булатниково">Булатниково</option>
-                            <option value="Расторгуево">Расторгуево</option>
-                            <option value="Калинина">Калинина</option>
-                            <option value="Ленинская">Ленинская</option>
-                            <option value="32 км">32 км</option>
-                            <option value="Домодедово">Домодедово</option>
-                            <option value="Взлётная">Взлётная</option>
-                            <option value="Востряково">Востряково</option>
-                            <option value="Белые столбы">Белые столбы</option>
-                            <option value="52 км">52 км</option>
-                            <option value="Барыбино">Барыбино</option>
-                            <option value="Вельяминово">Вельяминово</option>
-                            <option value="Привалово">Привалово</option>
-                            <option value="328 км">328 км</option>
-                            <option value="332 км">332 км</option>
-                            <option value="Малино">Малино</option>
-                            <option value="341 км">341 км</option>
-                            <option value="Шугарово">Шугарово</option>
-                            <option value="85 км">85 км</option>
-                            <option value="Жилёво">Жилёво</option>
-                            <option value="Ситенка">Ситенка</option>
-                            <option value="Ступино">Ступино</option>
-                            <option value="Акри">Акри</option>
-                            <option value="Белопесоцкий">Белопесоцкий</option>
-                            <option value="Кашира">Кашира</option>
-                            <option value="Тесна">Тесна</option>
-                            <option value="Ожерелье">Ожерелье</option>
-                            <option value="121 км">121 км</option>
-                            <option value="Пурлово">Пурлово</option>
-                            <option value="131 км">131 км</option>
-                            <option value="Топканово">Топканово</option>
-                            <option value="137 км">137 км</option>
-                            <option value="Богатищево">Богатищево</option>
-                            <option value="146 км">146 км</option>
-                            <option value="Коровино">Коровино</option>
-                            <option value="152 км">152 км</option>
-                            <option value="Узуново">Узуново</option>
-                            <option value="Авиационная">Авиационная</option>
-                            <option value="Космос">Космос</option>
-                            <option value="Аэропорт Домодедово">Аэропорт Домодедово</option>
-                            <option value="Яганово">Яганово</option>
-                            <option value="Сотниково">Сотниково</option>
-                            <option value="Кольчево">Кольчево</option>
-                        </select>
-                    </div>
-                    <div class="form-group"><label>Тип билета</label>
-                        <select id="passengerTicketType">
-                            <option value="full">Обычный (100₽)</option>
-                            <option value="social">Социальная карта (0₽)</option>
-                            <option value="student">Карта москвича/школьника (50₽)</option>
-                        </select>
-                    </div>
-                    <div class="form-group"><label>Направление</label>
-                        <select id="passengerDirection">
-                            <option value="oneway">Туда</option>
-                            <option value="roundtrip">Туда-обратно</option>
-                        </select>
-                    </div>
-                    <button class="btn-primary" onclick="passengerBuyTicket()" style="width:100%;padding:10px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">🎫 Купить билет</button>
-                </div>
-                <div class="tabs">
-                    <button class="tab active" data-ptab="active" onclick="switchPassengerTab('active')">Активные</button>
-                    <button class="tab" data-ptab="history" onclick="switchPassengerTab('history')">История</button>
-                </div>
-                <div id="passengerTickets"></div>
+            <div class="user-status" v-if="currentUser">
+                <span>👤 {{ currentUser.fullName }} <span style="opacity:0.6;font-weight:400;">({{ currentUser.roleTitle || getRoleName(currentUser.role) }})</span></span>
+                <button @click="logout">Выйти</button>
+            </div>
+            <div class="user-status" v-else>
+                <span>🔐 Требуется авторизация</span>
             </div>
         </div>
 
-        <!-- ===== КАССИР ===== -->
-        <div id="cashierPanel" class="hidden">
-            <div id="cashierAuth" class="auth-box">
-                <h3>🎫 Вход кассира</h3>
-                <div class="form-group"><label>Станция</label>
-                    <select id="cashierStationSelect">
-                        <option value="Павелецкий вокзал">Павелецкий вокзал</option>
-                        <option value="Дербеневская">Дербеневская</option>
-                        <option value="Тульская">Тульская</option>
-                        <option value="Верхние Котлы">Верхние Котлы</option>
-                        <option value="Нагатинская">Нагатинская</option>
-                        <option value="Варшавская">Варшавская</option>
-                        <option value="Чертаново">Чертаново</option>
-                        <option value="Котляково">Котляково</option>
-                        <option value="Бирюлейко-Тов.">Бирюлейко-Тов.</option>
-                        <option value="Бирюлейко-Пасс.">Бирюлейко-Пасс.</option>
-                        <option value="Булатниково">Булатниково</option>
-                        <option value="Расторгуево">Расторгуево</option>
-                        <option value="Калинина">Калинина</option>
-                        <option value="Ленинская">Ленинская</option>
-                        <option value="32 км">32 км</option>
-                        <option value="Домодедово">Домодедово</option>
-                        <option value="Взлётная">Взлётная</option>
-                        <option value="Востряково">Востряково</option>
-                        <option value="Белые столбы">Белые столбы</option>
-                        <option value="52 км">52 км</option>
-                        <option value="Барыбино">Барыбино</option>
-                        <option value="Вельяминово">Вельяминово</option>
-                        <option value="Привалово">Привалово</option>
-                        <option value="328 км">328 км</option>
-                        <option value="332 км">332 км</option>
-                        <option value="Малино">Малино</option>
-                        <option value="341 км">341 км</option>
-                        <option value="Шугарово">Шугарово</option>
-                        <option value="85 км">85 км</option>
-                        <option value="Жилёво">Жилёво</option>
-                        <option value="Ситенка">Ситенка</option>
-                        <option value="Ступино">Ступино</option>
-                        <option value="Акри">Акри</option>
-                        <option value="Белопесоцкий">Белопесоцкий</option>
-                        <option value="Кашира">Кашира</option>
-                        <option value="Тесна">Тесна</option>
-                        <option value="Ожерелье">Ожерелье</option>
-                        <option value="121 км">121 км</option>
-                        <option value="Пурлово">Пурлово</option>
-                        <option value="131 км">131 км</option>
-                        <option value="Топканово">Топканово</option>
-                        <option value="137 км">137 км</option>
-                        <option value="Богатищево">Богатищево</option>
-                        <option value="146 км">146 км</option>
-                        <option value="Коровино">Коровино</option>
-                        <option value="152 км">152 км</option>
-                        <option value="Узуново">Узуново</option>
-                    </select>
+        <!-- LOGIN -->
+        <div class="main-content" v-if="!currentUser">
+            <div class="card" style="max-width:460px; margin:0 auto;">
+                <div class="card-title">Вход в систему ГУ СВС</div>
+                <div class="form-group">
+                    <label>Логин</label>
+                    <input type="text" v-model="loginForm.login" placeholder="Введите логин" @keyup.enter="doLogin">
                 </div>
-                <div class="form-group"><label>Логин</label><input type="text" id="cashierLogin" placeholder="Логин"></div>
-                <div class="form-group"><label>Пароль</label><input type="password" id="cashierPassword" placeholder="Пароль"></div>
-                <div class="auth-actions">
-                    <button class="btn-primary" onclick="cashierLogin()">Войти</button>
+                <div class="form-group">
+                    <label>Пароль</label>
+                    <input type="password" v-model="loginForm.password" placeholder="Введите пароль" @keyup.enter="doLogin">
                 </div>
-            </div>
-            <div id="cashierContent" class="hidden">
-                <div class="buy-block">
-                    <h4>🎫 Продажа билета</h4>
-                    <div class="form-group"><label>Телефон пассажира</label>
-                        <input type="tel" id="cashierPhone" placeholder="+7 999 999 99 99" oninput="cashierFindUser(this.value)">
-                    </div>
-                    <div class="form-group"><label>Имя пассажира</label>
-                        <input type="text" id="cashierName" placeholder="Имя пассажира" readonly style="background:rgba(255,255,255,0.02);color:#888;">
-                    </div>
-                    <div class="form-group"><label>Станция назначения</label>
-                        <select id="cashierStation">
-                            <option value="Павелецкий вокзал">Павелецкий вокзал</option>
-                            <option value="Дербеневская">Дербеневская</option>
-                            <option value="Тульская">Тульская</option>
-                            <option value="Верхние Котлы">Верхние Котлы</option>
-                            <option value="Нагатинская">Нагатинская</option>
-                            <option value="Варшавская">Варшавская</option>
-                            <option value="Чертаново">Чертаново</option>
-                            <option value="Котляково">Котляково</option>
-                            <option value="Бирюлейко-Тов.">Бирюлейко-Тов.</option>
-                            <option value="Бирюлейко-Пасс.">Бирюлейко-Пасс.</option>
-                            <option value="Булатниково">Булатниково</option>
-                            <option value="Расторгуево">Расторгуево</option>
-                            <option value="Калинина">Калинина</option>
-                            <option value="Ленинская">Ленинская</option>
-                            <option value="32 км">32 км</option>
-                            <option value="Домодедово">Домодедово</option>
-                            <option value="Взлётная">Взлётная</option>
-                            <option value="Востряково">Востряково</option>
-                            <option value="Белые столбы">Белые столбы</option>
-                            <option value="52 км">52 км</option>
-                            <option value="Барыбино">Барыбино</option>
-                            <option value="Вельяминово">Вельяминово</option>
-                            <option value="Привалово">Привалово</option>
-                            <option value="328 км">328 км</option>
-                            <option value="332 км">332 км</option>
-                            <option value="Малино">Малино</option>
-                            <option value="341 км">341 км</option>
-                            <option value="Шугарово">Шугарово</option>
-                            <option value="85 км">85 км</option>
-                            <option value="Жилёво">Жилёво</option>
-                            <option value="Ситенка">Ситенка</option>
-                            <option value="Ступино">Ступино</option>
-                            <option value="Акри">Акри</option>
-                            <option value="Белопесоцкий">Белопесоцкий</option>
-                            <option value="Кашира">Кашира</option>
-                            <option value="Тесна">Тесна</option>
-                            <option value="Ожерелье">Ожерелье</option>
-                            <option value="121 км">121 км</option>
-                            <option value="Пурлово">Пурлово</option>
-                            <option value="131 км">131 км</option>
-                            <option value="Топканово">Топканово</option>
-                            <option value="137 км">137 км</option>
-                            <option value="Богатищево">Богатищево</option>
-                            <option value="146 км">146 км</option>
-                            <option value="Коровино">Коровино</option>
-                            <option value="152 км">152 км</option>
-                            <option value="Узуново">Узуново</option>
-                            <option value="Авиационная">Авиационная</option>
-                            <option value="Космос">Космос</option>
-                            <option value="Аэропорт Домодедово">Аэропорт Домодедово</option>
-                            <option value="Яганово">Яганово</option>
-                            <option value="Сотниково">Сотниково</option>
-                            <option value="Кольчево">Кольчево</option>
-                        </select>
-                    </div>
-                    <div class="form-group"><label>Тип билета</label>
-                        <select id="cashierTicketType">
-                            <option value="full">Обычный (100₽)</option>
-                            <option value="social">Социальная карта (0₽)</option>
-                            <option value="student">Карта москвича/школьника (50₽)</option>
-                        </select>
-                    </div>
-                    <div class="form-group"><label>Направление</label>
-                        <select id="cashierDirection">
-                            <option value="oneway">Туда</option>
-                            <option value="roundtrip">Туда-обратно</option>
-                        </select>
-                    </div>
-                    <button class="btn-success" onclick="cashierSellTicket()" style="width:100%;padding:10px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">🎫 Продать билет</button>
+                <button @click="doLogin" style="width:100%;">Войти</button>
+                <div style="margin-top:12px;font-size:0.75rem;color:#7a8a9e;text-align:center;">
+                    <i class="fas fa-info-circle"></i> Председатель: 2347 / 2203
                 </div>
-                <h4 style="color:#f5a623;margin-bottom:8px;font-size:0.9rem;">📋 Последние билеты</h4>
-                <div id="cashierTickets"></div>
             </div>
         </div>
 
-        <!-- ===== КОНТРОЛЁР ===== -->
-        <div id="controllerPanel" class="hidden">
-            <div id="controllerAuth" class="auth-box">
-                <h3>🔍 Вход контролёра</h3>
-                <div class="form-group"><label>Логин</label><input type="text" id="controllerLogin" placeholder="Логин"></div>
-                <div class="form-group"><label>Пароль</label><input type="password" id="controllerPassword" placeholder="Пароль"></div>
-                <div class="auth-actions">
-                    <button class="btn-primary" onclick="controllerLogin()">Войти</button>
+        <!-- CHAIRMAN / GOVERNOR PANEL -->
+        <div class="main-content" v-else-if="currentUser.role === 'chairman' || currentUser.role === 'governor'">
+            <div class="card">
+                <div class="flex-between">
+                    <div class="card-title">
+                        <span v-if="currentUser.role === 'chairman'">👑 Панель Председателя</span>
+                        <span v-else>⚜️ Панель Правителя</span>
+                    </div>
+                    <div class="badge" v-if="currentUser.role === 'chairman'">Высшие полномочия</div>
+                    <div class="badge" v-else>Полномочия Правителя</div>
                 </div>
+                <p style="color:#2a405b;">
+                    <strong>{{ currentUser.fullName }}</strong> — 
+                    <span v-if="currentUser.role === 'chairman'">управление сотрудниками и общими документами.</span>
+                    <span v-else>управление общими документами.</span>
+                </p>
             </div>
-            <div id="controllerContent" class="hidden">
-                <div class="action-buttons">
-                    <button class="btn-primary" onclick="controllerSetStation()">📍 Конечная</button>
-                    <button class="btn-info" onclick="controllerScanTicket()">📷 Сканировать</button>
-                </div>
 
-                <!-- БЛОК ПРОДАЖИ ДЛЯ КОНТРОЛЁРА -->
-                <div class="buy-block">
-                    <h4>🎫 Оформить билет (контролёр)</h4>
-                    <div class="form-group"><label>Телефон пассажира</label>
-                        <input type="tel" id="controllerSellPhone" placeholder="+7 999 999 99 99" oninput="controllerFindUser(this.value)">
-                    </div>
-                    <div class="form-group"><label>Имя пассажира</label>
-                        <input type="text" id="controllerSellName" placeholder="Имя пассажира" readonly style="background:rgba(255,255,255,0.02);color:#888;">
-                    </div>
-                    <div class="form-group"><label>Станция назначения</label>
-                        <select id="controllerSellStation">
-                            <option value="Павелецкий вокзал">Павелецкий вокзал</option>
-                            <option value="Дербеневская">Дербеневская</option>
-                            <option value="Тульская">Тульская</option>
-                            <option value="Верхние Котлы">Верхние Котлы</option>
-                            <option value="Нагатинская">Нагатинская</option>
-                            <option value="Варшавская">Варшавская</option>
-                            <option value="Чертаново">Чертаново</option>
-                            <option value="Котляково">Котляково</option>
-                            <option value="Бирюлейко-Тов.">Бирюлейко-Тов.</option>
-                            <option value="Бирюлейко-Пасс.">Бирюлейко-Пасс.</option>
-                            <option value="Булатниково">Булатниково</option>
-                            <option value="Расторгуево">Расторгуево</option>
-                            <option value="Калинина">Калинина</option>
-                            <option value="Ленинская">Ленинская</option>
-                            <option value="32 км">32 км</option>
-                            <option value="Домодедово">Домодедово</option>
-                            <option value="Взлётная">Взлётная</option>
-                            <option value="Востряково">Востряково</option>
-                            <option value="Белые столбы">Белые столбы</option>
-                            <option value="52 км">52 км</option>
-                            <option value="Барыбино">Барыбино</option>
-                            <option value="Вельяминово">Вельяминово</option>
-                            <option value="Привалово">Привалово</option>
-                            <option value="328 км">328 км</option>
-                            <option value="332 км">332 км</option>
-                            <option value="Малино">Малино</option>
-                            <option value="341 км">341 км</option>
-                            <option value="Шугарово">Шугарово</option>
-                            <option value="85 км">85 км</option>
-                            <option value="Жилёво">Жилёво</option>
-                            <option value="Ситенка">Ситенка</option>
-                            <option value="Ступино">Ступино</option>
-                            <option value="Акри">Акри</option>
-                            <option value="Белопесоцкий">Белопесоцкий</option>
-                            <option value="Кашира">Кашира</option>
-                            <option value="Тесна">Тесна</option>
-                            <option value="Ожерелье">Ожерелье</option>
-                            <option value="121 км">121 км</option>
-                            <option value="Пурлово">Пурлово</option>
-                            <option value="131 км">131 км</option>
-                            <option value="Топканово">Топканово</option>
-                            <option value="137 км">137 км</option>
-                            <option value="Богатищево">Богатищево</option>
-                            <option value="146 км">146 км</option>
-                            <option value="Коровино">Коровино</option>
-                            <option value="152 км">152 км</option>
-                            <option value="Узуново">Узуново</option>
-                            <option value="Авиационная">Авиационная</option>
-                            <option value="Космос">Космос</option>
-                            <option value="Аэропорт Домодедово">Аэропорт Домодедово</option>
-                            <option value="Яганово">Яганово</option>
-                            <option value="Сотниково">Сотниково</option>
-                            <option value="Кольчево">Кольчево</option>
-                        </select>
-                    </div>
-                    <div class="form-group"><label>Тип билета</label>
-                        <select id="controllerSellType">
-                            <option value="full">Обычный (100₽)</option>
-                            <option value="social">Социальная карта (0₽)</option>
-                            <option value="student">Карта москвича/школьника (50₽)</option>
-                        </select>
-                    </div>
-                    <div class="form-group"><label>Направление</label>
-                        <select id="controllerSellDirection">
-                            <option value="oneway">Туда</option>
-                            <option value="roundtrip">Туда-обратно</option>
-                        </select>
-                    </div>
-                    <button class="btn-success" onclick="controllerSellTicket()" style="width:100%;padding:10px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">🎫 Оформить билет</button>
-                </div>
-
-                <div class="scan-area">
-                    <h4 style="color:#f5a623;margin-bottom:6px;font-size:0.85rem;">🔍 Проверка билета</h4>
-                    <input type="text" id="controllerScanInput" placeholder="Введите номер билета" oninput="controllerCheckTicket(this.value)">
-                    <div id="controllerScanResult" class="scan-result"></div>
-                </div>
-                <div id="controllerTickets"></div>
-            </div>
-        </div>
-
-        <!-- ===== АДМИН ===== -->
-        <div id="adminPanel" class="hidden">
-            <div id="adminAuth" class="auth-box">
-                <h3>🔐 Вход администратора</h3>
-                <div class="form-group"><label>Логин</label><input type="text" id="adminLogin" placeholder="Логин"></div>
-                <div class="form-group"><label>Пароль</label><input type="password" id="adminPassword" placeholder="Пароль"></div>
-                <div class="auth-actions">
-                    <button class="btn-admin" onclick="adminLogin()" style="width:100%;padding:8px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">Войти</button>
-                </div>
-            </div>
-            <div id="adminContent" class="hidden">
-                <div class="tabs">
-                    <button class="tab active" data-atab="users" onclick="switchAdminTab('users')">👥 Сотрудники</button>
-                    <button class="tab" data-atab="create" onclick="switchAdminTab('create')">➕ Создать</button>
-                </div>
-                <div id="adminUsersTab">
-                    <div class="tabs">
-                        <button class="tab active" data-utab="cashiers" onclick="switchAdminUsersTab('cashiers')">🎫 Кассиры</button>
-                        <button class="tab" data-utab="controllers" onclick="switchAdminUsersTab('controllers')">🔍 Контролёры</button>
-                    </div>
-                    <div id="adminUsersList"></div>
-                </div>
-                <div id="adminCreateTab" class="hidden">
-                    <div style="background:rgba(255,255,255,0.02);border-radius:14px;padding:14px;">
-                        <h4 style="color:#f5a623;margin-bottom:8px;">➕ Создать сотрудника</h4>
+            <!-- Add Employee (only for chairman) -->
+            <div class="card" v-if="currentUser.role === 'chairman'">
+                <div class="card-title">➕ Назначить сотрудника</div>
+                <div class="grid-2col">
+                    <div>
                         <div class="form-group">
-                            <label>Тип</label>
-                            <select id="adminCreateType" onchange="adminCreateFields()" style="width:100%;padding:8px 12px;border-radius:30px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.03);color:#e8e8e8;font-size:0.85rem;outline:none;">
-                                <option value="cashier">🎫 Кассир</option>
-                                <option value="controller">🔍 Контролёр</option>
+                            <label>Должность</label>
+                            <input v-model="newPerson.roleTitle" placeholder="Например: Министр финансов">
+                        </div>
+                        <div class="form-group">
+                            <label>ФИО</label>
+                            <input v-model="newPerson.fullName" placeholder="Иванов Иван Иванович">
+                        </div>
+                        <div class="form-group">
+                            <label>Логин (уникальный)</label>
+                            <input v-model="newPerson.login" placeholder="придумайте логин">
+                        </div>
+                        <div class="form-group">
+                            <label>Пароль</label>
+                            <input type="text" v-model="newPerson.password" placeholder="придумайте пароль">
+                        </div>
+                        <div class="form-group">
+                            <label>Роль</label>
+                            <select v-model="newPerson.role">
+                                <option value="staff">Сотрудник</option>
+                                <option value="governor">Правитель</option>
                             </select>
                         </div>
-                        <div id="adminCreateFields"></div>
-                        <button class="btn-success" onclick="adminCreateUser()" style="width:100%;padding:8px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">➕ Создать</button>
+                    </div>
+                    <div>
+                        <div class="form-group">
+                            <label>📸 Фото сотрудника</label>
+                            <button type="button" @click="triggerFileUpload" class="camera-btn">📁 Выбрать фото</button>
+                            <input type="file" ref="fileInput" accept="image/*" @change="onFileSelected" class="hidden-file">
+                            <div v-if="newPerson.photoPreview">
+                                <img :src="newPerson.photoPreview" class="photo-preview">
+                                <button @click="clearNewPhoto" class="small-btn danger">Очистить</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>📄 Текст документа (опционально)</label>
+                            <textarea rows="2" v-model="newPerson.documentText" placeholder="Указ / Приказ о назначении..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>🖼️ Фото документа</label>
+                            <button type="button" @click="triggerDocUpload" class="camera-btn">📎 Загрузить фото</button>
+                            <input type="file" ref="docFileInput" accept="image/*" @change="onDocFileSelected" class="hidden-file">
+                            <div v-if="newPerson.documentImagePreview">
+                                <img :src="newPerson.documentImagePreview" class="photo-preview">
+                                <button @click="clearNewDoc" class="small-btn danger">Очистить</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button @click="addUser" style="width:100%; margin-top:4px;">✅ Назначить</button>
+            </div>
+
+            <!-- All Employees (only for chairman) -->
+            <div class="card" v-if="currentUser.role === 'chairman'">
+                <div class="card-title">📋 Все сотрудники</div>
+                <div v-if="loading" class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Загрузка...</div>
+                <div v-else-if="allUsersList.length === 0" class="empty-state">Пока нет назначенных сотрудников</div>
+                <div class="member-list" v-else>
+                    <div v-for="user in allUsersList" :key="user.login" class="member-item">
+                        <div class="member-info">
+                            <img v-if="user.photoUrl" :src="user.photoUrl" class="member-photo">
+                            <div v-else style="width:54px;height:54px;background:#d9e2ed;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;">📷</div>
+                            <div>
+                                <strong>{{ user.fullName }}</strong><br>
+                                <span class="badge">{{ user.roleTitle || getRoleName(user.role) }}</span>
+                                <span class="role-badge" v-if="user.role === 'governor'">⚜️ Правитель</span>
+                                <div style="font-size:0.7rem; color:#3e5f7e; margin-top:2px;">Логин: {{ user.login }}</div>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <button class="small-btn" @click="editUserDocument(user)">📄 Документ</button>
+                            <button class="small-btn danger" @click="removeUser(user.login)">🗑 Удалить</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Common Documents - доступно и Председателю, и Правителю -->
+            <div class="card">
+                <div class="card-title">📚 Общие документы (видны всем)</div>
+                <div style="background:#f5f9ff; padding:18px; border-radius:24px; margin-bottom:18px;">
+                    <div class="form-group">
+                        <label>Название документа</label>
+                        <input v-model="newDocTitle" placeholder="Например: Постановление №1">
+                    </div>
+                    <div class="form-group">
+                        <label>Текст</label>
+                        <textarea v-model="newDocText" rows="2" placeholder="Содержание документа..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Фото/скан</label>
+                        <button @click="triggerCommonDocUpload" class="camera-btn">📎 Загрузить фото</button>
+                        <input type="file" ref="commonDocInput" accept="image/*" @change="onCommonDocSelected" class="hidden-file">
+                        <div v-if="newDocImagePreview">
+                            <img :src="newDocImagePreview" class="photo-preview">
+                            <button @click="newDocImagePreview = null; newDocImageData = null" class="small-btn danger">Очистить</button>
+                        </div>
+                    </div>
+                    <button @click="addCommonDocument">📄 Добавить документ</button>
+                </div>
+
+                <div v-if="loadingDocs" class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Загрузка...</div>
+                <div v-else-if="commonDocuments.length === 0" class="empty-state">Пока нет общих документов</div>
+                <div class="documents-grid" v-else>
+                    <div v-for="doc in commonDocuments" :key="doc.id" class="document-card">
+                        <div class="flex-between">
+                            <h4>{{ doc.title || 'Документ' }}</h4>
+                            <button class="small-btn danger" @click="removeCommonDocument(doc.id)">🗑 Удалить</button>
+                        </div>
+                        <div v-if="doc.text" style="margin:10px 0; color:#1e2f41;">{{ doc.text }}</div>
+                        <div v-if="doc.image">
+                            <img :src="doc.image" class="document-img" @click="openModal(doc.image)">
+                        </div>
+                        <div style="font-size:0.7rem; color:#7a8a9e; margin-top:6px;">
+                            Добавлен: {{ doc.date }} 
+                            <span v-if="doc.author">• {{ doc.author }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STAFF PANEL (non-chairman, non-governor) -->
+        <div class="main-content" v-else>
+            <div class="card">
+                <div class="card-title">📄 Ваш персональный документ</div>
+                <div class="document-view">
+                    <div class="member-info" style="margin-bottom:14px;">
+                        <img v-if="currentUser.photoUrl" :src="currentUser.photoUrl" class="member-photo">
+                        <div v-else style="width:54px;height:54px;background:#d9e2ed;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;">📷</div>
+                        <div>
+                            <h3>{{ currentUser.fullName }}</h3>
+                            <p><strong>{{ currentUser.roleTitle || getRoleName(currentUser.role) }}</strong></p>
+                        </div>
+                    </div>
+                    <div v-if="currentUser.documentText" style="background:white; padding:14px; border-radius:18px; margin:10px 0;">{{ currentUser.documentText }}</div>
+                    <div v-if="currentUser.documentImageData">
+                        <img :src="currentUser.documentImageData" class="document-img" @click="openModal(currentUser.documentImageData)">
+                        <div class="badge" style="margin-top:4px;">📸 Фото документа (нажмите)</div>
+                    </div>
+                    <div v-if="!currentUser.documentText && !currentUser.documentImageData" style="color:#b1624b;">⚠️ Персональный документ ещё не загружен.</div>
+                </div>
+                <hr style="margin:16px 0; border:1px solid #eef2f8;">
+                <div class="flex-between">
+                    <div><strong>Ваши данные:</strong> логин: {{ currentUser.login }}</div>
+                    <div class="badge">ГУ СВС</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📚 Общие документы</div>
+                <div v-if="loadingDocs" class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Загрузка...</div>
+                <div v-else-if="commonDocuments.length === 0" class="empty-state">Пока нет опубликованных документов</div>
+                <div v-else class="documents-grid">
+                    <div v-for="doc in commonDocuments" :key="doc.id" class="document-card">
+                        <h4>{{ doc.title || 'Документ' }}</h4>
+                        <div v-if="doc.text" style="margin:10px 0;">{{ doc.text }}</div>
+                        <div v-if="doc.image">
+                            <img :src="doc.image" class="document-img" @click="openModal(doc.image)">
+                        </div>
+                        <div style="font-size:0.7rem; color:#7a8a9e;">
+                            Добавлен: {{ doc.date }}
+                            <span v-if="doc.author">• {{ doc.author }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBlZ5ZtyTXgtXxSJAx1jOxwhTrzlHRJmo",
-            authDomain: "bk-cashier.firebaseapp.com",
-            databaseURL: "https://bk-cashier-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "bk-cashier",
-            storageBucket: "bk-cashier.firebasestorage.app",
-            messagingSenderId: "385000840969",
-            appId: "1:385000840969:web:1ec8d09176b6551dc0fdd8"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+    <!-- MODAL for image -->
+    <div v-if="modalImage" class="modal" @click="closeModal">
+        <div class="modal-content"><img :src="modalImage" alt="Увеличенное фото"></div>
+    </div>
 
-        // ===== СТАНЦИИ =====
-        const allStations = [
-            'Павелецкий вокзал', 'Дербеневская', 'Тульская', 'Верхние Котлы',
-            'Нагатинская', 'Варшавская', 'Чертаново', 'Котляково',
-            'Бирюлейко-Тов.', 'Бирюлейко-Пасс.', 'Булатниково', 'Расторгуево',
-            'Калинина', 'Ленинская', '32 км', 'Домодедово',
-            'Взлётная', 'Востряково', 'Белые столбы', '52 км',
-            'Барыбино', 'Вельяминово', 'Привалово', '328 км',
-            '332 км', 'Малино', '341 км', 'Шугарово',
-            '85 км', 'Жилёво', 'Ситенка', 'Ступино',
-            'Акри', 'Белопесоцкий', 'Кашира', 'Тесна',
-            'Ожерелье', '121 км', 'Пурлово', '131 км',
-            'Топканово', '137 км', 'Богатищево', '146 км',
-            'Коровино', '152 км', 'Узуново',
-            'Авиационная', 'Космос', 'Аэропорт Домодедово',
-            'Яганово', 'Сотниково', 'Кольчево'
-        ];
+    <!-- EDIT DOCUMENT MODAL -->
+    <div v-if="editingUser" class="modal" @click.self="closeEditModal">
+        <div class="modal-card">
+            <h3 style="margin-bottom:16px;">Документ: {{ editingUser.fullName }}</h3>
+            <div class="form-group">
+                <label>Текст документа</label>
+                <textarea v-model="editDocText" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Фото документа</label>
+                <div v-if="editDocImage"><img :src="editDocImage" class="photo-preview" style="max-width:100%;"></div>
+                <button @click="triggerEditDocUpload" class="small-btn">📎 Заменить фото</button>
+                <button v-if="editDocImage" @click="editDocImage = null; editDocImageData = null" class="small-btn danger">🗑 Удалить фото</button>
+                <input type="file" ref="editDocInput" accept="image/*" @change="onEditDocSelected" class="hidden-file">
+            </div>
+            <div class="flex-between" style="margin-top:18px;">
+                <button @click="saveUserDoc">💾 Сохранить</button>
+                <button @click="closeEditModal" class="small-btn">Отмена</button>
+            </div>
+        </div>
+    </div>
 
-        // ===== ПЕРЕМЕННЫЕ =====
-        let currentUser = { id: null, name: null, type: 'passenger', phone: null, role: null, station: null };
-        let currentRole = 'passenger';
-        let adminUsersTab = 'cashiers';
-        let passengerTab = 'active';
-        let controllerStation = 'Павелецкий вокзал';
+    <div v-if="toastMessage" class="success-toast">{{ toastMessage }}</div>
+</div>
 
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.classList.add('show');
-            clearTimeout(t._timeout);
-            t._timeout = setTimeout(() => t.classList.remove('show'), 2000);
-        }
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+<script>
+    // ========== FIREBASE CONFIG ==========
+    const firebaseConfig = {
+        apiKey: "AIzaSyBlZ5ZtyTXgtXxSJAx1jOxwhTrzlHRJmo",
+        authDomain: "bk-cashier.firebaseapp.com",
+        databaseURL: "https://bk-cashier-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "bk-cashier",
+        storageBucket: "bk-cashier.firebasestorage.app",
+        messagingSenderId: "385000840969",
+        appId: "1:385000840969:web:1ec8d09176b6551dc0fdd8"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-        function getTicketPrice(type) {
-            if (type === 'social') return 0;
-            if (type === 'student') return 50;
-            return 100;
-        }
+    // ========== VUE APP ==========
+    new Vue({
+        el: '#app',
+        data: {
+            // Auth
+            currentUser: null,
+            loginForm: { login: '', password: '' },
 
-        function getTypeName(type) {
-            if (type === 'social') return 'Социальная карта';
-            if (type === 'student') return 'Карта москвича/школьника';
-            return 'Обычный';
-        }
+            // New employee form
+            newPerson: {
+                roleTitle: '',
+                fullName: '',
+                login: '',
+                password: '',
+                role: 'staff',
+                photoPreview: null,
+                photoUrl: '',
+                documentText: '',
+                documentImageData: '',
+                documentImagePreview: null
+            },
 
-        function getDirectionName(dir) {
-            return dir === 'roundtrip' ? 'Туда-обратно' : 'Туда';
-        }
+            // New common document
+            newDocTitle: '',
+            newDocText: '',
+            newDocImagePreview: null,
+            newDocImageData: null,
 
-        function generateTicketNumber() {
-            return String(Math.floor(1000 + Math.random() * 9000));
-        }
+            // Lists
+            usersList: [],
+            commonDocuments: [],
+            loading: true,
+            loadingDocs: true,
 
-        // ===== ПЕРЕКЛЮЧЕНИЕ РОЛЕЙ =====
-        window.switchRole = function(role) {
-            currentRole = role;
-            document.querySelectorAll('.role-btn').forEach(b => b.classList.toggle('active', b.dataset.role === role));
-            document.querySelectorAll('#passengerPanel, #cashierPanel, #controllerPanel, #adminPanel')
-                .forEach(el => el.classList.add('hidden'));
+            // UI
+            modalImage: null,
+            toastMessage: '',
+            editingUser: null,
+            editDocText: '',
+            editDocImage: null,
+            editDocImageData: null,
 
-            if (role === 'passenger') {
-                document.getElementById('passengerPanel').classList.remove('hidden');
-                document.getElementById('passengerContent').classList.add('hidden');
-                document.getElementById('passengerAuth').classList.remove('hidden');
-            } else if (role === 'cashier') {
-                document.getElementById('cashierPanel').classList.remove('hidden');
-                document.getElementById('cashierContent').classList.add('hidden');
-                document.getElementById('cashierAuth').classList.remove('hidden');
-            } else if (role === 'controller') {
-                document.getElementById('controllerPanel').classList.remove('hidden');
-                document.getElementById('controllerContent').classList.add('hidden');
-                document.getElementById('controllerAuth').classList.remove('hidden');
-            } else if (role === 'admin') {
-                document.getElementById('adminPanel').classList.remove('hidden');
-                document.getElementById('adminContent').classList.add('hidden');
-                document.getElementById('adminAuth').classList.remove('hidden');
+            // Firebase listeners
+            usersListener: null,
+            docsListener: null
+        },
+
+        computed: {
+            allUsersList() {
+                return this.usersList.filter(u => u.role !== 'chairman');
             }
-        };
+        },
 
-        // =============================================
-        // ===== ПАССАЖИР =====
-        // =============================================
-        window.passengerLogin = function() {
-            const phone = document.getElementById('passengerPhone').value.trim();
-            if (!phone) { showToast('Введите телефон'); return; }
+        mounted() {
+            this.initializeChairman();
+            this.loadUsers();
+            this.loadDocuments();
+        },
 
-            db.ref('users').orderByChild('phone').equalTo(phone).once('value', (sn) => {
-                if (sn.exists()) {
-                    sn.forEach(child => {
-                        currentUser.id = child.key;
-                        currentUser.name = child.val().name;
-                        currentUser.phone = child.val().phone;
-                        currentUser.type = 'passenger';
-                    });
-                    showToast('Добро пожаловать, ' + currentUser.name + '!');
-                    enterPassengerMode();
-                } else {
-                    showToast('Пользователь не найден. Зарегистрируйтесь.');
-                }
-            });
-        };
+        beforeDestroy() {
+            if (this.usersListener) this.usersListener.off();
+            if (this.docsListener) this.docsListener.off();
+        },
 
-        window.passengerRegister = function() {
-            const phone = document.getElementById('passengerPhone').value.trim();
-            const name = document.getElementById('passengerName').value.trim();
-            if (!phone || !name) { showToast('Заполните все поля'); return; }
-
-            const userId = 'user_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
-            db.ref('users/' + userId).set({
-                id: userId,
-                name: name,
-                phone: phone,
-                type: 'passenger',
-                createdAt: Date.now()
-            }).then(() => {
-                currentUser = { id: userId, name: name, phone: phone, type: 'passenger' };
-                showToast('Регистрация успешна!');
-                enterPassengerMode();
-            });
-        };
-
-        function enterPassengerMode() {
-            document.getElementById('passengerAuth').classList.add('hidden');
-            document.getElementById('passengerContent').classList.remove('hidden');
-            document.getElementById('userNameDisplay').textContent = currentUser.name + ' 🎫';
-            renderPassengerTickets();
-        }
-
-        window.passengerBuyTicket = function() {
-            if (!currentUser.id) { showToast('Войдите как пассажир'); return; }
-            const station = document.getElementById('passengerStation').value;
-            const type = document.getElementById('passengerTicketType').value;
-            const direction = document.getElementById('passengerDirection').value;
-            createTicket(currentUser.id, currentUser.name, currentUser.phone, station, type, direction);
-        };
-
-        window.switchPassengerTab = function(tab) {
-            passengerTab = tab;
-            document.querySelectorAll('#passengerContent .tab[data-ptab]').forEach(t => t.classList.toggle('active', t
-                .dataset.ptab === tab));
-            renderPassengerTickets();
-        };
-
-        function renderPassengerTickets() {
-            const container = document.getElementById('passengerTickets');
-            db.ref('tickets').orderByChild('userId').equalTo(currentUser.id).on('value', (sn) => {
-                const tickets = [];
-                sn.forEach(child => tickets.push({ id: child.key, ...child.val() }));
-                tickets.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-
-                const filtered = passengerTab === 'active' ?
-                    tickets.filter(t => t.status === 'active') :
-                    tickets;
-
-                if (filtered.length === 0) {
-                    container.innerHTML =
-                        '<div style="text-align:center;color:#555;padding:20px;font-size:0.85rem;">Нет билетов</div>';
-                    return;
-                }
-
-                container.innerHTML = filtered.map(t => `
-                    <div class="ticket-card">
-                        <div class="ticket-header">
-                            <span class="ticket-number">🎫 №${t.ticketNumber || t.id}</span>
-                            <span class="ticket-status ${t.status === 'active' ? 'status-active' : 'status-expired'}">
-                                ${t.status === 'active' ? '✅ Действителен' : '❌ Недействителен'}
-                            </span>
-                        </div>
-                        <div class="ticket-route">🚆 ${t.station}</div>
-                        <div class="ticket-info"><i class="fas fa-user"></i> ${t.passengerName}</div>
-                        <div class="ticket-info"><i class="fas fa-phone"></i> ${t.phone}</div>
-                        <div class="ticket-info"><i class="fas fa-ticket-alt"></i> ${getTypeName(t.type)}</div>
-                        <div class="ticket-info"><i class="fas fa-exchange-alt"></i> ${getDirectionName(t.direction)}</div>
-                        <div class="ticket-info"><i class="fas fa-ruble-sign"></i> ${t.price} ₽</div>
-                        <div class="ticket-info"><i class="fas fa-clock"></i> До ${new Date(t.expiresAt).toLocaleString()}</div>
-                        <div class="qr-container" id="qr_${t.id}"></div>
-                        <script>
-                            setTimeout(() => {
-                                try {
-                                    new QRCode(document.getElementById('qr_${t.id}'), {
-                                        text: '${t.ticketNumber || t.id}',
-                                        width: 120,
-                                        height: 120
-                                    });
-                                } catch(e) {}
-                            }, 100);
-                        <\/script>
-                    </div>
-                `).join('');
-            });
-        }
-
-        // =============================================
-        // ===== КАССИР =====
-        // =============================================
-        window.cashierLogin = function() {
-            const station = document.getElementById('cashierStationSelect').value;
-            const login = document.getElementById('cashierLogin').value.trim();
-            const password = document.getElementById('cashierPassword').value.trim();
-
-            if (!station || !login || !password) { showToast('Заполните все поля'); return; }
-
-            db.ref('cashiers').orderByChild('login').equalTo(login).once('value', (sn) => {
-                if (sn.exists()) {
-                    let found = false;
-                    sn.forEach(child => {
-                        const data = child.val();
-                        if (data.password === password && data.station === station) {
-                            currentUser = {
-                                id: child.key,
-                                name: data.name,
-                                type: 'cashier',
-                                role: 'cashier',
-                                station: data.station
-                            };
-                            found = true;
-                            showToast('👋 Добро пожаловать, ' + data.name + '!');
-                            document.getElementById('cashierAuth').classList.add('hidden');
-                            document.getElementById('cashierContent').classList.remove('hidden');
-                            document.getElementById('userNameDisplay').textContent = data.name + ' 🎫 ' + data.station;
-                            loadCashierTickets();
-                        }
-                    });
-                    if (!found) showToast('Неверный логин, пароль или станция');
-                } else {
-                    showToast('Кассир не найден');
-                }
-            });
-        };
-
-        window.cashierFindUser = function(phone) {
-            const nameField = document.getElementById('cashierName');
-            if (!phone || phone.length < 10) {
-                nameField.value = '';
-                nameField.placeholder = 'Имя пассажира';
-                return;
-            }
-
-            db.ref('users').orderByChild('phone').equalTo(phone).once('value', (sn) => {
-                if (sn.exists()) {
-                    sn.forEach(child => {
-                        nameField.value = child.val().name;
-                    });
-                } else {
-                    nameField.value = '';
-                    nameField.placeholder = 'Новый пассажир';
-                }
-            });
-        };
-
-        window.cashierSellTicket = function() {
-            const phone = document.getElementById('cashierPhone').value.trim();
-            const name = document.getElementById('cashierName').value.trim();
-            const station = document.getElementById('cashierStation').value;
-            const type = document.getElementById('cashierTicketType').value;
-            const direction = document.getElementById('cashierDirection').value;
-
-            if (!phone || !name) { showToast('Введите телефон и имя пассажира'); return; }
-            if (phone.length < 10) { showToast('Введите полный номер телефона'); return; }
-
-            db.ref('users').orderByChild('phone').equalTo(phone).once('value', (sn) => {
-                let userId;
-                if (sn.exists()) {
-                    sn.forEach(child => { userId = child.key; });
-                    db.ref('users/' + userId + '/name').set(name);
-                } else {
-                    userId = 'user_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
-                    db.ref('users/' + userId).set({
-                        id: userId,
-                        name: name,
-                        phone: phone,
-                        type: 'passenger',
-                        createdAt: Date.now()
-                    });
-                }
-
-                const ticketNumber = generateTicketNumber();
-                createTicketWithNumber(userId, name, phone, station, type, direction, ticketNumber);
-
-                document.getElementById('cashierPhone').value = '';
-                document.getElementById('cashierName').value = '';
-                document.getElementById('cashierName').placeholder = 'Имя пассажира';
-
-                showToast('✅ Билет №' + ticketNumber + ' продан!');
-                loadCashierTickets();
-            });
-        };
-
-        function loadCashierTickets() {
-            const container = document.getElementById('cashierTickets');
-            db.ref('tickets').orderByChild('createdAt').limitToLast(20).on('value', (sn) => {
-                const tickets = [];
-                sn.forEach(child => tickets.push({ id: child.key, ...child.val() }));
-                tickets.reverse();
-
-                if (tickets.length === 0) {
-                    container.innerHTML = '<div style="text-align:center;color:#555;padding:15px;">Нет билетов</div>';
-                    return;
-                }
-
-                container.innerHTML = tickets.map(t => `
-                    <div class="ticket-card">
-                        <div class="ticket-header">
-                            <span class="ticket-number">🎫 №${t.ticketNumber || t.id}</span>
-                            <span class="ticket-status ${t.status === 'active' ? 'status-active' : 'status-expired'}">
-                                ${t.status === 'active' ? '✅ Действителен' : '❌ Недействителен'}
-                            </span>
-                        </div>
-                        <div class="ticket-route">🚆 ${t.station}</div>
-                        <div class="ticket-info"><i class="fas fa-user"></i> ${t.passengerName}</div>
-                        <div class="ticket-info"><i class="fas fa-phone"></i> ${t.phone}</div>
-                        <div class="ticket-info"><i class="fas fa-ticket-alt"></i> ${getTypeName(t.type)}</div>
-                        <div class="ticket-info"><i class="fas fa-ruble-sign"></i> ${t.price} ₽</div>
-                    </div>
-                `).join('');
-            });
-        }
-
-        // =============================================
-        // ===== КОНТРОЛЁР (с продажей) =====
-        // =============================================
-        window.controllerLogin = function() {
-            const login = document.getElementById('controllerLogin').value.trim();
-            const password = document.getElementById('controllerPassword').value.trim();
-
-            if (!login || !password) { showToast('Заполните поля'); return; }
-
-            db.ref('controllers').orderByChild('login').equalTo(login).once('value', (sn) => {
-                if (sn.exists()) {
-                    let found = false;
-                    sn.forEach(child => {
-                        const data = child.val();
-                        if (data.password === password) {
-                            currentUser = {
-                                id: child.key,
-                                name: data.name,
-                                type: 'controller',
-                                role: 'controller'
-                            };
-                            found = true;
-                            showToast('👋 Добро пожаловать, ' + data.name + '!');
-                            document.getElementById('controllerAuth').classList.add('hidden');
-                            document.getElementById('controllerContent').classList.remove('hidden');
-                            document.getElementById('userNameDisplay').textContent = data.name + ' 🔍';
-                        }
-                    });
-                    if (!found) showToast('Неверный пароль');
-                } else {
-                    showToast('Контролёр не найден');
-                }
-            });
-        };
-
-        window.controllerFindUser = function(phone) {
-            const nameField = document.getElementById('controllerSellName');
-            if (!phone || phone.length < 10) {
-                nameField.value = '';
-                nameField.placeholder = 'Имя пассажира';
-                return;
-            }
-
-            db.ref('users').orderByChild('phone').equalTo(phone).once('value', (sn) => {
-                if (sn.exists()) {
-                    sn.forEach(child => {
-                        nameField.value = child.val().name;
-                    });
-                } else {
-                    nameField.value = '';
-                    nameField.placeholder = 'Новый пассажир';
-                }
-            });
-        };
-
-        window.controllerSellTicket = function() {
-            const phone = document.getElementById('controllerSellPhone').value.trim();
-            const name = document.getElementById('controllerSellName').value.trim();
-            const station = document.getElementById('controllerSellStation').value;
-            const type = document.getElementById('controllerSellType').value;
-            const direction = document.getElementById('controllerSellDirection').value;
-
-            if (!phone || !name) { showToast('Введите телефон и имя пассажира'); return; }
-            if (phone.length < 10) { showToast('Введите полный номер телефона'); return; }
-
-            db.ref('users').orderByChild('phone').equalTo(phone).once('value', (sn) => {
-                let userId;
-                if (sn.exists()) {
-                    sn.forEach(child => { userId = child.key; });
-                    db.ref('users/' + userId + '/name').set(name);
-                } else {
-                    userId = 'user_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
-                    db.ref('users/' + userId).set({
-                        id: userId,
-                        name: name,
-                        phone: phone,
-                        type: 'passenger',
-                        createdAt: Date.now()
-                    });
-                }
-
-                const ticketNumber = generateTicketNumber();
-                createTicketWithNumber(userId, name, phone, station, type, direction, ticketNumber);
-
-                document.getElementById('controllerSellPhone').value = '';
-                document.getElementById('controllerSellName').value = '';
-                document.getElementById('controllerSellName').placeholder = 'Имя пассажира';
-
-                showToast('✅ Билет №' + ticketNumber + ' оформлен!');
-            });
-        };
-
-        window.controllerSetStation = function() {
-            const station = prompt('Введите конечную станцию:');
-            if (station && allStations.includes(station)) {
-                controllerStation = station;
-                showToast('📍 Конечная станция: ' + station);
-            } else if (station) {
-                showToast('❌ Станция не найдена');
-            }
-        };
-
-        window.controllerScanTicket = function() {
-            document.getElementById('controllerScanInput').focus();
-            showToast('📷 Введите номер билета');
-        };
-
-        window.controllerCheckTicket = function(code) {
-            const resultDiv = document.getElementById('controllerScanResult');
-            if (!code || code.length < 4) {
-                resultDiv.style.display = 'none';
-                return;
-            }
-
-            db.ref('tickets').orderByChild('ticketNumber').equalTo(code).once('value', (sn) => {
-                let found = false;
-                sn.forEach(child => {
-                    const ticket = child.val();
-                    found = true;
-                    const now = Date.now();
-                    const isValid = ticket.status === 'active' && ticket.expiresAt > now;
-
-                    resultDiv.style.display = 'block';
-                    resultDiv.className = 'scan-result ' + (isValid ? 'success' : 'error');
-                    resultDiv.innerHTML = `
-                        <div style="font-weight:bold;font-size:1rem;margin-bottom:4px;">
-                            ${isValid ? '✅ БИЛЕТ ДЕЙСТВИТЕЛЕН' : '❌ БИЛЕТ НЕДЕЙСТВИТЕЛЕН'}
-                        </div>
-                        <div>🎫 №${ticket.ticketNumber || ticket.id}</div>
-                        <div>🚆 ${ticket.station}</div>
-                        <div>🧑 ${ticket.passengerName}</div>
-                        <div>📱 ${ticket.phone}</div>
-                        <div>🎫 ${getTypeName(ticket.type)}</div>
-                        <div>🔄 ${getDirectionName(ticket.direction)}</div>
-                        <div>💰 ${ticket.price} ₽</div>
-                        <div style="font-size:0.75rem;color:#888;">⏳ До ${new Date(ticket.expiresAt).toLocaleString()}</div>
-                        ${!isValid ? '<div style="color:#ef5350;margin-top:4px;">Срок действия истёк</div>' : ''}
-                        ${controllerStation ? '<div style="color:#4CAF50;margin-top:4px;">📍 Конечная: ' + controllerStation + '</div>' : ''}
-                    `;
+        methods: {
+            // ===== INITIALIZE CHAIRMAN =====
+            initializeChairman() {
+                // Проверяем, есть ли председатель в базе
+                db.ref('users').orderByChild('role').equalTo('chairman').once('value', (sn) => {
+                    if (!sn.exists()) {
+                        // Создаем председателя
+                        const chairmanData = {
+                            login: '2347',
+                            password: '2203',
+                            role: 'chairman',
+                            roleTitle: 'Председатель Правительства СВС',
+                            fullName: 'Черных Вячеслав Андреевич',
+                            documentText: '',
+                            documentImageData: '',
+                            photoUrl: ''
+                        };
+                        db.ref('users').push().set(chairmanData);
+                    }
                 });
+            },
 
-                if (!found) {
-                    resultDiv.style.display = 'block';
-                    resultDiv.className = 'scan-result error';
-                    resultDiv.innerHTML = '❌ Билет не найден';
-                }
-            });
-        };
+            // ===== TOAST =====
+            showToast(msg) {
+                this.toastMessage = msg;
+                clearTimeout(this._toastTimer);
+                this._toastTimer = setTimeout(() => this.toastMessage = '', 2800);
+            },
 
-        // =============================================
-        // ===== АДМИН =====
-        // =============================================
-        window.adminLogin = function() {
-            const login = document.getElementById('adminLogin').value.trim();
-            const password = document.getElementById('adminPassword').value.trim();
+            // ===== ROLE =====
+            getRoleName(role) {
+                const names = {
+                    chairman: 'Председатель Правительства СВС',
+                    governor: 'Правитель СВС',
+                    minister: 'Министр строительства',
+                    staff: 'Сотрудник'
+                };
+                return names[role] || role;
+            },
 
-            if (login === '2203' && password === '2347') {
-                showToast('👋 Добро пожаловать, администратор!');
-                document.getElementById('adminAuth').classList.add('hidden');
-                document.getElementById('adminContent').classList.remove('hidden');
-                document.getElementById('userNameDisplay').textContent = 'Администратор 🔐';
-                switchAdminTab('users');
-                switchAdminUsersTab('cashiers');
-            } else {
-                showToast('❌ Неверный логин или пароль');
-            }
-        };
+            // ===== USERS =====
+            loadUsers() {
+                this.loading = true;
+                this.usersListener = db.ref('users');
+                this.usersListener.on('value', (sn) => {
+                    const users = [];
+                    sn.forEach(child => {
+                        users.push({ id: child.key, ...child.val() });
+                    });
+                    this.usersList = users;
+                    this.loading = false;
+                });
+            },
 
-        window.switchAdminTab = function(tab) {
-            document.querySelectorAll('#adminContent .tab[data-atab]').forEach(t => t.classList.toggle('active', t.dataset
-                .atab === tab));
-            document.getElementById('adminUsersTab').classList.toggle('hidden', tab !== 'users');
-            document.getElementById('adminCreateTab').classList.toggle('hidden', tab !== 'create');
-            if (tab === 'users') switchAdminUsersTab(adminUsersTab);
-            if (tab === 'create') adminCreateFields();
-        };
+            // ===== DOCUMENTS =====
+            loadDocuments() {
+                this.loadingDocs = true;
+                this.docsListener = db.ref('common_documents');
+                this.docsListener.on('value', (sn) => {
+                    const docs = [];
+                    sn.forEach(child => {
+                        docs.push({ id: child.key, ...child.val() });
+                    });
+                    this.commonDocuments = docs;
+                    this.loadingDocs = false;
+                });
+            },
 
-        window.switchAdminUsersTab = function(tab) {
-            adminUsersTab = tab;
-            document.querySelectorAll('#adminUsersTab .tab[data-utab]').forEach(t => t.classList.toggle('active', t.dataset
-                .utab === tab));
-            loadAdminUsers(tab);
-        };
-
-        function loadAdminUsers(type) {
-            const container = document.getElementById('adminUsersList');
-            let ref;
-
-            if (type === 'cashiers') ref = db.ref('cashiers');
-            else if (type === 'controllers') ref = db.ref('controllers');
-
-            ref.on('value', (sn) => {
-                const items = [];
-                sn.forEach(child => items.push({ id: child.key, ...child.val() }));
-
-                if (items.length === 0) {
-                    container.innerHTML = '<div style="color:#555;padding:15px;text-align:center;">Нет сотрудников</div>';
+            // ===== AUTH =====
+            doLogin() {
+                const { login, password } = this.loginForm;
+                if (!login || !password) {
+                    this.showToast('❌ Введите логин и пароль');
                     return;
                 }
 
-                container.innerHTML = items.map(u => `
-                    <div class="admin-user-item">
-                        <div class="user-info">
-                            <div class="name">${u.name || 'Без имени'}</div>
-                            <div class="detail">${u.station ? '📍 ' + u.station : ''} ${u.login ? 'Логин: ' + u.login : ''}</div>
-                        </div>
-                        <button class="delete-btn" onclick="adminDeleteUser('${type}', '${u.id}')">✕ Удалить</button>
-                    </div>
-                `).join('');
-            });
-        }
+                const user = this.usersList.find(u =>
+                    u.login === login && u.password === password
+                );
 
-        window.adminDeleteUser = function(type, id) {
-            if (!confirm('Удалить сотрудника?')) return;
-            let ref;
-            if (type === 'cashiers') ref = db.ref('cashiers/' + id);
-            else if (type === 'controllers') ref = db.ref('controllers/' + id);
+                if (user) {
+                    this.currentUser = { ...user };
+                    this.showToast(`👋 Добро пожаловать, ${user.fullName}`);
+                    this.loginForm = { login: '', password: '' };
+                } else {
+                    this.showToast('❌ Неверный логин или пароль');
+                }
+            },
 
-            ref.remove().then(() => {
-                showToast('✅ Сотрудник удалён');
-                loadAdminUsers(type);
-            });
-        };
+            logout() {
+                this.currentUser = null;
+                this.loginForm = { login: '', password: '' };
+                this.showToast('👋 Выход выполнен');
+            },
 
-        window.adminCreateFields = function() {
-            const container = document.getElementById('adminCreateFields');
-            const type = document.getElementById('adminCreateType').value;
+            // ===== ADD USER =====
+            resetNewPersonForm() {
+                this.newPerson = {
+                    roleTitle: '',
+                    fullName: '',
+                    login: '',
+                    password: '',
+                    role: 'staff',
+                    photoPreview: null,
+                    photoUrl: '',
+                    documentText: '',
+                    documentImageData: '',
+                    documentImagePreview: null
+                };
+                if (this.$refs.fileInput) this.$refs.fileInput.value = '';
+                if (this.$refs.docFileInput) this.$refs.docFileInput.value = '';
+            },
 
-            if (type === 'cashier') {
-                container.innerHTML = `
-                    <div class="form-group"><label>ФИО</label><input type="text" id="adminCreateName" placeholder="Иванов Иван"></div>
-                    <div class="form-group"><label>Станция</label>
-                        <select id="adminCreateStation" style="width:100%;padding:8px 12px;border-radius:30px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.03);color:#e8e8e8;font-size:0.85rem;outline:none;">
-                            ${allStations.map(s => `<option value="${s}">${s}</option>`).join('')}
-                        </select>
-                    </div>
-                    <div class="form-group"><label>Логин</label><input type="text" id="adminCreateLogin" placeholder="Логин"></div>
-                    <div class="form-group"><label>Пароль</label><input type="password" id="adminCreatePassword" placeholder="Пароль"></div>
-                `;
-            } else if (type === 'controller') {
-                container.innerHTML = `
-                    <div class="form-group"><label>ФИО</label><input type="text" id="adminCreateName" placeholder="Иванов Иван"></div>
-                    <div class="form-group"><label>Логин</label><input type="text" id="adminCreateLogin" placeholder="Логин"></div>
-                    <div class="form-group"><label>Пароль</label><input type="password" id="adminCreatePassword" placeholder="Пароль"></div>
-                `;
-            }
-        };
+            addUser() {
+                const p = this.newPerson;
+                if (!p.login?.trim() || !p.password?.trim() || !p.fullName?.trim()) {
+                    this.showToast('❌ Заполните логин, пароль и ФИО');
+                    return;
+                }
+                if (!p.roleTitle?.trim()) {
+                    this.showToast('❌ Укажите должность');
+                    return;
+                }
+                if (this.usersList.find(u => u.login === p.login.trim())) {
+                    this.showToast('❌ Логин уже существует');
+                    return;
+                }
 
-        window.adminCreateUser = function() {
-            const type = document.getElementById('adminCreateType').value;
-            const name = document.getElementById('adminCreateName').value.trim();
-            const login = document.getElementById('adminCreateLogin').value.trim();
-            const password = document.getElementById('adminCreatePassword').value.trim();
+                const newUser = {
+                    login: p.login.trim(),
+                    password: p.password.trim(),
+                    role: p.role || 'staff',
+                    roleTitle: p.roleTitle.trim(),
+                    fullName: p.fullName.trim(),
+                    documentText: p.documentText || '',
+                    documentImageData: p.documentImageData || '',
+                    photoUrl: p.photoUrl || ''
+                };
 
-            if (!name || !login || !password) {
-                showToast('❌ Заполните все поля');
-                return;
-            }
+                const ref = db.ref('users').push();
+                ref.set(newUser).then(() => {
+                    this.resetNewPersonForm();
+                    this.showToast('✅ Сотрудник назначен');
+                });
+            },
 
-            if (type === 'cashier') {
-                const station = document.getElementById('adminCreateStation').value;
-                if (!station) { showToast('❌ Выберите станцию'); return; }
+            removeUser(login) {
+                if (!confirm('Удалить сотрудника?')) return;
+                const user = this.usersList.find(u => u.login === login);
+                if (!user) return;
 
-                const id = 'CASH_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
-                db.ref('cashiers/' + id).set({
-                    id: id,
-                    name: name,
-                    station: station,
-                    login: login,
-                    password: password,
-                    createdAt: Date.now()
+                if (this.currentUser?.login === login) {
+                    this.logout();
+                }
+
+                db.ref('users/' + user.id).remove().then(() => {
+                    this.showToast('🗑️ Сотрудник удалён');
+                });
+            },
+
+            // ===== EDIT USER DOCUMENT =====
+            editUserDocument(user) {
+                this.editingUser = user;
+                this.editDocText = user.documentText || '';
+                this.editDocImage = user.documentImageData || null;
+                this.editDocImageData = user.documentImageData || null;
+            },
+
+            saveUserDoc() {
+                if (!this.editingUser) return;
+                const ref = db.ref('users/' + this.editingUser.id);
+                ref.update({
+                    documentText: this.editDocText,
+                    documentImageData: this.editDocImageData || ''
                 }).then(() => {
-                    showToast('✅ Кассир ' + name + ' создан! Станция: ' + station);
-                    switchAdminUsersTab('cashiers');
+                    if (this.currentUser?.login === this.editingUser.login) {
+                        this.currentUser.documentText = this.editDocText;
+                        this.currentUser.documentImageData = this.editDocImageData;
+                    }
+                    this.showToast('✅ Документ обновлён');
+                    this.closeEditModal();
                 });
-            } else if (type === 'controller') {
-                const id = 'CONT_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
-                db.ref('controllers/' + id).set({
-                    id: id,
-                    name: name,
-                    login: login,
-                    password: password,
-                    createdAt: Date.now()
-                }).then(() => {
-                    showToast('✅ Контролёр ' + name + ' создан!');
-                    switchAdminUsersTab('controllers');
-                });
-            }
-        };
+            },
 
-        // =============================================
-        // ===== ОБЩАЯ ФУНКЦИЯ СОЗДАНИЯ БИЛЕТА =====
-        // =============================================
-        function createTicketWithNumber(userId, name, phone, station, type, direction, ticketNumber) {
-            const ticketId = 'TKT' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4)
-            .toUpperCase();
-            const price = getTicketPrice(type);
-            const expiresAt = Date.now() + 24 * 60 * 60 * 1000;
+            closeEditModal() {
+                this.editingUser = null;
+                this.editDocText = '';
+                this.editDocImage = null;
+                this.editDocImageData = null;
+            },
 
-            db.ref('tickets/' + ticketId).set({
-                id: ticketId,
-                ticketNumber: ticketNumber,
-                userId: userId,
-                passengerName: name,
-                phone: phone,
-                station: station,
-                type: type,
-                direction: direction,
-                price: price,
-                status: 'active',
-                createdAt: Date.now(),
-                expiresAt: expiresAt
-            }).then(() => {
-                // Обновляем список у пассажира если он онлайн
-                if (currentRole === 'passenger' && currentUser.id === userId) {
-                    renderPassengerTickets();
+            // ===== COMMON DOCUMENTS =====
+            resetNewDocumentForm() {
+                this.newDocTitle = '';
+                this.newDocText = '';
+                this.newDocImagePreview = null;
+                this.newDocImageData = null;
+                if (this.$refs.commonDocInput) this.$refs.commonDocInput.value = '';
+            },
+
+            addCommonDocument() {
+                if (!this.newDocTitle.trim() && !this.newDocText.trim() && !this.newDocImageData) {
+                    this.showToast('❌ Заполните название, текст или фото');
+                    return;
                 }
-            });
+
+                const newDoc = {
+                    title: this.newDocTitle.trim() || 'Документ',
+                    text: this.newDocText.trim() || '',
+                    image: this.newDocImageData || null,
+                    date: new Date().toLocaleString('ru-RU'),
+                    author: this.currentUser?.fullName || 'Председатель'
+                };
+
+                db.ref('common_documents').push().set(newDoc).then(() => {
+                    this.resetNewDocumentForm();
+                    this.showToast('✅ Документ опубликован и виден всем!');
+                });
+            },
+
+            removeCommonDocument(docId) {
+                if (!confirm('Удалить документ?')) return;
+                db.ref('common_documents/' + docId).remove().then(() => {
+                    this.showToast('🗑️ Документ удалён');
+                });
+            },
+
+            // ===== FILE HANDLERS =====
+            onFileSelected(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        this.newPerson.photoPreview = ev.target.result;
+                        this.newPerson.photoUrl = ev.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            },
+
+            onDocFileSelected(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        this.newPerson.documentImagePreview = ev.target.result;
+                        this.newPerson.documentImageData = ev.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            },
+
+            onCommonDocSelected(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        this.newDocImagePreview = ev.target.result;
+                        this.newDocImageData = ev.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            },
+
+            onEditDocSelected(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        this.editDocImage = ev.target.result;
+                        this.editDocImageData = ev.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            },
+
+            triggerFileUpload() { this.$refs.fileInput.click(); },
+            triggerDocUpload() { this.$refs.docFileInput.click(); },
+            triggerCommonDocUpload() { this.$refs.commonDocInput.click(); },
+            triggerEditDocUpload() { this.$refs.editDocInput.click(); },
+
+            clearNewPhoto() {
+                this.newPerson.photoPreview = null;
+                this.newPerson.photoUrl = '';
+            },
+
+            clearNewDoc() {
+                this.newPerson.documentImagePreview = null;
+                this.newPerson.documentImageData = '';
+            },
+
+            // ===== MODAL =====
+            openModal(img) { this.modalImage = img; },
+            closeModal() { this.modalImage = null; }
         }
-
-        function createTicket(userId, name, phone, station, type, direction) {
-            const ticketNumber = generateTicketNumber();
-            createTicketWithNumber(userId, name, phone, station, type, direction, ticketNumber);
-            showToast('🎫 Билет №' + ticketNumber + ' создан!');
-        }
-
-        // =============================================
-        // ===== ИНИЦИАЛИЗАЦИЯ =====
-        // =============================================
-        console.log('🚆 ЖД Павелецкое направление');
-        console.log('👑 Админ: логин 2203, пароль 2347');
-        console.log('📍 Все станции по схеме Павелецкого направления');
-        console.log('🎫 Контролёры теперь могут оформлять билеты!');
-
-        setTimeout(() => adminCreateFields(), 100);
-    </script>
+    });
+</script>
 </body>
 </html>
