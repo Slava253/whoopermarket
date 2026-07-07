@@ -1,111 +1,95 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Koder OS</title>
+    <title>Koder OS — Face ID</title>
+    <!-- Подключаем Face-API.js (для распознавания лиц) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'SF Pro Display', -apple-system, 'Helvetica Neue', monospace; }
-        body {
-            background: #0a0a0f;
-            height: 100vh;
-            overflow: hidden;
-            color: #e0e0e0;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'SF Pro Display', -apple-system, 'Helvetica Neue', sans-serif; }
+        body { background: #0a0a0f; height: 100vh; overflow: hidden; color: #e0e0e0; }
 
-        /* ЭКРАН АКТИВАЦИИ — Koder Style */
+        /* ЭКРАН АКТИВАЦИИ */
         #activation {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #0d0d14;
             background-image: radial-gradient(circle at 50% 30%, #1a1a2e 0%, #0a0a0f 100%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            padding: 30px 24px;
-            text-align: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 9999; padding: 30px 24px; text-align: center;
             transition: opacity 0.5s ease;
         }
-        #activation .logo {
-            font-size: 48px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #00d4ff, #7b2ffc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -2px;
-            margin-bottom: 4px;
-        }
-        #activation .sub {
-            font-size: 13px;
-            color: rgba(255,255,255,0.35);
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 28px;
-        }
+        #activation .logo { font-size: 48px; font-weight: 800; background: linear-gradient(135deg, #00d4ff, #7b2ffc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -2px; margin-bottom: 4px; }
+        #activation .sub { font-size: 13px; color: rgba(255,255,255,0.35); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; }
 
-        .status-grid {
-            width: 100%;
-            max-width: 340px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-        .status-item {
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 12px;
-            padding: 12px 16px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            backdrop-filter: blur(8px);
-        }
+        .status-grid { width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+        .status-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; font-size: 14px; backdrop-filter: blur(8px); }
         .status-item span:first-child { color: rgba(255,255,255,0.4); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
         .status-item span:last-child { font-weight: 500; color: #fff; }
 
-        /* Кнопка Face ID — нативная анимация */
-        #bio-container {
-            margin: 12px 0 10px;
+        /* ВИДЕО / ФОТО ДЛЯ РАСПОЗНАВАНИЯ */
+        #face-container {
+            width: 100%; max-width: 280px;
+            aspect-ratio: 4/3;
+            background: rgba(0,0,0,0.4);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.06);
+            overflow: hidden;
+            margin: 8px 0 12px;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .biometric-btn {
-            width: 72px; height: 72px;
-            border-radius: 50%;
-            border: none;
-            background: rgba(0, 212, 255, 0.12);
-            border: 1.5px solid rgba(0, 212, 255, 0.25);
-            color: #00d4ff;
-            font-size: 32px;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            position: relative;
-        }
-        .biometric-btn:active { transform: scale(0.88); }
-        .biometric-btn.active { background: rgba(0, 212, 255, 0.2); border-color: #00d4ff; box-shadow: 0 0 30px rgba(0,212,255,0.15); }
-        .biometric-btn.success { background: rgba(52, 199, 89, 0.2); border-color: #34c759; color: #34c759; box-shadow: 0 0 30px rgba(52,199,89,0.15); }
-        .biometric-btn.fail { background: rgba(255, 59, 48, 0.15); border-color: #ff3b30; color: #ff3b30; }
-        .biometric-btn .pulse {
+        #face-container video, #face-container canvas {
             position: absolute;
-            top: -6px; left: -6px; right: -6px; bottom: -6px;
-            border-radius: 50%;
-            border: 1.5px solid rgba(0,212,255,0.1);
-            animation: pulse-ring 2s infinite;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
         }
-        @keyframes pulse-ring {
-            0% { transform: scale(1); opacity: 0.6; }
-            100% { transform: scale(1.25); opacity: 0; }
+        #face-container canvas { z-index: 2; }
+        #face-container video { z-index: 1; }
+        #face-container .placeholder {
+            color: rgba(255,255,255,0.2);
+            font-size: 14px;
+            z-index: 0;
+            text-align: center;
+            padding: 20px;
         }
-        #bio-label {
+        .face-status {
             font-size: 12px;
-            color: rgba(255,255,255,0.3);
-            margin-top: 6px;
-            letter-spacing: 0.3px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 6px;
+            color: rgba(255,255,255,0.5);
         }
+        .face-status.success { color: #34c759; background: rgba(52,199,89,0.1); }
+        .face-status.fail { color: #ff3b30; background: rgba(255,59,48,0.1); }
 
-        /* Поле пароля — Koder input */
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            width: 100%; max-width: 280px;
+            margin-top: 6px;
+        }
+        .btn-row button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.04);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-row button:active { transform: scale(0.95); opacity: 0.7; }
+        .btn-row button.primary { background: linear-gradient(135deg, #00d4ff, #7b2ffc); border: none; }
+        .btn-row button.success { background: #34c759; border: none; }
+        .btn-row button.danger { background: #ff3b30; border: none; }
+
         #activation input {
             width: 100%; max-width: 280px;
             padding: 14px 18px;
@@ -119,46 +103,32 @@
             font-weight: 600;
             outline: none;
             transition: 0.25s;
-            margin-top: 6px;
+            margin-top: 8px;
         }
         #activation input:focus { border-color: #00d4ff; background: rgba(0,212,255,0.05); }
         #activation input::placeholder { letter-spacing: 2px; font-weight: 400; color: rgba(255,255,255,0.15); }
 
         .act-btn {
             background: linear-gradient(135deg, #00d4ff, #7b2ffc);
-            border: none;
-            color: #fff;
-            font-size: 17px;
-            font-weight: 600;
-            padding: 15px 32px;
-            border-radius: 30px;
-            margin-top: 16px;
-            cursor: pointer;
-            width: 100%; max-width: 280px;
-            transition: 0.2s;
-            letter-spacing: 0.5px;
+            border: none; color: #fff; font-size: 17px; font-weight: 600;
+            padding: 15px 32px; border-radius: 30px; margin-top: 14px;
+            cursor: pointer; width: 100%; max-width: 280px;
+            transition: 0.2s; letter-spacing: 0.5px;
         }
         .act-btn:active { transform: scale(0.96); opacity: 0.85; }
-        .act-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+        .act-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-        /* TOAST — стиль Koder */
         .toast {
             position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
-            background: rgba(20,20,35,0.92);
-            backdrop-filter: blur(18px);
-            padding: 10px 22px;
-            border-radius: 16px;
-            font-size: 13px;
-            color: #fff;
-            z-index: 999;
-            display: none;
+            background: rgba(20,20,35,0.92); backdrop-filter: blur(18px);
+            padding: 10px 22px; border-radius: 16px; font-size: 13px; color: #fff;
+            z-index: 999; display: none;
             border: 1px solid rgba(255,255,255,0.06);
             box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-            max-width: 88%;
-            text-align: center;
+            max-width: 88%; text-align: center;
         }
 
-        /* РАБОЧИЙ СТОЛ — Koder Theme */
+        /* РАБОЧИЙ СТОЛ */
         #desktop {
             display: none;
             flex-direction: column;
@@ -180,7 +150,6 @@
             border-bottom: 1px solid rgba(255,255,255,0.03);
         }
         #statusbar #time { color: #fff; font-weight: 600; }
-
         #appgrid {
             flex: 1;
             padding: 24px 16px 100px;
@@ -215,13 +184,8 @@
         .icon:hover .img { background: rgba(255,255,255,0.08); }
         .icon span { font-size: 11px; opacity: 0.6; text-shadow: 0 1px 4px rgba(0,0,0,0.5); }
 
-        /* Окна — как в Koder (полупрозрачные, с неоном) */
         .window {
-            position: fixed;
-            top: 50px;
-            left: 5%;
-            width: 90%;
-            max-width: 380px;
+            position: fixed; top: 50px; left: 5%; width: 90%; max-width: 380px;
             max-height: 72vh;
             background: rgba(18,18,30,0.94);
             backdrop-filter: blur(30px);
@@ -281,20 +245,14 @@
         .window-body h2 { color: #fff; font-size: 24px; font-weight: 700; }
 
         #overlay {
-            position: fixed;
-            top:0;left:0;width:100%;height:100%;
+            position: fixed; top:0;left:0;width:100%;height:100%;
             background: rgba(0,0,0,0.5);
             backdrop-filter: blur(4px);
             display: none;
             z-index: 150;
         }
-
-        /* Док — как в Koder */
         #dock {
-            position: fixed;
-            bottom: 16px;
-            left: 50%;
-            transform: translateX(-50%);
+            position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
             background: rgba(20,20,35,0.7);
             backdrop-filter: blur(24px);
             padding: 6px 18px;
@@ -316,11 +274,13 @@
         }
         #dock button:active { transform: scale(0.8); color: #00d4ff; }
 
-        /* Адаптация под iPhone X и новее (безопасная зона) */
         @supports (padding: max(0px)) {
             #statusbar { padding-top: max(12px, env(safe-area-inset-top)); }
             #dock { bottom: max(16px, env(safe-area-inset-bottom)); }
         }
+
+        /* Скрытый canvas для обработки */
+        #hidden-canvas { display: none; }
     </style>
 </head>
 <body>
@@ -328,7 +288,7 @@
 <!-- ЭКРАН АКТИВАЦИИ -->
 <div id="activation">
     <div class="logo">⌘ Koder</div>
-    <div class="sub">Активация • v2.0</div>
+    <div class="sub">Face ID • Активация</div>
 
     <div class="status-grid">
         <div class="status-item"><span>📶 Wi-Fi</span><span id="act-wifi">—</span></div>
@@ -336,21 +296,26 @@
         <div class="status-item"><span>🌤 Погода</span><span id="act-weather">—</span></div>
     </div>
 
-    <!-- Face ID кнопка с пульсацией -->
-    <div id="bio-container">
-        <button class="biometric-btn" id="bio-btn" onclick="requestBiometric()">
-            <span class="pulse"></span>
-            <span id="bio-icon">😀</span>
-        </button>
-        <p id="bio-label">Настройте Face ID / Touch ID</p>
+    <!-- Контейнер для камеры + разметка лица -->
+    <div id="face-container">
+        <video id="video" autoplay muted playsinline></video>
+        <canvas id="overlay-canvas"></canvas>
+        <div class="placeholder" id="face-placeholder">📸 Наведите камеру на лицо</div>
+    </div>
+
+    <div id="face-status" class="face-status">⏳ Ожидание лица...</div>
+
+    <div class="btn-row">
+        <button class="primary" id="btn-capture" onclick="captureAndSaveFace()">📸 Запомнить лицо</button>
+        <button class="success" id="btn-verify" onclick="verifyFace()">✅ Проверить</button>
     </div>
 
     <input type="password" id="passcode" placeholder="● ● ● ●" maxlength="4" inputmode="numeric" pattern="[0-9]*">
-    <button class="act-btn" id="activate-btn" onclick="activateOS()">🔓 Войти в систему</button>
-    <p style="font-size:11px; color:rgba(255,255,255,0.15); margin-top:14px;">Разрешения запрашиваются 1 раз</p>
+    <button class="act-btn" id="activate-btn" onclick="activateOS()">🔓 Войти</button>
+    <p style="font-size:11px; color:rgba(255,255,255,0.15); margin-top:12px;">Сначала запомните лицо, затем войдите</p>
 </div>
 
-<!-- РАБОЧИЙ СТОЛ -->
+<!-- РАБОЧИЙ СТОЛ (как в прошлой версии) -->
 <div id="desktop">
     <div id="statusbar">
         <span id="time">12:00</span>
@@ -363,38 +328,13 @@
         <button class="icon" onclick="openApp('settings')"><div class="img">⚙️</div><span>Настройки</span></button>
         <button class="icon" onclick="openApp('terminal')"><div class="img">⌨️</div><span>Терминал</span></button>
     </div>
-
     <div id="overlay" onclick="closeAll()"></div>
-
-    <!-- Окна приложений -->
-    <div class="window" id="win-notes">
-        <div class="window-header"><span>📝 Заметки</span><button onclick="closeApp('notes')">✕</button></div>
-        <div class="window-body"><p>Привет, это Koder OS.</p><button onclick="alert('Сохранено в localStorage')">💾 Сохранить</button></div>
-    </div>
-    <div class="window" id="win-weather">
-        <div class="window-header"><span>☀️ Погода</span><button onclick="closeApp('weather')">✕</button></div>
-        <div class="window-body"><h2 id="weather-temp">--°C</h2><p id="weather-desc">Загрузка...</p><button onclick="getWeather()">🔄 Обновить</button></div>
-    </div>
-    <div class="window" id="win-music">
-        <div class="window-header"><span>🎵 Музыка</span><button onclick="closeApp('music')">✕</button></div>
-        <div class="window-body"><p>Сейчас играет:<br><strong>«Koder Dreams»</strong></p><button onclick="alert('▶️ Плеер запущен')">▶ Воспроизвести</button></div>
-    </div>
-    <div class="window" id="win-settings">
-        <div class="window-header"><span>⚙️ Настройки</span><button onclick="closeApp('settings')">✕</button></div>
-        <div class="window-body">
-            <p>🌙 Тёмная тема: вкл</p>
-            <p id="bio-status">🔐 Face ID: не настроен</p>
-            <button onclick="alert('Сброс настроек')">🔄 Сбросить</button>
-        </div>
-    </div>
-    <div class="window" id="win-terminal">
-        <div class="window-header"><span>⌨️ Терминал</span><button onclick="closeApp('terminal')">✕</button></div>
-        <div class="window-body">
-            <p style="color:#00d4ff; font-family: monospace;">$ whoami<br>➜ koder<br>$ uptime<br>➜ 00:00:01</p>
-            <button onclick="alert('Выполнено: ls -la')">▶ Выполнить</button>
-        </div>
-    </div>
-
+    <!-- Окна (кратко) -->
+    <div class="window" id="win-notes"><div class="window-header"><span>📝 Заметки</span><button onclick="closeApp('notes')">✕</button></div><div class="window-body"><p>Привет!</p><button onclick="alert('Сохранено')">💾 Сохранить</button></div></div>
+    <div class="window" id="win-weather"><div class="window-header"><span>☀️ Погода</span><button onclick="closeApp('weather')">✕</button></div><div class="window-body"><h2 id="weather-temp">--°C</h2><p id="weather-desc">Загрузка...</p><button onclick="getWeather()">🔄 Обновить</button></div></div>
+    <div class="window" id="win-music"><div class="window-header"><span>🎵 Музыка</span><button onclick="closeApp('music')">✕</button></div><div class="window-body"><p>Сейчас: <strong>«Koder Dreams»</strong></p><button onclick="alert('▶️ Плеер')">▶ Воспроизвести</button></div></div>
+    <div class="window" id="win-settings"><div class="window-header"><span>⚙️ Настройки</span><button onclick="closeApp('settings')">✕</button></div><div class="window-body"><p>🌙 Тёмная тема: вкл</p><p id="bio-status">🔐 Face ID: не настроен</p><button onclick="alert('Сброс')">🔄 Сбросить</button></div></div>
+    <div class="window" id="win-terminal"><div class="window-header"><span>⌨️ Терминал</span><button onclick="closeApp('terminal')">✕</button></div><div class="window-body"><p style="color:#00d4ff; font-family: monospace;">$ whoami<br>➜ koder</p><button onclick="alert('ls -la')">▶ Выполнить</button></div></div>
     <div id="dock">
         <button onclick="openApp('notes')">📝</button>
         <button onclick="openApp('weather')">☀️</button>
@@ -404,30 +344,229 @@
 </div>
 
 <div class="toast" id="toast"></div>
+<canvas id="hidden-canvas"></canvas>
 
 <script>
     // ============================================================
-    // 1. ФЛАГИ ОДНОКРАТНЫХ ЗАПРОСОВ
+    // 1. ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
     // ============================================================
-    let bioRequested = false;
+    let savedFaceDescriptor = null;  // сохранённый дескриптор лица
+    let faceMatcher = null;
+    let modelsLoaded = false;
+    let stream = null;
     let geoRequested = false;
-    let bioGranted = false;
     let geoGranted = false;
-    let passcode = '';
 
     // ============================================================
-    // 2. Wi-Fi (заглушка)
+    // 2. ЗАГРУЗКА МОДЕЛЕЙ FACE-API.JS
     // ============================================================
-    function getWifiName() {
+    async function loadFaceModels() {
         try {
-            if (navigator.connection) return 'Домашний Wi-Fi';
-        } catch(e) {}
-        return 'Wi-Fi';
+            // Загружаем модели с CDN (для GitHub Pages используем относительный путь)
+            const MODEL_URL = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/models/';
+            await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+            await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+            await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+            modelsLoaded = true;
+            console.log('✅ Модели Face-API загружены');
+            showToast('✅ Модели загружены');
+            startCamera();
+        } catch (err) {
+            console.error('Ошибка загрузки моделей:', err);
+            showToast('⚠️ Ошибка загрузки моделей. Проверьте интернет.');
+        }
     }
 
     // ============================================================
-    // 3. БАТАРЕЯ (реальный процент)
+    // 3. КАМЕРА
     // ============================================================
+    async function startCamera() {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: 'user',
+                    width: { ideal: 320 },
+                    height: { ideal: 240 }
+                }
+            });
+            const video = document.getElementById('video');
+            video.srcObject = stream;
+            await video.play();
+            document.getElementById('face-placeholder').style.display = 'none';
+            detectFaceLoop();
+        } catch (err) {
+            console.error('Ошибка камеры:', err);
+            document.getElementById('face-placeholder').textContent = '⚠️ Нет доступа к камере';
+            showToast('⚠️ Разрешите доступ к камере');
+        }
+    }
+
+    // ============================================================
+    // 4. ЦИКЛ ДЕТЕКЦИИ ЛИЦА (с отрисовкой)
+    // ============================================================
+    async function detectFaceLoop() {
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('overlay-canvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = video.videoWidth || 320;
+        canvas.height = video.videoHeight || 240;
+
+        async function detect() {
+            if (!modelsLoaded || !video.videoWidth) {
+                requestAnimationFrame(detect);
+                return;
+            }
+
+            const detections = await faceapi.detectAllFaces(
+                video,
+                new faceapi.TinyFaceDetectorOptions({
+                    inputSize: 128,
+                    scoreThreshold: 0.5
+                })
+            ).withFaceLandmarks();
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Рисуем рамку вокруг лица
+            if (detections.length > 0) {
+                const box = detections[0].detection.box;
+                ctx.strokeStyle = '#00d4ff';
+                ctx.lineWidth = 2;
+                ctx.shadowColor = '#00d4ff';
+                ctx.shadowBlur = 15;
+                ctx.strokeRect(box.x, box.y, box.width, box.height);
+                ctx.shadowBlur = 0;
+
+                document.getElementById('face-status').textContent = '✅ Лицо обнаружено';
+                document.getElementById('face-status').className = 'face-status success';
+                document.getElementById('btn-capture').disabled = false;
+                document.getElementById('btn-verify').disabled = false;
+            } else {
+                document.getElementById('face-status').textContent = '⏳ Лицо не найдено';
+                document.getElementById('face-status').className = 'face-status';
+                document.getElementById('btn-capture').disabled = true;
+                document.getElementById('btn-verify').disabled = true;
+            }
+
+            requestAnimationFrame(detect);
+        }
+        detect();
+    }
+
+    // ============================================================
+    // 5. ЗАПОМНИТЬ ЛИЦО (снимает фото и сохраняет дескриптор)
+    // ============================================================
+    async function captureAndSaveFace() {
+        if (!modelsLoaded) {
+            showToast('⚠️ Модели ещё не загружены');
+            return;
+        }
+
+        const video = document.getElementById('video');
+        if (!video.videoWidth) {
+            showToast('⚠️ Камера не активна');
+            return;
+        }
+
+        const detection = await faceapi.detectSingleFace(
+            video,
+            new faceapi.TinyFaceDetectorOptions({ inputSize: 128 })
+        ).withFaceLandmarks().withFaceDescriptor();
+
+        if (!detection) {
+            showToast('⚠️ Лицо не найдено. Посмотрите в камеру.');
+            return;
+        }
+
+        savedFaceDescriptor = detection.descriptor;
+        faceMatcher = new faceapi.FaceMatcher(
+            [new faceapi.LabeledFaceDescriptors('Пользователь', [detection.descriptor])]
+        );
+
+        document.getElementById('bio-status').textContent = '🔐 Face ID: ✅ лицо сохранено';
+        showToast('✅ Лицо сохранено! Теперь нажмите "Проверить" или введите пароль.');
+    }
+
+    // ============================================================
+    // 6. ПРОВЕРИТЬ ЛИЦО (сравнивает с сохранённым)
+    // ============================================================
+    async function verifyFace() {
+        if (!savedFaceDescriptor) {
+            showToast('⚠️ Сначала сохраните лицо (кнопка "Запомнить лицо")');
+            return;
+        }
+
+        const video = document.getElementById('video');
+        if (!video.videoWidth) {
+            showToast('⚠️ Камера не активна');
+            return;
+        }
+
+        const detection = await faceapi.detectSingleFace(
+            video,
+            new faceapi.TinyFaceDetectorOptions({ inputSize: 128 })
+        ).withFaceLandmarks().withFaceDescriptor();
+
+        if (!detection) {
+            showToast('⚠️ Лицо не найдено. Посмотрите в камеру.');
+            return;
+        }
+
+        const distance = faceapi.euclideanDistance(savedFaceDescriptor, detection.descriptor);
+        const threshold = 0.6; // чем меньше, тем строже
+
+        if (distance < threshold) {
+            showToast('✅ Лицо совпадает! Добро пожаловать.');
+            document.getElementById('face-status').textContent = '✅ Лицо совпадает!';
+            document.getElementById('face-status').className = 'face-status success';
+            // Автоматический вход
+            document.getElementById('activate-btn').click();
+        } else {
+            showToast(`❌ Лицо НЕ совпадает (расстояние: ${distance.toFixed(3)})`);
+            document.getElementById('face-status').textContent = '❌ Лицо не совпадает';
+            document.getElementById('face-status').className = 'face-status fail';
+        }
+    }
+
+    // ============================================================
+    // 7. АКТИВАЦИЯ (ВХОД)
+    // ============================================================
+    function activateOS() {
+        const pwd = document.getElementById('passcode').value;
+        if (pwd.length !== 4) {
+            showToast('⚠️ Введите 4-значный пароль');
+            return;
+        }
+
+        // Проверяем, сохранено ли лицо (необязательно, но рекомендуем)
+        if (!savedFaceDescriptor) {
+            showToast('⚠️ Рекомендуется сохранить лицо для входа');
+        }
+
+        // Скрываем активацию
+        document.getElementById('activation').style.opacity = '0';
+        setTimeout(() => {
+            document.getElementById('activation').style.display = 'none';
+            document.getElementById('desktop').style.display = 'flex';
+        }, 500);
+
+        getBatteryLevel();
+        getWeather();
+        updateTime();
+        setInterval(updateTime, 1000);
+        setInterval(getBatteryLevel, 30000);
+        showToast('👋 Добро пожаловать в Koder OS!');
+    }
+
+    // ============================================================
+    // 8. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+    // ============================================================
+    function getWifiName() {
+        try { if (navigator.connection) return 'Домашний Wi-Fi'; } catch(e) {}
+        return 'Wi-Fi';
+    }
+
     function getBatteryLevel() {
         if (navigator.getBattery) {
             navigator.getBattery().then(battery => {
@@ -442,9 +581,6 @@
         }
     }
 
-    // ============================================================
-    // 4. ГЕОЛОКАЦИЯ (ОДИН РАЗ)
-    // ============================================================
     function getWeather() {
         if (!geoRequested) {
             geoRequested = true;
@@ -458,7 +594,7 @@
                     document.getElementById('act-weather').textContent = '❌ Гео заблокирован';
                     document.getElementById('weather-temp').textContent = '--°C';
                     document.getElementById('weather-desc').textContent = 'Разрешите геолокацию';
-                    showToast('⚠️ Геолокация отклонена. Нажмите "Обновить" для повторного запроса.');
+                    showToast('⚠️ Геолокация отклонена');
                 },
                 { enableHighAccuracy: true, timeout: 10000 }
             );
@@ -490,110 +626,11 @@
             });
     }
 
-    // ============================================================
-    // 5. FACE ID / TOUCH ID (WebAuthn — нативный запрос для iOS)
-    // ============================================================
-    function requestBiometric() {
-        if (bioRequested) {
-            showToast('🔐 Face ID уже запрашивался');
-            return;
-        }
-        bioRequested = true;
-        const btn = document.getElementById('bio-btn');
-        const icon = document.getElementById('bio-icon');
-        btn.classList.add('active');
-        icon.textContent = '⏳';
-
-        // Проверяем, есть ли поддержка WebAuthn
-        if (!window.PublicKeyCredential) {
-            // Эмуляция для старых устройств
-            bioGranted = true;
-            btn.classList.remove('active');
-            btn.classList.add('success');
-            icon.textContent = '✅';
-            document.getElementById('bio-label').textContent = '✅ Face ID (эмуляция)';
-            document.getElementById('bio-status').textContent = '🔐 Face ID: ✅ активен';
-            showToast('✅ Face ID эмулирован (WebAuthn не поддерживается)');
-            return;
-        }
-
-        // Настоящий запрос Face ID через WebAuthn (только на iOS с Face ID)
-        const challenge = new Uint8Array(32);
-        window.crypto.getRandomValues(challenge);
-        const publicKey = {
-            challenge: challenge,
-            rpId: window.location.hostname || 'localhost',
-            userVerification: 'required',
-            timeout: 60000,
-            allowCredentials: []
-        };
-
-        navigator.credentials.get({ publicKey: publicKey })
-            .then(() => {
-                bioGranted = true;
-                btn.classList.remove('active');
-                btn.classList.add('success');
-                icon.textContent = '✅';
-                document.getElementById('bio-label').textContent = '✅ Face ID активирован';
-                document.getElementById('bio-status').textContent = '🔐 Face ID: ✅ активен';
-                showToast('✅ Face ID / Touch ID успешно настроен!');
-            })
-            .catch((err) => {
-                bioGranted = false;
-                btn.classList.remove('active');
-                btn.classList.add('fail');
-                icon.textContent = '❌';
-                document.getElementById('bio-label').textContent = '❌ Face ID не доступен';
-                document.getElementById('bio-status').textContent = '🔐 Face ID: ❌ не активен';
-                showToast('⚠️ Face ID отклонён или недоступен');
-                console.warn('WebAuthn error:', err);
-            });
-    }
-
-    // ============================================================
-    // 6. АКТИВАЦИЯ
-    // ============================================================
-    function activateOS() {
-        const pwd = document.getElementById('passcode').value;
-        if (pwd.length !== 4) {
-            showToast('⚠️ Введите 4-значный пароль');
-            return;
-        }
-        passcode = pwd;
-
-        // Если биометрия не запрашивалась — предлагаем
-        if (!bioRequested) {
-            requestBiometric();
-        }
-
-        // Скрываем активацию
-        document.getElementById('activation').style.opacity = '0';
-        setTimeout(() => {
-            document.getElementById('activation').style.display = 'none';
-            document.getElementById('desktop').style.display = 'flex';
-        }, 500);
-
-        getBatteryLevel();
-        getWeather();
-        updateTime();
-        setInterval(updateTime, 1000);
-        setInterval(getBatteryLevel, 30000);
-
-        // Показываем приветствие
-        showToast('👋 Добро пожаловать в Koder OS!');
-    }
-
-    // ============================================================
-    // 7. ЧАСЫ
-    // ============================================================
     function updateTime() {
         const now = new Date();
         document.getElementById('time').textContent = now.toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
     }
 
-    // ============================================================
-    // 8. УПРАВЛЕНИЕ ОКНАМИ
-    // ============================================================
     function openApp(id) {
         closeAll();
         document.getElementById('overlay').style.display = 'block';
@@ -609,9 +646,6 @@
         document.getElementById('overlay').style.display = 'none';
     }
 
-    // ============================================================
-    // 9. TOAST
-    // ============================================================
     function showToast(msg) {
         const t = document.getElementById('toast');
         t.textContent = msg;
@@ -621,18 +655,17 @@
     }
 
     // ============================================================
-    // 10. ИНИЦИАЛИЗАЦИЯ
+    // 9. ЗАПУСК
     // ============================================================
     window.onload = function() {
         document.getElementById('act-wifi').textContent = getWifiName();
         getBatteryLevel();
         document.getElementById('bio-status').textContent = '🔐 Face ID: не настроен';
-        // Проверяем поддержку WebAuthn и показываем подсказку
-        if (window.PublicKeyCredential) {
-            document.getElementById('bio-label').textContent = '🔐 Нажмите для Face ID / Touch ID';
-        } else {
-            document.getElementById('bio-label').textContent = '⚡ Эмуляция биометрии (нажмите)';
-        }
+        document.getElementById('btn-capture').disabled = true;
+        document.getElementById('btn-verify').disabled = true;
+
+        // Загружаем модели Face-API
+        loadFaceModels();
     };
 
     window.addEventListener('popstate', closeAll);
