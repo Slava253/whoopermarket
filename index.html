@@ -1,1027 +1,641 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>ГУ СВС | Государственные услуги</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Koder OS</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'SF Pro Display', -apple-system, 'Helvetica Neue', monospace; }
         body {
-            background: #f0f4f9;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .app-container {
-            max-width: 1400px;
-            width: 100%;
-            background: white;
-            border-radius: 40px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.20);
+            background: #0a0a0f;
+            height: 100vh;
             overflow: hidden;
+            color: #e0e0e0;
         }
 
-        .header {
-            background: linear-gradient(145deg, #0b1e3a, #1a3359);
-            color: white;
-            padding: 16px 32px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .logo-area h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            background: linear-gradient(to right, #fff, #d4e0ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .logo-area p {
-            font-size: 0.75rem;
-            opacity: 0.7;
-            -webkit-text-fill-color: #b6cfff;
-        }
-
-        .user-status {
-            background: rgba(255, 255, 255, 0.10);
-            backdrop-filter: blur(4px);
-            padding: 8px 20px;
-            border-radius: 60px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            font-size: 0.9rem;
-        }
-
-        .user-status button {
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            color: white;
-            padding: 4px 16px;
-            border-radius: 40px;
-            font-size: 0.75rem;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .user-status button:hover {
-            background: rgba(255, 255, 255, 0.25);
-        }
-
-        .main-content {
-            padding: 28px 32px;
-        }
-
-        .card {
-            background: #ffffff;
-            border-radius: 28px;
-            box-shadow: 0 4px 20px rgba(0, 20, 50, 0.04);
-            border: 1px solid #eef2f8;
-            padding: 24px 28px;
-            margin-bottom: 24px;
-        }
-
-        .card-title {
-            font-size: 1.4rem;
-            font-weight: 650;
-            color: #0b1e3a;
-            border-left: 6px solid #f6b83d;
-            padding-left: 18px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .badge {
-            background: #eef4ff;
-            color: #1a3359;
-            border-radius: 40px;
-            padding: 4px 16px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            display: inline-block;
-        }
-
-        .grid-2col {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-        }
-
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        label {
-            font-weight: 600;
-            color: #1e2f41;
-            display: block;
-            margin-bottom: 5px;
-            font-size: 0.8rem;
-        }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 11px 16px;
-            border: 1.5px solid #dae2ec;
-            border-radius: 18px;
-            font-size: 0.92rem;
-            transition: 0.2s;
-            background: #fbfdff;
-            color: #111;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #1a3359;
-            box-shadow: 0 0 0 4px rgba(26, 51, 89, 0.08);
-        }
-
-        button {
-            background: #1a3359;
-            color: white;
-            border: none;
-            padding: 11px 24px;
-            border-radius: 60px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            font-size: 0.88rem;
-        }
-
-        button:hover:not(:disabled) {
-            background: #0e2442;
-            transform: scale(0.97);
-            box-shadow: 0 6px 16px rgba(26, 51, 89, 0.25);
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .member-list {
-            margin-top: 16px;
-            border-top: 1px solid #e6ecf3;
-            padding-top: 18px;
-        }
-
-        .member-item {
-            background: #f8faff;
-            border-radius: 22px;
-            padding: 14px 20px;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-            border: 1px solid #eef2f8;
-        }
-
-        .member-info {
-            display: flex;
-            gap: 16px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .member-photo {
-            width: 54px;
-            height: 54px;
-            border-radius: 50%;
-            object-fit: cover;
-            background: #d9e2ed;
-            border: 2.5px solid #f6b83d;
-        }
-
-        .document-view {
-            background: #faf6ee;
-            border-left: 6px solid #f6b83d;
-            padding: 18px 22px;
-            border-radius: 24px;
-            margin-top: 14px;
-        }
-
-        .document-card {
-            background: white;
-            border-radius: 22px;
-            padding: 16px 20px;
-            margin-bottom: 14px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-            border: 1px solid #eef2f8;
-        }
-
-        .document-card h4 {
-            color: #0b1e3a;
-            margin-bottom: 8px;
-            font-size: 1.05rem;
-        }
-
-        .photo-preview {
-            max-width: 120px;
-            max-height: 120px;
-            border-radius: 16px;
-            object-fit: cover;
-            margin-top: 8px;
-            border: 1px solid #dae2ec;
-        }
-
-        .document-img {
-            max-width: 100%;
-            max-height: 250px;
-            border-radius: 18px;
-            margin-top: 10px;
-            border: 1px solid #e2eaf2;
-            cursor: pointer;
-            transition: 0.15s;
-        }
-        .document-img:hover { opacity: 0.9; }
-
-        .flex-between {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .camera-btn {
-            background: #3d5a7a;
-            margin-top: 4px;
-            font-size: 0.78rem;
-            padding: 7px 16px;
-        }
-
-        .hidden-file { display: none; }
-
-        .modal {
+        /* ЭКРАН АКТИВАЦИИ — Koder Style */
+        #activation {
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(6px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            cursor: pointer;
-        }
-        .modal-content {
-            max-width: 92%;
-            max-height: 92%;
-        }
-        .modal-content img {
-            max-width: 100%;
-            max-height: 90vh;
-            border-radius: 20px;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
-        }
-        .modal-card {
-            background: white;
-            border-radius: 32px;
-            padding: 28px;
-            max-width: 520px;
-            width: 92%;
-        }
-
-        .success-toast {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: #1d6f2c;
-            color: white;
-            padding: 14px 28px;
-            border-radius: 60px;
-            font-weight: 500;
-            z-index: 1100;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            animation: slideFade 2.8s ease forwards;
-        }
-
-        @keyframes slideFade {
-            0% { opacity: 0; transform: translateY(24px); }
-            12% { opacity: 1; transform: translateY(0); }
-            85% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(24px); visibility: hidden; }
-        }
-
-        .small-btn {
-            padding: 5px 14px;
-            font-size: 0.72rem;
-            background: #e6edf6;
-            color: #1a3359;
-            border-radius: 40px;
-            cursor: pointer;
-            border: none;
-            font-weight: 500;
-        }
-        .small-btn.danger {
-            background: #fee9e9;
-            color: #b33a34;
-        }
-        .small-btn:hover { opacity: 0.8; }
-
-        .documents-grid {
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #0d0d14;
+            background-image: radial-gradient(circle at 50% 30%, #1a1a2e 0%, #0a0a0f 100%);
             display: flex;
             flex-direction: column;
-            gap: 16px;
-        }
-
-        .loading-spinner {
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 30px 24px;
             text-align: center;
-            padding: 30px;
-            color: #7a8a9e;
+            transition: opacity 0.5s ease;
+        }
+        #activation .logo {
+            font-size: 48px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00d4ff, #7b2ffc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -2px;
+            margin-bottom: 4px;
+        }
+        #activation .sub {
+            font-size: 13px;
+            color: rgba(255,255,255,0.35);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 28px;
         }
 
-        .empty-state {
+        .status-grid {
+            width: 100%;
+            max-width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .status-item {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            backdrop-filter: blur(8px);
+        }
+        .status-item span:first-child { color: rgba(255,255,255,0.4); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .status-item span:last-child { font-weight: 500; color: #fff; }
+
+        /* Кнопка Face ID — нативная анимация */
+        #bio-container {
+            margin: 12px 0 10px;
+            position: relative;
+        }
+        .biometric-btn {
+            width: 72px; height: 72px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(0, 212, 255, 0.12);
+            border: 1.5px solid rgba(0, 212, 255, 0.25);
+            color: #00d4ff;
+            font-size: 32px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+        }
+        .biometric-btn:active { transform: scale(0.88); }
+        .biometric-btn.active { background: rgba(0, 212, 255, 0.2); border-color: #00d4ff; box-shadow: 0 0 30px rgba(0,212,255,0.15); }
+        .biometric-btn.success { background: rgba(52, 199, 89, 0.2); border-color: #34c759; color: #34c759; box-shadow: 0 0 30px rgba(52,199,89,0.15); }
+        .biometric-btn.fail { background: rgba(255, 59, 48, 0.15); border-color: #ff3b30; color: #ff3b30; }
+        .biometric-btn .pulse {
+            position: absolute;
+            top: -6px; left: -6px; right: -6px; bottom: -6px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(0,212,255,0.1);
+            animation: pulse-ring 2s infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(1); opacity: 0.6; }
+            100% { transform: scale(1.25); opacity: 0; }
+        }
+        #bio-label {
+            font-size: 12px;
+            color: rgba(255,255,255,0.3);
+            margin-top: 6px;
+            letter-spacing: 0.3px;
+        }
+
+        /* Поле пароля — Koder input */
+        #activation input {
+            width: 100%; max-width: 280px;
+            padding: 14px 18px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
+            color: #fff;
+            font-size: 20px;
             text-align: center;
-            padding: 30px;
-            color: #7a8a9e;
-            background: #f8faff;
-            border-radius: 20px;
-        }
-
-        .role-badge {
-            display: inline-block;
-            padding: 2px 12px;
-            border-radius: 20px;
-            font-size: 0.7rem;
+            letter-spacing: 8px;
             font-weight: 600;
-            background: #eef4ff;
-            color: #1a3359;
+            outline: none;
+            transition: 0.25s;
+            margin-top: 6px;
+        }
+        #activation input:focus { border-color: #00d4ff; background: rgba(0,212,255,0.05); }
+        #activation input::placeholder { letter-spacing: 2px; font-weight: 400; color: rgba(255,255,255,0.15); }
+
+        .act-btn {
+            background: linear-gradient(135deg, #00d4ff, #7b2ffc);
+            border: none;
+            color: #fff;
+            font-size: 17px;
+            font-weight: 600;
+            padding: 15px 32px;
+            border-radius: 30px;
+            margin-top: 16px;
+            cursor: pointer;
+            width: 100%; max-width: 280px;
+            transition: 0.2s;
+            letter-spacing: 0.5px;
+        }
+        .act-btn:active { transform: scale(0.96); opacity: 0.85; }
+        .act-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+
+        /* TOAST — стиль Koder */
+        .toast {
+            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+            background: rgba(20,20,35,0.92);
+            backdrop-filter: blur(18px);
+            padding: 10px 22px;
+            border-radius: 16px;
+            font-size: 13px;
+            color: #fff;
+            z-index: 999;
+            display: none;
+            border: 1px solid rgba(255,255,255,0.06);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+            max-width: 88%;
+            text-align: center;
         }
 
-        @media (max-width: 760px) {
-            .grid-2col { grid-template-columns: 1fr; }
-            .main-content { padding: 18px; }
-            .header { padding: 14px 18px; }
-            .card { padding: 16px 18px; }
+        /* РАБОЧИЙ СТОЛ — Koder Theme */
+        #desktop {
+            display: none;
+            flex-direction: column;
+            height: 100vh;
+            background: #0a0a0f;
+            background-image: radial-gradient(ellipse at 20% 50%, #12121f 0%, #0a0a0f 80%);
         }
-        @media (max-width: 480px) {
-            .member-item { flex-direction: column; align-items: stretch; }
-            .flex-between { flex-direction: column; align-items: stretch; }
+        #statusbar {
+            padding: 12px 20px 8px;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(16px);
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 500;
+            flex-shrink: 0;
+            z-index: 100;
+            color: rgba(255,255,255,0.7);
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+        #statusbar #time { color: #fff; font-weight: 600; }
+
+        #appgrid {
+            flex: 1;
+            padding: 24px 16px 100px;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: 16px 12px;
+            overflow-y: auto;
+        }
+        .icon {
+            width: 72px;
+            text-align: center;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: #ddd;
+            transition: 0.15s;
+        }
+        .icon:active { transform: scale(0.88); }
+        .icon .img {
+            width: 58px; height: 58px;
+            margin: 0 auto 5px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            border: 1px solid rgba(255,255,255,0.04);
+            transition: 0.2s;
+        }
+        .icon:hover .img { background: rgba(255,255,255,0.08); }
+        .icon span { font-size: 11px; opacity: 0.6; text-shadow: 0 1px 4px rgba(0,0,0,0.5); }
+
+        /* Окна — как в Koder (полупрозрачные, с неоном) */
+        .window {
+            position: fixed;
+            top: 50px;
+            left: 5%;
+            width: 90%;
+            max-width: 380px;
+            max-height: 72vh;
+            background: rgba(18,18,30,0.94);
+            backdrop-filter: blur(30px);
+            border-radius: 20px;
+            border: 1px solid rgba(0,212,255,0.08);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.03);
+            display: none;
+            flex-direction: column;
+            z-index: 200;
+            animation: pop 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+            overflow: hidden;
+        }
+        @keyframes pop { from { transform: scale(0.92) translateY(12px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+        .window-header {
+            padding: 14px 18px 8px;
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 15px;
+            background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            color: #fff;
+        }
+        .window-header button {
+            background: rgba(255,70,70,0.15);
+            border: none;
+            color: #ff6b6b;
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .window-header button:active { background: rgba(255,70,70,0.3); }
+        .window-body {
+            padding: 18px 20px 22px;
+            overflow-y: auto;
+            flex: 1;
+            font-size: 14px;
+            line-height: 1.7;
+            color: #c8c8d0;
+        }
+        .window-body button {
+            background: rgba(0,212,255,0.1);
+            border: 1px solid rgba(0,212,255,0.15);
+            color: #00d4ff;
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 10px;
+            width: 100%;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .window-body button:active { background: rgba(0,212,255,0.2); transform: scale(0.97); }
+        .window-body h2 { color: #fff; font-size: 24px; font-weight: 700; }
+
+        #overlay {
+            position: fixed;
+            top:0;left:0;width:100%;height:100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+            z-index: 150;
+        }
+
+        /* Док — как в Koder */
+        #dock {
+            position: fixed;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(20,20,35,0.7);
+            backdrop-filter: blur(24px);
+            padding: 6px 18px;
+            border-radius: 32px;
+            display: flex;
+            gap: 22px;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            z-index: 50;
+        }
+        #dock button {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.6);
+            font-size: 22px;
+            cursor: pointer;
+            padding: 6px 0;
+            transition: 0.2s;
+        }
+        #dock button:active { transform: scale(0.8); color: #00d4ff; }
+
+        /* Адаптация под iPhone X и новее (безопасная зона) */
+        @supports (padding: max(0px)) {
+            #statusbar { padding-top: max(12px, env(safe-area-inset-top)); }
+            #dock { bottom: max(16px, env(safe-area-inset-bottom)); }
         }
     </style>
 </head>
 <body>
 
-<div id="app">
-    <div class="app-container">
-        <!-- HEADER -->
-        <div class="header">
-            <div class="logo-area">
-                <h1>ГУ СВС</h1>
-                <p>Государственные услуги • Система управления</p>
-            </div>
-            <div class="user-status" v-if="currentUser">
-                <span>👤 {{ currentUser.fullName }} <span style="opacity:0.6;font-weight:400;">({{ currentUser.roleTitle || getRoleName(currentUser.role) }})</span></span>
-                <button @click="logout">Выйти</button>
-            </div>
-            <div class="user-status" v-else>
-                <span>🔐 Требуется авторизация</span>
-            </div>
-        </div>
+<!-- ЭКРАН АКТИВАЦИИ -->
+<div id="activation">
+    <div class="logo">⌘ Koder</div>
+    <div class="sub">Активация • v2.0</div>
 
-        <!-- LOGIN -->
-        <div class="main-content" v-if="!currentUser">
-            <div class="card" style="max-width:460px; margin:0 auto;">
-                <div class="card-title">Вход в систему ГУ СВС</div>
-                <div class="form-group">
-                    <label>Логин</label>
-                    <input type="text" v-model="loginForm.login" placeholder="Введите логин" @keyup.enter="doLogin">
-                </div>
-                <div class="form-group">
-                    <label>Пароль</label>
-                    <input type="password" v-model="loginForm.password" placeholder="Введите пароль" @keyup.enter="doLogin">
-                </div>
-                <button @click="doLogin" style="width:100%;">Войти</button>
-                <div style="margin-top:12px;font-size:0.75rem;color:#7a8a9e;text-align:center;">
-                    <i class="fas fa-info-circle"></i> Председатель: 2347 / 2203
-                </div>
-            </div>
-        </div>
-
-        <!-- CHAIRMAN / GOVERNOR PANEL -->
-        <div class="main-content" v-else-if="currentUser.role === 'chairman' || currentUser.role === 'governor'">
-            <div class="card">
-                <div class="flex-between">
-                    <div class="card-title">
-                        <span v-if="currentUser.role === 'chairman'">👑 Панель Председателя</span>
-                        <span v-else>⚜️ Панель Правителя</span>
-                    </div>
-                    <div class="badge" v-if="currentUser.role === 'chairman'">Высшие полномочия</div>
-                    <div class="badge" v-else>Полномочия Правителя</div>
-                </div>
-                <p style="color:#2a405b;">
-                    <strong>{{ currentUser.fullName }}</strong> — 
-                    <span v-if="currentUser.role === 'chairman'">управление сотрудниками и общими документами.</span>
-                    <span v-else>управление общими документами.</span>
-                </p>
-            </div>
-
-            <!-- Add Employee (only for chairman) -->
-            <div class="card" v-if="currentUser.role === 'chairman'">
-                <div class="card-title">➕ Назначить сотрудника</div>
-                <div class="grid-2col">
-                    <div>
-                        <div class="form-group">
-                            <label>Должность</label>
-                            <input v-model="newPerson.roleTitle" placeholder="Например: Министр финансов">
-                        </div>
-                        <div class="form-group">
-                            <label>ФИО</label>
-                            <input v-model="newPerson.fullName" placeholder="Иванов Иван Иванович">
-                        </div>
-                        <div class="form-group">
-                            <label>Логин (уникальный)</label>
-                            <input v-model="newPerson.login" placeholder="придумайте логин">
-                        </div>
-                        <div class="form-group">
-                            <label>Пароль</label>
-                            <input type="text" v-model="newPerson.password" placeholder="придумайте пароль">
-                        </div>
-                        <div class="form-group">
-                            <label>Роль</label>
-                            <select v-model="newPerson.role">
-                                <option value="staff">Сотрудник</option>
-                                <option value="governor">Правитель</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="form-group">
-                            <label>📸 Фото сотрудника</label>
-                            <button type="button" @click="triggerFileUpload" class="camera-btn">📁 Выбрать фото</button>
-                            <input type="file" ref="fileInput" accept="image/*" @change="onFileSelected" class="hidden-file">
-                            <div v-if="newPerson.photoPreview">
-                                <img :src="newPerson.photoPreview" class="photo-preview">
-                                <button @click="clearNewPhoto" class="small-btn danger">Очистить</button>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>📄 Текст документа (опционально)</label>
-                            <textarea rows="2" v-model="newPerson.documentText" placeholder="Указ / Приказ о назначении..."></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label>🖼️ Фото документа</label>
-                            <button type="button" @click="triggerDocUpload" class="camera-btn">📎 Загрузить фото</button>
-                            <input type="file" ref="docFileInput" accept="image/*" @change="onDocFileSelected" class="hidden-file">
-                            <div v-if="newPerson.documentImagePreview">
-                                <img :src="newPerson.documentImagePreview" class="photo-preview">
-                                <button @click="clearNewDoc" class="small-btn danger">Очистить</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <button @click="addUser" style="width:100%; margin-top:4px;">✅ Назначить</button>
-            </div>
-
-            <!-- All Employees (only for chairman) -->
-            <div class="card" v-if="currentUser.role === 'chairman'">
-                <div class="card-title">📋 Все сотрудники</div>
-                <div v-if="loading" class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Загрузка...</div>
-                <div v-else-if="allUsersList.length === 0" class="empty-state">Пока нет назначенных сотрудников</div>
-                <div class="member-list" v-else>
-                    <div v-for="user in allUsersList" :key="user.login" class="member-item">
-                        <div class="member-info">
-                            <img v-if="user.photoUrl" :src="user.photoUrl" class="member-photo">
-                            <div v-else style="width:54px;height:54px;background:#d9e2ed;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;">📷</div>
-                            <div>
-                                <strong>{{ user.fullName }}</strong><br>
-                                <span class="badge">{{ user.roleTitle || getRoleName(user.role) }}</span>
-                                <span class="role-badge" v-if="user.role === 'governor'">⚜️ Правитель</span>
-                                <div style="font-size:0.7rem; color:#3e5f7e; margin-top:2px;">Логин: {{ user.login }}</div>
-                            </div>
-                        </div>
-                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                            <button class="small-btn" @click="editUserDocument(user)">📄 Документ</button>
-                            <button class="small-btn danger" @click="removeUser(user.login)">🗑 Удалить</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Common Documents - доступно и Председателю, и Правителю -->
-            <div class="card">
-                <div class="card-title">📚 Общие документы (видны всем)</div>
-                <div style="background:#f5f9ff; padding:18px; border-radius:24px; margin-bottom:18px;">
-                    <div class="form-group">
-                        <label>Название документа</label>
-                        <input v-model="newDocTitle" placeholder="Например: Постановление №1">
-                    </div>
-                    <div class="form-group">
-                        <label>Текст</label>
-                        <textarea v-model="newDocText" rows="2" placeholder="Содержание документа..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Фото/скан</label>
-                        <button @click="triggerCommonDocUpload" class="camera-btn">📎 Загрузить фото</button>
-                        <input type="file" ref="commonDocInput" accept="image/*" @change="onCommonDocSelected" class="hidden-file">
-                        <div v-if="newDocImagePreview">
-                            <img :src="newDocImagePreview" class="photo-preview">
-                            <button @click="newDocImagePreview = null; newDocImageData = null" class="small-btn danger">Очистить</button>
-                        </div>
-                    </div>
-                    <button @click="addCommonDocument">📄 Добавить документ</button>
-                </div>
-
-                <div v-if="loadingDocs" class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Загрузка...</div>
-                <div v-else-if="commonDocuments.length === 0" class="empty-state">Пока нет общих документов</div>
-                <div class="documents-grid" v-else>
-                    <div v-for="doc in commonDocuments" :key="doc.id" class="document-card">
-                        <div class="flex-between">
-                            <h4>{{ doc.title || 'Документ' }}</h4>
-                            <button class="small-btn danger" @click="removeCommonDocument(doc.id)">🗑 Удалить</button>
-                        </div>
-                        <div v-if="doc.text" style="margin:10px 0; color:#1e2f41;">{{ doc.text }}</div>
-                        <div v-if="doc.image">
-                            <img :src="doc.image" class="document-img" @click="openModal(doc.image)">
-                        </div>
-                        <div style="font-size:0.7rem; color:#7a8a9e; margin-top:6px;">
-                            Добавлен: {{ doc.date }} 
-                            <span v-if="doc.author">• {{ doc.author }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- STAFF PANEL (non-chairman, non-governor) -->
-        <div class="main-content" v-else>
-            <div class="card">
-                <div class="card-title">📄 Ваш персональный документ</div>
-                <div class="document-view">
-                    <div class="member-info" style="margin-bottom:14px;">
-                        <img v-if="currentUser.photoUrl" :src="currentUser.photoUrl" class="member-photo">
-                        <div v-else style="width:54px;height:54px;background:#d9e2ed;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;">📷</div>
-                        <div>
-                            <h3>{{ currentUser.fullName }}</h3>
-                            <p><strong>{{ currentUser.roleTitle || getRoleName(currentUser.role) }}</strong></p>
-                        </div>
-                    </div>
-                    <div v-if="currentUser.documentText" style="background:white; padding:14px; border-radius:18px; margin:10px 0;">{{ currentUser.documentText }}</div>
-                    <div v-if="currentUser.documentImageData">
-                        <img :src="currentUser.documentImageData" class="document-img" @click="openModal(currentUser.documentImageData)">
-                        <div class="badge" style="margin-top:4px;">📸 Фото документа (нажмите)</div>
-                    </div>
-                    <div v-if="!currentUser.documentText && !currentUser.documentImageData" style="color:#b1624b;">⚠️ Персональный документ ещё не загружен.</div>
-                </div>
-                <hr style="margin:16px 0; border:1px solid #eef2f8;">
-                <div class="flex-between">
-                    <div><strong>Ваши данные:</strong> логин: {{ currentUser.login }}</div>
-                    <div class="badge">ГУ СВС</div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-title">📚 Общие документы</div>
-                <div v-if="loadingDocs" class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Загрузка...</div>
-                <div v-else-if="commonDocuments.length === 0" class="empty-state">Пока нет опубликованных документов</div>
-                <div v-else class="documents-grid">
-                    <div v-for="doc in commonDocuments" :key="doc.id" class="document-card">
-                        <h4>{{ doc.title || 'Документ' }}</h4>
-                        <div v-if="doc.text" style="margin:10px 0;">{{ doc.text }}</div>
-                        <div v-if="doc.image">
-                            <img :src="doc.image" class="document-img" @click="openModal(doc.image)">
-                        </div>
-                        <div style="font-size:0.7rem; color:#7a8a9e;">
-                            Добавлен: {{ doc.date }}
-                            <span v-if="doc.author">• {{ doc.author }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="status-grid">
+        <div class="status-item"><span>📶 Wi-Fi</span><span id="act-wifi">—</span></div>
+        <div class="status-item"><span>🔋 Батарея</span><span id="act-battery">—</span></div>
+        <div class="status-item"><span>🌤 Погода</span><span id="act-weather">—</span></div>
     </div>
 
-    <!-- MODAL for image -->
-    <div v-if="modalImage" class="modal" @click="closeModal">
-        <div class="modal-content"><img :src="modalImage" alt="Увеличенное фото"></div>
+    <!-- Face ID кнопка с пульсацией -->
+    <div id="bio-container">
+        <button class="biometric-btn" id="bio-btn" onclick="requestBiometric()">
+            <span class="pulse"></span>
+            <span id="bio-icon">😀</span>
+        </button>
+        <p id="bio-label">Настройте Face ID / Touch ID</p>
     </div>
 
-    <!-- EDIT DOCUMENT MODAL -->
-    <div v-if="editingUser" class="modal" @click.self="closeEditModal">
-        <div class="modal-card">
-            <h3 style="margin-bottom:16px;">Документ: {{ editingUser.fullName }}</h3>
-            <div class="form-group">
-                <label>Текст документа</label>
-                <textarea v-model="editDocText" rows="3"></textarea>
-            </div>
-            <div class="form-group">
-                <label>Фото документа</label>
-                <div v-if="editDocImage"><img :src="editDocImage" class="photo-preview" style="max-width:100%;"></div>
-                <button @click="triggerEditDocUpload" class="small-btn">📎 Заменить фото</button>
-                <button v-if="editDocImage" @click="editDocImage = null; editDocImageData = null" class="small-btn danger">🗑 Удалить фото</button>
-                <input type="file" ref="editDocInput" accept="image/*" @change="onEditDocSelected" class="hidden-file">
-            </div>
-            <div class="flex-between" style="margin-top:18px;">
-                <button @click="saveUserDoc">💾 Сохранить</button>
-                <button @click="closeEditModal" class="small-btn">Отмена</button>
-            </div>
-        </div>
-    </div>
-
-    <div v-if="toastMessage" class="success-toast">{{ toastMessage }}</div>
+    <input type="password" id="passcode" placeholder="● ● ● ●" maxlength="4" inputmode="numeric" pattern="[0-9]*">
+    <button class="act-btn" id="activate-btn" onclick="activateOS()">🔓 Войти в систему</button>
+    <p style="font-size:11px; color:rgba(255,255,255,0.15); margin-top:14px;">Разрешения запрашиваются 1 раз</p>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+<!-- РАБОЧИЙ СТОЛ -->
+<div id="desktop">
+    <div id="statusbar">
+        <span id="time">12:00</span>
+        <span id="status-right">📶 Wi-Fi 🔋 0%</span>
+    </div>
+    <div id="appgrid">
+        <button class="icon" onclick="openApp('notes')"><div class="img">📝</div><span>Заметки</span></button>
+        <button class="icon" onclick="openApp('weather')"><div class="img">☀️</div><span>Погода</span></button>
+        <button class="icon" onclick="openApp('music')"><div class="img">🎵</div><span>Музыка</span></button>
+        <button class="icon" onclick="openApp('settings')"><div class="img">⚙️</div><span>Настройки</span></button>
+        <button class="icon" onclick="openApp('terminal')"><div class="img">⌨️</div><span>Терминал</span></button>
+    </div>
+
+    <div id="overlay" onclick="closeAll()"></div>
+
+    <!-- Окна приложений -->
+    <div class="window" id="win-notes">
+        <div class="window-header"><span>📝 Заметки</span><button onclick="closeApp('notes')">✕</button></div>
+        <div class="window-body"><p>Привет, это Koder OS.</p><button onclick="alert('Сохранено в localStorage')">💾 Сохранить</button></div>
+    </div>
+    <div class="window" id="win-weather">
+        <div class="window-header"><span>☀️ Погода</span><button onclick="closeApp('weather')">✕</button></div>
+        <div class="window-body"><h2 id="weather-temp">--°C</h2><p id="weather-desc">Загрузка...</p><button onclick="getWeather()">🔄 Обновить</button></div>
+    </div>
+    <div class="window" id="win-music">
+        <div class="window-header"><span>🎵 Музыка</span><button onclick="closeApp('music')">✕</button></div>
+        <div class="window-body"><p>Сейчас играет:<br><strong>«Koder Dreams»</strong></p><button onclick="alert('▶️ Плеер запущен')">▶ Воспроизвести</button></div>
+    </div>
+    <div class="window" id="win-settings">
+        <div class="window-header"><span>⚙️ Настройки</span><button onclick="closeApp('settings')">✕</button></div>
+        <div class="window-body">
+            <p>🌙 Тёмная тема: вкл</p>
+            <p id="bio-status">🔐 Face ID: не настроен</p>
+            <button onclick="alert('Сброс настроек')">🔄 Сбросить</button>
+        </div>
+    </div>
+    <div class="window" id="win-terminal">
+        <div class="window-header"><span>⌨️ Терминал</span><button onclick="closeApp('terminal')">✕</button></div>
+        <div class="window-body">
+            <p style="color:#00d4ff; font-family: monospace;">$ whoami<br>➜ koder<br>$ uptime<br>➜ 00:00:01</p>
+            <button onclick="alert('Выполнено: ls -la')">▶ Выполнить</button>
+        </div>
+    </div>
+
+    <div id="dock">
+        <button onclick="openApp('notes')">📝</button>
+        <button onclick="openApp('weather')">☀️</button>
+        <button onclick="openApp('music')">🎵</button>
+        <button onclick="location.reload()">🏠</button>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
-    // ========== FIREBASE CONFIG ==========
-    const firebaseConfig = {
-        apiKey: "AIzaSyBlZ5ZtyTXgtXxSJAx1jOxwhTrzlHRJmo",
-        authDomain: "bk-cashier.firebaseapp.com",
-        databaseURL: "https://bk-cashier-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "bk-cashier",
-        storageBucket: "bk-cashier.firebasestorage.app",
-        messagingSenderId: "385000840969",
-        appId: "1:385000840969:web:1ec8d09176b6551dc0fdd8"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    // ============================================================
+    // 1. ФЛАГИ ОДНОКРАТНЫХ ЗАПРОСОВ
+    // ============================================================
+    let bioRequested = false;
+    let geoRequested = false;
+    let bioGranted = false;
+    let geoGranted = false;
+    let passcode = '';
 
-    // ========== VUE APP ==========
-    new Vue({
-        el: '#app',
-        data: {
-            // Auth
-            currentUser: null,
-            loginForm: { login: '', password: '' },
+    // ============================================================
+    // 2. Wi-Fi (заглушка)
+    // ============================================================
+    function getWifiName() {
+        try {
+            if (navigator.connection) return 'Домашний Wi-Fi';
+        } catch(e) {}
+        return 'Wi-Fi';
+    }
 
-            // New employee form
-            newPerson: {
-                roleTitle: '',
-                fullName: '',
-                login: '',
-                password: '',
-                role: 'staff',
-                photoPreview: null,
-                photoUrl: '',
-                documentText: '',
-                documentImageData: '',
-                documentImagePreview: null
-            },
-
-            // New common document
-            newDocTitle: '',
-            newDocText: '',
-            newDocImagePreview: null,
-            newDocImageData: null,
-
-            // Lists
-            usersList: [],
-            commonDocuments: [],
-            loading: true,
-            loadingDocs: true,
-
-            // UI
-            modalImage: null,
-            toastMessage: '',
-            editingUser: null,
-            editDocText: '',
-            editDocImage: null,
-            editDocImageData: null,
-
-            // Firebase listeners
-            usersListener: null,
-            docsListener: null
-        },
-
-        computed: {
-            allUsersList() {
-                return this.usersList.filter(u => u.role !== 'chairman');
-            }
-        },
-
-        mounted() {
-            this.initializeChairman();
-            this.loadUsers();
-            this.loadDocuments();
-        },
-
-        beforeDestroy() {
-            if (this.usersListener) this.usersListener.off();
-            if (this.docsListener) this.docsListener.off();
-        },
-
-        methods: {
-            // ===== INITIALIZE CHAIRMAN =====
-            initializeChairman() {
-                // Проверяем, есть ли председатель в базе
-                db.ref('users').orderByChild('role').equalTo('chairman').once('value', (sn) => {
-                    if (!sn.exists()) {
-                        // Создаем председателя
-                        const chairmanData = {
-                            login: '2347',
-                            password: '2203',
-                            role: 'chairman',
-                            roleTitle: 'Председатель Правительства СВС',
-                            fullName: 'Черных Вячеслав Андреевич',
-                            documentText: '',
-                            documentImageData: '',
-                            photoUrl: ''
-                        };
-                        db.ref('users').push().set(chairmanData);
-                    }
-                });
-            },
-
-            // ===== TOAST =====
-            showToast(msg) {
-                this.toastMessage = msg;
-                clearTimeout(this._toastTimer);
-                this._toastTimer = setTimeout(() => this.toastMessage = '', 2800);
-            },
-
-            // ===== ROLE =====
-            getRoleName(role) {
-                const names = {
-                    chairman: 'Председатель Правительства СВС',
-                    governor: 'Правитель СВС',
-                    minister: 'Министр строительства',
-                    staff: 'Сотрудник'
-                };
-                return names[role] || role;
-            },
-
-            // ===== USERS =====
-            loadUsers() {
-                this.loading = true;
-                this.usersListener = db.ref('users');
-                this.usersListener.on('value', (sn) => {
-                    const users = [];
-                    sn.forEach(child => {
-                        users.push({ id: child.key, ...child.val() });
-                    });
-                    this.usersList = users;
-                    this.loading = false;
-                });
-            },
-
-            // ===== DOCUMENTS =====
-            loadDocuments() {
-                this.loadingDocs = true;
-                this.docsListener = db.ref('common_documents');
-                this.docsListener.on('value', (sn) => {
-                    const docs = [];
-                    sn.forEach(child => {
-                        docs.push({ id: child.key, ...child.val() });
-                    });
-                    this.commonDocuments = docs;
-                    this.loadingDocs = false;
-                });
-            },
-
-            // ===== AUTH =====
-            doLogin() {
-                const { login, password } = this.loginForm;
-                if (!login || !password) {
-                    this.showToast('❌ Введите логин и пароль');
-                    return;
-                }
-
-                const user = this.usersList.find(u =>
-                    u.login === login && u.password === password
-                );
-
-                if (user) {
-                    this.currentUser = { ...user };
-                    this.showToast(`👋 Добро пожаловать, ${user.fullName}`);
-                    this.loginForm = { login: '', password: '' };
-                } else {
-                    this.showToast('❌ Неверный логин или пароль');
-                }
-            },
-
-            logout() {
-                this.currentUser = null;
-                this.loginForm = { login: '', password: '' };
-                this.showToast('👋 Выход выполнен');
-            },
-
-            // ===== ADD USER =====
-            resetNewPersonForm() {
-                this.newPerson = {
-                    roleTitle: '',
-                    fullName: '',
-                    login: '',
-                    password: '',
-                    role: 'staff',
-                    photoPreview: null,
-                    photoUrl: '',
-                    documentText: '',
-                    documentImageData: '',
-                    documentImagePreview: null
-                };
-                if (this.$refs.fileInput) this.$refs.fileInput.value = '';
-                if (this.$refs.docFileInput) this.$refs.docFileInput.value = '';
-            },
-
-            addUser() {
-                const p = this.newPerson;
-                if (!p.login?.trim() || !p.password?.trim() || !p.fullName?.trim()) {
-                    this.showToast('❌ Заполните логин, пароль и ФИО');
-                    return;
-                }
-                if (!p.roleTitle?.trim()) {
-                    this.showToast('❌ Укажите должность');
-                    return;
-                }
-                if (this.usersList.find(u => u.login === p.login.trim())) {
-                    this.showToast('❌ Логин уже существует');
-                    return;
-                }
-
-                const newUser = {
-                    login: p.login.trim(),
-                    password: p.password.trim(),
-                    role: p.role || 'staff',
-                    roleTitle: p.roleTitle.trim(),
-                    fullName: p.fullName.trim(),
-                    documentText: p.documentText || '',
-                    documentImageData: p.documentImageData || '',
-                    photoUrl: p.photoUrl || ''
-                };
-
-                const ref = db.ref('users').push();
-                ref.set(newUser).then(() => {
-                    this.resetNewPersonForm();
-                    this.showToast('✅ Сотрудник назначен');
-                });
-            },
-
-            removeUser(login) {
-                if (!confirm('Удалить сотрудника?')) return;
-                const user = this.usersList.find(u => u.login === login);
-                if (!user) return;
-
-                if (this.currentUser?.login === login) {
-                    this.logout();
-                }
-
-                db.ref('users/' + user.id).remove().then(() => {
-                    this.showToast('🗑️ Сотрудник удалён');
-                });
-            },
-
-            // ===== EDIT USER DOCUMENT =====
-            editUserDocument(user) {
-                this.editingUser = user;
-                this.editDocText = user.documentText || '';
-                this.editDocImage = user.documentImageData || null;
-                this.editDocImageData = user.documentImageData || null;
-            },
-
-            saveUserDoc() {
-                if (!this.editingUser) return;
-                const ref = db.ref('users/' + this.editingUser.id);
-                ref.update({
-                    documentText: this.editDocText,
-                    documentImageData: this.editDocImageData || ''
-                }).then(() => {
-                    if (this.currentUser?.login === this.editingUser.login) {
-                        this.currentUser.documentText = this.editDocText;
-                        this.currentUser.documentImageData = this.editDocImageData;
-                    }
-                    this.showToast('✅ Документ обновлён');
-                    this.closeEditModal();
-                });
-            },
-
-            closeEditModal() {
-                this.editingUser = null;
-                this.editDocText = '';
-                this.editDocImage = null;
-                this.editDocImageData = null;
-            },
-
-            // ===== COMMON DOCUMENTS =====
-            resetNewDocumentForm() {
-                this.newDocTitle = '';
-                this.newDocText = '';
-                this.newDocImagePreview = null;
-                this.newDocImageData = null;
-                if (this.$refs.commonDocInput) this.$refs.commonDocInput.value = '';
-            },
-
-            addCommonDocument() {
-                if (!this.newDocTitle.trim() && !this.newDocText.trim() && !this.newDocImageData) {
-                    this.showToast('❌ Заполните название, текст или фото');
-                    return;
-                }
-
-                const newDoc = {
-                    title: this.newDocTitle.trim() || 'Документ',
-                    text: this.newDocText.trim() || '',
-                    image: this.newDocImageData || null,
-                    date: new Date().toLocaleString('ru-RU'),
-                    author: this.currentUser?.fullName || 'Председатель'
-                };
-
-                db.ref('common_documents').push().set(newDoc).then(() => {
-                    this.resetNewDocumentForm();
-                    this.showToast('✅ Документ опубликован и виден всем!');
-                });
-            },
-
-            removeCommonDocument(docId) {
-                if (!confirm('Удалить документ?')) return;
-                db.ref('common_documents/' + docId).remove().then(() => {
-                    this.showToast('🗑️ Документ удалён');
-                });
-            },
-
-            // ===== FILE HANDLERS =====
-            onFileSelected(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                        this.newPerson.photoPreview = ev.target.result;
-                        this.newPerson.photoUrl = ev.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                }
-            },
-
-            onDocFileSelected(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                        this.newPerson.documentImagePreview = ev.target.result;
-                        this.newPerson.documentImageData = ev.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                }
-            },
-
-            onCommonDocSelected(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                        this.newDocImagePreview = ev.target.result;
-                        this.newDocImageData = ev.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                }
-            },
-
-            onEditDocSelected(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                        this.editDocImage = ev.target.result;
-                        this.editDocImageData = ev.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                }
-            },
-
-            triggerFileUpload() { this.$refs.fileInput.click(); },
-            triggerDocUpload() { this.$refs.docFileInput.click(); },
-            triggerCommonDocUpload() { this.$refs.commonDocInput.click(); },
-            triggerEditDocUpload() { this.$refs.editDocInput.click(); },
-
-            clearNewPhoto() {
-                this.newPerson.photoPreview = null;
-                this.newPerson.photoUrl = '';
-            },
-
-            clearNewDoc() {
-                this.newPerson.documentImagePreview = null;
-                this.newPerson.documentImageData = '';
-            },
-
-            // ===== MODAL =====
-            openModal(img) { this.modalImage = img; },
-            closeModal() { this.modalImage = null; }
+    // ============================================================
+    // 3. БАТАРЕЯ (реальный процент)
+    // ============================================================
+    function getBatteryLevel() {
+        if (navigator.getBattery) {
+            navigator.getBattery().then(battery => {
+                const level = Math.round(battery.level * 100);
+                document.getElementById('act-battery').textContent = level + '%';
+                document.getElementById('status-right').textContent = '📶 ' + getWifiName() + ' 🔋 ' + level + '%';
+            }).catch(() => {
+                document.getElementById('act-battery').textContent = '86%';
+            });
+        } else {
+            document.getElementById('act-battery').textContent = '86%';
         }
-    });
+    }
+
+    // ============================================================
+    // 4. ГЕОЛОКАЦИЯ (ОДИН РАЗ)
+    // ============================================================
+    function getWeather() {
+        if (!geoRequested) {
+            geoRequested = true;
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    geoGranted = true;
+                    fetchWeather(pos.coords.latitude, pos.coords.longitude);
+                },
+                () => {
+                    geoGranted = false;
+                    document.getElementById('act-weather').textContent = '❌ Гео заблокирован';
+                    document.getElementById('weather-temp').textContent = '--°C';
+                    document.getElementById('weather-desc').textContent = 'Разрешите геолокацию';
+                    showToast('⚠️ Геолокация отклонена. Нажмите "Обновить" для повторного запроса.');
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        } else if (geoGranted) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude),
+                () => showToast('⚠️ Не удалось получить координаты')
+            );
+        } else {
+            showToast('⚠️ Геолокация запрещена. Очистите историю сайта.');
+        }
+    }
+
+    function fetchWeather(lat, lon) {
+        fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.current_weather) {
+                    const temp = data.current_weather.temperature;
+                    const code = data.current_weather.weathercode;
+                    const desc = ['Ясно','Облачно','Пасмурно','Пасмурно','Туман','Морось','Дождь','Снег','Ливень'][code] || 'Облачно';
+                    document.getElementById('act-weather').textContent = temp + '°C ' + desc;
+                    document.getElementById('weather-temp').textContent = temp + '°C';
+                    document.getElementById('weather-desc').textContent = desc;
+                }
+            })
+            .catch(() => {
+                document.getElementById('act-weather').textContent = 'Ошибка API';
+            });
+    }
+
+    // ============================================================
+    // 5. FACE ID / TOUCH ID (WebAuthn — нативный запрос для iOS)
+    // ============================================================
+    function requestBiometric() {
+        if (bioRequested) {
+            showToast('🔐 Face ID уже запрашивался');
+            return;
+        }
+        bioRequested = true;
+        const btn = document.getElementById('bio-btn');
+        const icon = document.getElementById('bio-icon');
+        btn.classList.add('active');
+        icon.textContent = '⏳';
+
+        // Проверяем, есть ли поддержка WebAuthn
+        if (!window.PublicKeyCredential) {
+            // Эмуляция для старых устройств
+            bioGranted = true;
+            btn.classList.remove('active');
+            btn.classList.add('success');
+            icon.textContent = '✅';
+            document.getElementById('bio-label').textContent = '✅ Face ID (эмуляция)';
+            document.getElementById('bio-status').textContent = '🔐 Face ID: ✅ активен';
+            showToast('✅ Face ID эмулирован (WebAuthn не поддерживается)');
+            return;
+        }
+
+        // Настоящий запрос Face ID через WebAuthn (только на iOS с Face ID)
+        const challenge = new Uint8Array(32);
+        window.crypto.getRandomValues(challenge);
+        const publicKey = {
+            challenge: challenge,
+            rpId: window.location.hostname || 'localhost',
+            userVerification: 'required',
+            timeout: 60000,
+            allowCredentials: []
+        };
+
+        navigator.credentials.get({ publicKey: publicKey })
+            .then(() => {
+                bioGranted = true;
+                btn.classList.remove('active');
+                btn.classList.add('success');
+                icon.textContent = '✅';
+                document.getElementById('bio-label').textContent = '✅ Face ID активирован';
+                document.getElementById('bio-status').textContent = '🔐 Face ID: ✅ активен';
+                showToast('✅ Face ID / Touch ID успешно настроен!');
+            })
+            .catch((err) => {
+                bioGranted = false;
+                btn.classList.remove('active');
+                btn.classList.add('fail');
+                icon.textContent = '❌';
+                document.getElementById('bio-label').textContent = '❌ Face ID не доступен';
+                document.getElementById('bio-status').textContent = '🔐 Face ID: ❌ не активен';
+                showToast('⚠️ Face ID отклонён или недоступен');
+                console.warn('WebAuthn error:', err);
+            });
+    }
+
+    // ============================================================
+    // 6. АКТИВАЦИЯ
+    // ============================================================
+    function activateOS() {
+        const pwd = document.getElementById('passcode').value;
+        if (pwd.length !== 4) {
+            showToast('⚠️ Введите 4-значный пароль');
+            return;
+        }
+        passcode = pwd;
+
+        // Если биометрия не запрашивалась — предлагаем
+        if (!bioRequested) {
+            requestBiometric();
+        }
+
+        // Скрываем активацию
+        document.getElementById('activation').style.opacity = '0';
+        setTimeout(() => {
+            document.getElementById('activation').style.display = 'none';
+            document.getElementById('desktop').style.display = 'flex';
+        }, 500);
+
+        getBatteryLevel();
+        getWeather();
+        updateTime();
+        setInterval(updateTime, 1000);
+        setInterval(getBatteryLevel, 30000);
+
+        // Показываем приветствие
+        showToast('👋 Добро пожаловать в Koder OS!');
+    }
+
+    // ============================================================
+    // 7. ЧАСЫ
+    // ============================================================
+    function updateTime() {
+        const now = new Date();
+        document.getElementById('time').textContent = now.toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
+    }
+
+    // ============================================================
+    // 8. УПРАВЛЕНИЕ ОКНАМИ
+    // ============================================================
+    function openApp(id) {
+        closeAll();
+        document.getElementById('overlay').style.display = 'block';
+        const win = document.getElementById('win-'+id);
+        if (win) win.style.display = 'flex';
+    }
+    function closeApp(id) {
+        document.getElementById('win-'+id).style.display = 'none';
+        document.getElementById('overlay').style.display = 'none';
+    }
+    function closeAll() {
+        document.querySelectorAll('.window').forEach(w => w.style.display = 'none');
+        document.getElementById('overlay').style.display = 'none';
+    }
+
+    // ============================================================
+    // 9. TOAST
+    // ============================================================
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.style.display = 'block';
+        clearTimeout(t._hide);
+        t._hide = setTimeout(() => t.style.display = 'none', 3500);
+    }
+
+    // ============================================================
+    // 10. ИНИЦИАЛИЗАЦИЯ
+    // ============================================================
+    window.onload = function() {
+        document.getElementById('act-wifi').textContent = getWifiName();
+        getBatteryLevel();
+        document.getElementById('bio-status').textContent = '🔐 Face ID: не настроен';
+        // Проверяем поддержку WebAuthn и показываем подсказку
+        if (window.PublicKeyCredential) {
+            document.getElementById('bio-label').textContent = '🔐 Нажмите для Face ID / Touch ID';
+        } else {
+            document.getElementById('bio-label').textContent = '⚡ Эмуляция биометрии (нажмите)';
+        }
+    };
+
+    window.addEventListener('popstate', closeAll);
 </script>
 </body>
 </html>
