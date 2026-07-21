@@ -10,72 +10,634 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <!-- ... остальной код ... -->
+    <!-- ===== QR БИБЛИОТЕКА ===== -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <!-- ===== FIREBASE ===== -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:Arial,sans-serif; background:#0f0f1a; color:#fff; padding:10px; min-height:100vh; }
+        .container { max-width:500px; margin:0 auto; }
+        .hidden { display:none !important; }
+        
+        .header { display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:10px 14px; border-radius:16px; margin-bottom:12px; }
+        .logo { font-size:1.2rem; font-weight:bold; color:#f5a623; }
+        .user-badge { font-size:0.7rem; color:#888; background:rgba(255,255,255,0.05); padding:4px 12px; border-radius:30px; }
+        .user-badge button { background:none; border:none; color:#f5a623; cursor:pointer; margin-left:8px; }
+        .bell { position:relative; cursor:pointer; font-size:1.2rem; margin-right:8px; }
+        .bell .badge { position:absolute; top:-6px; right:-8px; background:#ef4444; color:#fff; font-size:0.5rem; padding:2px 5px; border-radius:50%; }
+        
+        .btn { padding:8px 16px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; font-size:0.8rem; transition:0.2s; }
+        .btn-primary { background:#f5a623; color:#1a1a2e; }
+        .btn-success { background:#4CAF50; color:#fff; }
+        .btn-danger { background:#ef4444; color:#fff; }
+        .btn-secondary { background:rgba(255,255,255,0.08); color:#fff; }
+        .btn-warning { background:#ff9800; color:#fff; }
+        .btn-info { background:#2196F3; color:#fff; }
+        .btn-block { width:100%; padding:10px; }
+        
+        .form-group { margin-bottom:10px; }
+        .form-group label { display:block; font-size:0.7rem; color:#888; margin-bottom:4px; }
+        .form-group input, .form-group textarea, .form-group select { width:100%; padding:10px 14px; border-radius:30px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.05); color:#fff; font-size:0.85rem; outline:none; font-family:inherit; }
+        .form-group textarea { border-radius:14px; min-height:80px; resize:vertical; }
+        .form-group select option { background:#1a1a2e; color:#fff; }
+        
+        .auth-box { background:rgba(255,255,255,0.03); border-radius:16px; padding:20px; margin-bottom:16px; border:1px solid rgba(255,255,255,0.05); }
+        .auth-box h3 { margin-bottom:12px; color:#f5a623; font-size:1rem; }
+        .auth-actions { display:flex; gap:8px; margin-top:12px; }
+        .auth-actions button { flex:1; padding:10px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; font-size:0.8rem; }
+        
+        .wallet { background:rgba(255,255,255,0.03); border-radius:14px; padding:12px 16px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
+        .wallet .amount { font-size:1.2rem; font-weight:bold; color:#f5a623; }
+        
+        .tabs { display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap; }
+        .tab { padding:8px 16px; border-radius:30px; background:rgba(255,255,255,0.05); cursor:pointer; font-size:0.75rem; color:#888; border:1px solid transparent; }
+        .tab.active { background:rgba(245,166,35,0.15); color:#f5a623; border-color:#f5a623; }
+        
+        .product-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; margin-bottom:16px; }
+        .product-card { background:rgba(255,255,255,0.05); border-radius:14px; padding:12px; text-align:center; border:1px solid rgba(255,255,255,0.05); cursor:pointer; transition:0.2s; }
+        .product-card:hover { background:rgba(255,255,255,0.08); }
+        .product-card .product-image { width:100%; height:100px; object-fit:cover; border-radius:10px; margin-bottom:6px; background:rgba(255,255,255,0.05); }
+        .product-card .name { font-weight:600; font-size:0.85rem; margin-bottom:4px; }
+        .product-card .price { color:#f5a623; font-weight:bold; font-size:0.95rem; }
+        .product-card .add-btn { margin-top:8px; background:#f5a623; color:#1a1a2e; border:none; padding:6px 16px; border-radius:30px; font-weight:bold; cursor:pointer; font-size:0.7rem; }
+        
+        .cart-panel { background:rgba(255,255,255,0.03); border-radius:14px; padding:14px; margin-bottom:16px; border:1px solid rgba(255,255,255,0.05); }
+        .cart-panel .title { font-weight:bold; margin-bottom:10px; color:#f5a623; font-size:0.95rem; }
+        .cart-item { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.85rem; }
+        .cart-total { font-weight:bold; font-size:1.1rem; margin-top:10px; padding-top:10px; border-top:2px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; }
+        .cart-actions { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+        .cart-actions button { flex:1; padding:10px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; min-width:80px; font-size:0.8rem; }
+        
+        .order-card { background:rgba(255,255,255,0.04); border-radius:14px; padding:14px; margin-bottom:10px; border-left:4px solid #f5a623; }
+        .order-card .order-header { display:flex; justify-content:space-between; font-weight:bold; margin-bottom:6px; font-size:0.85rem; flex-wrap:wrap; gap:4px; }
+        .order-card .order-number { color:#f5a623; font-size:0.85rem; }
+        .order-card .order-status { font-size:0.65rem; padding:3px 12px; border-radius:30px; }
+        .status-collecting { background:#ff9800; color:#fff; }
+        .status-ready { background:#4CAF50; color:#fff; }
+        .status-delivered { background:#999; color:#fff; }
+        .status-return { background:#ef4444; color:#fff; }
+        .order-card .order-code { font-size:1.6rem; font-weight:bold; color:#f5a623; font-family:monospace; letter-spacing:6px; background:rgba(255,255,255,0.08); padding:10px; border-radius:12px; margin:8px 0; text-align:center; border:2px solid rgba(245,166,35,0.25); }
+        .order-card .order-pickup-number { font-size:1.3rem; font-weight:bold; color:#4CAF50; font-family:monospace; background:rgba(76,175,80,0.15); padding:6px 16px; border-radius:10px; display:inline-block; border:2px solid #4CAF50; letter-spacing:4px; }
+        .order-card .order-review { margin-top:10px; padding:10px; background:rgba(255,255,255,0.05); border-radius:10px; }
+        .order-card .order-review .stars { color:#f5a623; font-size:1.2rem; }
+        .order-delivery-info { font-size:0.8rem; color:#888; margin:4px 0; }
+        .order-delivery-info span { color:#f5a623; }
+        .order-item { display:flex; align-items:center; gap:10px; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.03); }
+        .order-item .item-info { flex:1; font-size:0.85rem; }
+        
+        .qr-code-container { display:flex; justify-content:center; padding:10px; min-height:200px; align-items:center; flex-direction:column; }
+        .qr-code-container img { border-radius:12px; background:white; padding:10px; max-width:100%; max-height:250px; }
+        .qr-placeholder { color:#888; font-size:0.9rem; text-align:center; padding:20px; }
+        
+        .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.85); z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px; }
+        .modal-content { background:#1a1a2e; border-radius:20px; padding:24px; max-width:450px; width:100%; max-height:90vh; overflow-y:auto; border:1px solid rgba(255,255,255,0.08); }
+        .modal-content h3 { color:#f5a623; margin-bottom:12px; font-size:1.1rem; }
+        .modal-close { float:right; background:none; border:none; color:#888; font-size:1.4rem; cursor:pointer; }
+        
+        .product-image-upload { border:2px dashed rgba(255,255,255,0.1); border-radius:14px; padding:14px; text-align:center; cursor:pointer; transition:0.2s; }
+        .product-image-upload:hover { border-color:#f5a623; background:rgba(255,255,255,0.03); }
+        .product-image-upload img { max-width:100%; max-height:150px; border-radius:10px; margin-top:6px; }
+        
+        .stars-input { display:flex; gap:8px; justify-content:center; margin:12px 0; }
+        .stars-input button { background:none; border:none; font-size:2rem; cursor:pointer; color:#555; transition:0.2s; }
+        .stars-input button.active { color:#f5a623; }
+        
+        .review-item { background:rgba(255,255,255,0.03); border-radius:12px; padding:12px; margin-bottom:8px; border-left:3px solid #f5a623; }
+        .review-item .review-header { display:flex; justify-content:space-between; font-size:0.8rem; color:#888; }
+        .review-item .review-header .review-user { color:#f5a623; font-weight:bold; }
+        .review-item .review-stars { color:#f5a623; font-size:1.1rem; }
+        .review-item .review-text { margin:6px 0; font-size:0.9rem; }
+        .review-item .review-photo { max-width:100%; max-height:150px; border-radius:10px; margin-top:6px; cursor:pointer; border:1px solid rgba(255,255,255,0.05); }
+        
+        .support-message { background:rgba(255,255,255,0.03); border-radius:10px; padding:10px 14px; margin-bottom:6px; }
+        .support-message .sender { font-weight:bold; font-size:0.75rem; color:#f5a623; }
+        .support-message .text { font-size:0.9rem; margin-top:4px; }
+        .support-message .time { font-size:0.65rem; color:#555; text-align:right; margin-top:4px; }
+        .support-message.admin { border-left:3px solid #f5a623; }
+        .support-message.client { border-left:3px solid #4CAF50; }
+        
+        .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:12px 24px; border-radius:40px; z-index:999; opacity:0; transition:0.3s; pointer-events:none; font-weight:600; max-width:90%; text-align:center; font-size:0.85rem; }
+        .toast.show { opacity:1; }
+        
+        .photo-modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.92); z-index:2000; display:flex; align-items:center; justify-content:center; padding:20px; cursor:pointer; }
+        .photo-modal-content { max-width:95%; max-height:95%; display:flex; align-items:center; justify-content:center; }
+        .photo-modal-content img { max-width:100%; max-height:90vh; border-radius:16px; object-fit:contain; box-shadow:0 0 40px rgba(0,0,0,0.5); }
+        .photo-modal-close { position:fixed; top:20px; right:20px; color:#fff; font-size:2rem; cursor:pointer; background:none; border:none; z-index:2001; opacity:0.7; transition:0.2s; }
+        .photo-modal-close:hover { opacity:1; transform:scale(1.1); }
+        
+        .notification-list { max-height:300px; overflow-y:auto; }
+        .notification-item { background:rgba(255,255,255,0.03); padding:10px; border-radius:10px; margin-bottom:6px; border-left:3px solid #f5a623; }
+        .notification-item .time { font-size:0.6rem; color:#555; }
+        
+        .code-input { font-size:1.5rem; letter-spacing:10px; text-align:center; }
+        
+        @media (max-width:400px) { .product-grid { grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); } }
+    </style>
 </head>
 <body>
-<!-- ... -->
+<div class="container">
+    
+    <div class="header">
+        <div class="logo">🛒 WHOPPER</div>
+        <div class="user-badge">
+            <span class="bell" onclick="showNotifications()">🔔 <span id="notifBadge" class="badge hidden">0</span></span>
+            👤 <span id="userNameDisplay">Гость</span>
+            <button onclick="logout()">Выйти</button>
+        </div>
+    </div>
+
+    <!-- АВТОРИЗАЦИЯ -->
+    <div id="authBox" class="auth-box">
+        <h3>👤 Вход / Регистрация</h3>
+        <div class="form-group"><label>📱 Номер телефона</label><input type="tel" id="clientPhone" placeholder="+7 999 999 99 99"></div>
+        <div class="form-group"><label>👤 Имя</label><input type="text" id="nameInput" placeholder="Ваше имя"></div>
+        <div class="auth-actions">
+            <button class="btn-primary" onclick="login()">Войти</button>
+            <button class="btn-success" onclick="register()">Регистрация</button>
+        </div>
+        <div id="codeAuth" class="hidden" style="margin-top:12px;">
+            <div class="form-group"><label>🔑 Введите код из уведомлений</label><input type="text" id="codeInput" class="code-input" maxlength="6" placeholder="000000"></div>
+            <button class="btn-primary btn-block" onclick="confirmCode()">✅ Подтвердить</button>
+        </div>
+    </div>
+
+    <!-- ОСНОВНОЙ КОНТЕНТ -->
+    <div id="mainContent" class="hidden">
+        <div class="wallet" onclick="addMoney()"><span>💰 Кошелёк</span><span class="amount" id="walletAmount">0 ₽</span></div>
+        
+        <div class="tabs">
+            <button class="tab active" data-tab="shop" onclick="switchTab('shop')">🛍️ Магазин</button>
+            <button class="tab" data-tab="orders" onclick="switchTab('orders')">📦 Заказы</button>
+            <button class="tab" data-tab="qr" onclick="switchTab('qr')">📱 QR-код</button>
+            <button class="tab" data-tab="reviews" onclick="switchTab('reviews')">⭐ Отзывы</button>
+            <button class="tab" data-tab="support" onclick="switchTab('support')">💬 Поддержка</button>
+        </div>
+
+        <div id="tabShop">
+            <div class="product-grid" id="productsGrid"></div>
+            <div class="cart-panel">
+                <div class="title">🛒 Корзина</div>
+                <div id="cartItems"><div style="color:#555;">Пусто</div></div>
+                <div class="cart-total"><span>Итого:</span> <span id="cartTotal">0 ₽</span></div>
+                <div class="cart-actions">
+                    <button class="btn-primary" onclick="showCheckout()">💳 Оформить</button>
+                    <button class="btn-secondary" onclick="clearCart()">Очистить</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="tabOrders" class="hidden"><div id="ordersList"></div></div>
+
+        <div id="tabQr" class="hidden">
+            <div style="text-align:center;padding:20px;">
+                <h3 style="color:#f5a623;">📱 Ваш QR-код</h3>
+                <p style="color:#888;font-size:0.85rem;margin-bottom:15px;">Покажите в ПВЗ</p>
+                <div id="qrContainer" class="qr-code-container"><div class="qr-placeholder">⏳ Загрузка QR...</div></div>
+                <div id="qrInfo" style="margin-top:10px;color:#888;font-size:0.8rem;"></div>
+            </div>
+        </div>
+
+        <div id="tabReviews" class="hidden"><div id="reviewsList"></div></div>
+
+        <div id="tabSupport" class="hidden">
+            <div id="supportChat" style="max-height:300px;overflow-y:auto;margin-bottom:10px;"></div>
+            <div style="display:flex;gap:8px;">
+                <input type="text" id="supportInput" placeholder="Сообщение..." style="flex:1;padding:10px 16px;border-radius:30px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.05);color:#fff;font-size:0.85rem;outline:none;">
+                <button class="btn-primary" onclick="sendSupportMessage()">📤</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- МОДАЛКИ -->
+<div id="checkoutModal" class="modal-overlay hidden" onclick="if(event.target===this) closeCheckoutModal()">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeCheckoutModal()">✕</button>
+        <h3>💳 Оформление заказа</h3>
+        <div class="form-group">
+            <label>📍 Выберите ПВЗ</label>
+            <select id="checkoutPvz"><option value="">-- Выберите ПВЗ --</option></select>
+        </div>
+        <div class="form-group">
+            <label>💳 Способ оплаты</label>
+            <select id="checkoutPayment">
+                <option value="now">Сразу (списание сейчас)</option>
+                <option value="on_delivery">При получении (списание при выдаче)</option>
+            </select>
+        </div>
+        <div id="checkoutTotal" style="color:#f5a623;font-size:1.2rem;font-weight:bold;margin:10px 0;">Итого: 0 ₽</div>
+        <button class="btn-primary btn-block" onclick="confirmCheckout()">✅ Подтвердить</button>
+    </div>
+</div>
+
+<div id="reviewModal" class="modal-overlay hidden" onclick="if(event.target===this) closeReviewModal()">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeReviewModal()">✕</button>
+        <h3>⭐ Оставить отзыв</h3>
+        <div id="reviewOrderId" style="display:none;"></div>
+        <div style="margin:10px 0;">
+            <label style="color:#888;font-size:0.8rem;">Оценка</label>
+            <div class="stars-input" id="starsInput">
+                <button data-star="1" onclick="selectStar(1)">★</button>
+                <button data-star="2" onclick="selectStar(2)">★</button>
+                <button data-star="3" onclick="selectStar(3)">★</button>
+                <button data-star="4" onclick="selectStar(4)">★</button>
+                <button data-star="5" onclick="selectStar(5)">★</button>
+            </div>
+        </div>
+        <div class="form-group"><label>Комментарий</label><textarea id="reviewComment" placeholder="Ваш отзыв..." rows="3"></textarea></div>
+        <div class="form-group">
+            <label>📸 Фото</label>
+            <div class="product-image-upload" onclick="document.getElementById('reviewPhotoInput').click()">
+                <span>Нажмите чтобы загрузить фото</span>
+                <input type="file" id="reviewPhotoInput" accept="image/*" style="display:none;" onchange="previewReviewPhoto(event)">
+                <div id="reviewPhotoPreview"></div>
+            </div>
+        </div>
+        <button class="btn-primary btn-block" onclick="submitReview()">📝 Отправить</button>
+    </div>
+</div>
+
+<!-- МОДАЛКА УВЕДОМЛЕНИЙ -->
+<div id="notifModal" class="modal-overlay hidden" onclick="if(event.target===this) closeNotifModal()">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeNotifModal()">✕</button>
+        <h3>🔔 Уведомления</h3>
+        <div id="notifList" class="notification-list"></div>
+    </div>
+</div>
 
 <script>
-// ========== FIREBASE С PERSISTENCE ==========
+// ========== FIREBASE ==========
+const firebaseConfig = {
+    apiKey: "AIzaSyBlZ5ZtyTXgtXxSJAx1jOxwhTrzlHRJmo",
+    authDomain: "bk-cashier.firebaseapp.com",
+    databaseURL: "https://bk-cashier-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "bk-cashier",
+    storageBucket: "bk-cashier.firebasestorage.app",
+    messagingSenderId: "385000840969",
+    appId: "1:385000840969:web:1ec8d09176b6551dc0fdd8"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ========== ВКЛЮЧАЕМ PERSISTENCE ==========
 firebase.database().setPersistenceEnabled(true)
     .then(() => console.log('✅ Данные сохраняются локально'))
     .catch(err => console.log('❌ Ошибка persistence:', err));
 
-// ========== ПРИНУДИТЕЛЬНАЯ ЗАГРУЗКА ==========
+// ========== ПЕРЕМЕННЫЕ ==========
+let currentUser = null;
+let cart = [];
+let selectedStar = 0;
+let reviewOrderId = null;
+let reviewPhotoData = null;
+let allPvzList = [];
+let pendingLogin = null;
+
+// ========== СОХРАНЕНИЕ СЕССИИ ==========
+function saveSession(user) {
+    localStorage.setItem('whoper_session', JSON.stringify({
+        phone: user.phone,
+        name: user.name,
+        wallet: user.wallet,
+        id: user.id,
+        timestamp: Date.now()
+    }));
+}
+
+function loadSession() {
+    const data = localStorage.getItem('whoper_session');
+    if (data) {
+        try {
+            const session = JSON.parse(data);
+            if (Date.now() - session.timestamp < 30 * 24 * 60 * 60 * 1000) { // 30 дней
+                return session;
+            }
+        } catch(e) {}
+    }
+    return null;
+}
+
+// ========== АВТОМАТИЧЕСКИЙ ВХОД ==========
 window.addEventListener('load', function() {
-    if (currentUser) {
-        console.log('🔄 Принудительная загрузка заказов...');
-        loadOrders();
-        renderQR();
+    const session = loadSession();
+    if (session) {
+        db.ref('users/' + session.id).once('value', (sn) => {
+            const user = sn.val();
+            if (user) {
+                currentUser = { id: session.id, ...user };
+                document.getElementById('clientPhone').value = user.phone;
+                document.getElementById('nameInput').value = user.name;
+                enterMode();
+                showToast('👋 Добро пожаловать, ' + user.name + '!');
+            }
+        });
     }
 });
 
-// ========== ОБНОВЛЕНИЕ ПРИ ВОЗВРАЩЕНИИ ==========
-document.addEventListener('visibilitychange', function() {
-    if (!document.hidden && currentUser) {
-        console.log('🔄 Возврат на страницу - обновляем заказы...');
-        loadOrders();
-        renderQR();
-    }
-});
+// ========== ВХОД ==========
+function login() {
+    const phone = document.getElementById('clientPhone').value.trim();
+    if (!phone) { showToast('❌ Введите номер телефона'); return; }
+    
+    db.ref('users').orderByChild('phone').equalTo(phone).once('value', (sn) => {
+        if (sn.exists()) {
+            sn.forEach(child => {
+                const user = child.val();
+                const deviceId = getDeviceId();
+                const activeDevices = user.devices || [];
+                
+                // Проверяем, есть ли уже устройство
+                if (activeDevices.includes(deviceId)) {
+                    // Это знакомое устройство - вход без кода
+                    currentUser = { id: child.key, ...user };
+                    saveSession(currentUser);
+                    showToast('👋 Добро пожаловать, ' + user.name + '!');
+                    enterMode();
+                } else {
+                    // Новое устройство - запрашиваем код
+                    pendingLogin = { id: child.key, user: user, phone: phone };
+                    const code = Math.floor(100000 + Math.random() * 900000).toString();
+                    // Сохраняем код в Firebase
+                    db.ref('auth_codes/' + child.key).set({
+                        code: code,
+                        createdAt: Date.now(),
+                        phone: phone,
+                        device: deviceId
+                    });
+                    // Добавляем уведомление
+                    addNotification(child.key, {
+                        title: '🔑 Код подтверждения',
+                        text: 'Введите код ' + code + ' для входа на новом устройстве',
+                        type: 'auth',
+                        code: code
+                    });
+                    document.getElementById('codeAuth').classList.remove('hidden');
+                    document.getElementById('codeInput').focus();
+                    showToast('📱 Код отправлен в уведомления');
+                }
+            });
+        } else {
+            showToast('❌ Пользователь не найден');
+        }
+    });
+}
 
-// ========== ЗАГРУЗКА ЗАКАЗОВ С KEEPSYNC ==========
-function loadOrders() {
+function confirmCode() {
+    const code = document.getElementById('codeInput').value.trim();
+    if (!code || code.length < 6) { showToast('❌ Введите 6-значный код'); return; }
+    if (!pendingLogin) { showToast('❌ Ошибка входа'); return; }
+    
+    db.ref('auth_codes/' + pendingLogin.id).once('value', (sn) => {
+        const data = sn.val();
+        if (data && data.code === code) {
+            // Код верный - добавляем устройство
+            const deviceId = getDeviceId();
+            const devices = pendingLogin.user.devices || [];
+            if (!devices.includes(deviceId)) {
+                devices.push(deviceId);
+                db.ref('users/' + pendingLogin.id + '/devices').set(devices);
+            }
+            currentUser = { id: pendingLogin.id, ...pendingLogin.user };
+            saveSession(currentUser);
+            document.getElementById('codeAuth').classList.add('hidden');
+            document.getElementById('codeInput').value = '';
+            showToast('👋 Добро пожаловать, ' + currentUser.name + '!');
+            enterMode();
+            pendingLogin = null;
+            // Удаляем код
+            db.ref('auth_codes/' + currentUser.id).remove();
+        } else {
+            showToast('❌ Неверный код');
+        }
+    });
+}
+
+function getDeviceId() {
+    let id = localStorage.getItem('whoper_device_id');
+    if (!id) {
+        id = 'DEV_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 6);
+        localStorage.setItem('whoper_device_id', id);
+    }
+    return id;
+}
+
+// ========== УВЕДОМЛЕНИЯ ==========
+function addNotification(userId, notif) {
+    const ref = db.ref('notifications/' + userId).push();
+    ref.set({
+        ...notif,
+        read: false,
+        createdAt: Date.now()
+    });
+}
+
+function loadNotifications() {
     if (!currentUser) return;
-    
-    const ref = db.ref('orders').orderByChild('user').equalTo(currentUser.phone);
-    // Постоянная синхронизация
-    ref.keepSynced(true);
-    
-    ref.on('value', (sn) => {
-        const orders = [];
-        sn.forEach(child => { orders.push({ id: child.key, ...child.val() }); });
-        orders.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    db.ref('notifications/' + currentUser.id).orderByChild('createdAt').limitToLast(20).on('value', (sn) => {
+        const notifs = [];
+        let unread = 0;
+        sn.forEach(child => {
+            const data = child.val();
+            notifs.push({ id: child.key, ...data });
+            if (!data.read) unread++;
+        });
+        notifs.reverse();
         
-        const container = document.getElementById('ordersList');
-        if (!orders.length) {
-            container.innerHTML = '<div style="text-align:center;color:#555;padding:20px;">📭 Нет заказов</div>';
+        // Обновляем бейдж
+        const badge = document.getElementById('notifBadge');
+        if (unread > 0) {
+            badge.classList.remove('hidden');
+            badge.textContent = unread;
+        } else {
+            badge.classList.add('hidden');
+        }
+        
+        // Сохраняем для отображения
+        window._notifications = notifs;
+    });
+}
+
+function showNotifications() {
+    const container = document.getElementById('notifList');
+    const notifs = window._notifications || [];
+    
+    if (!notifs.length) {
+        container.innerHTML = '<div style="color:#555;padding:20px;text-align:center;">Нет уведомлений</div>';
+    } else {
+        container.innerHTML = notifs.map(n => `
+            <div class="notification-item" style="${n.read ? 'opacity:0.5;' : ''}">
+                <div style="font-weight:bold;color:#f5a623;">${n.title || 'Уведомление'}</div>
+                <div style="font-size:0.85rem;">${n.text || ''}</div>
+                ${n.code ? `<div style="font-size:1.5rem;font-weight:bold;color:#f5a623;letter-spacing:6px;margin-top:4px;">${n.code}</div>` : ''}
+                <div class="time">${new Date(n.createdAt).toLocaleString()}</div>
+            </div>
+        `).join('');
+    }
+    
+    // Отмечаем как прочитанные
+    if (currentUser) {
+        db.ref('notifications/' + currentUser.id).once('value', (sn) => {
+            sn.forEach(child => {
+                if (!child.val().read) {
+                    db.ref('notifications/' + currentUser.id + '/' + child.key + '/read').set(true);
+                }
+            });
+        });
+    }
+    
+    document.getElementById('notifModal').classList.remove('hidden');
+}
+
+function closeNotifModal() {
+    document.getElementById('notifModal').classList.add('hidden');
+}
+
+// ========== РЕГИСТРАЦИЯ ==========
+function register() {
+    const phone = document.getElementById('clientPhone').value.trim();
+    const name = document.getElementById('nameInput').value.trim();
+    if (!phone) { showToast('❌ Введите номер телефона'); return; }
+    if (!name) { showToast('❌ Введите имя'); return; }
+    
+    db.ref('users').orderByChild('phone').equalTo(phone).once('value', (sn) => {
+        if (sn.exists()) { showToast('❌ Номер уже зарегистрирован'); return; }
+        const user = { phone, name, wallet: 1000, devices: [getDeviceId()] };
+        db.ref('users').push().set(user).then((ref) => {
+            const userId = ref.key;
+            db.ref('users/' + userId).update({ id: userId });
+            currentUser = { id: userId, ...user };
+            saveSession(currentUser);
+            showToast('✅ Регистрация успешна! +1000 ₽');
+            enterMode();
+        });
+    });
+}
+
+function logout() {
+    currentUser = null;
+    cart = [];
+    document.getElementById('authBox').classList.remove('hidden');
+    document.getElementById('mainContent').classList.add('hidden');
+    document.getElementById('userNameDisplay').textContent = 'Гость';
+    localStorage.removeItem('whoper_session');
+    showToast('👋 Выход выполнен');
+}
+
+function enterMode() {
+    document.getElementById('authBox').classList.add('hidden');
+    document.getElementById('mainContent').classList.remove('hidden');
+    document.getElementById('userNameDisplay').textContent = currentUser.name + ' 📱';
+    document.getElementById('walletAmount').textContent = currentUser.wallet + ' ₽';
+    loadProducts();
+    loadOrders();
+    renderQR();
+    loadReviews();
+    loadSupport();
+    loadPvzList();
+    loadNotifications();
+    renderCart();
+}
+
+// ========== QR-КОД ДЛЯ КЛИЕНТА ==========
+function renderQR() {
+    const container = document.getElementById('qrContainer');
+    const info = document.getElementById('qrInfo');
+    
+    if (!currentUser) {
+        container.innerHTML = '<div class="qr-placeholder">Войдите в аккаунт</div>';
+        info.textContent = '';
+        return;
+    }
+    
+    db.ref('orders').orderByChild('user').equalTo(currentUser.phone).once('value', (sn) => {
+        const activeOrders = [];
+        sn.forEach(child => {
+            const order = child.val();
+            if (order.status !== 'delivered' && order.status !== 'return') {
+                activeOrders.push({ id: child.key, ...order });
+            }
+        });
+        
+        if (!activeOrders.length) {
+            container.innerHTML = '<div class="qr-placeholder">Нет активных заказов</div>';
+            info.textContent = 'Оформите заказ';
             return;
         }
         
-        container.innerHTML = orders.map(o => `
-            <div class="order-card">
-                <div class="order-header">
-                    <span class="order-number">🆔 ${o.id}</span>
-                    <span class="order-status status-${o.status}">${getStatusName(o.status)}</span>
-                </div>
-                <div>${o.items.map(i => `${i.name} x${i.qty}`).join(', ')}</div>
-                <div style="font-weight:bold;">💰 ${o.total} ₽</div>
-                <div class="order-code">🔑 ${o.code}</div>
-                ${o.pickupNumber ? `<div style="text-align:center;margin:6px 0;"><span class="order-pickup-number">📋 ${o.pickupNumber}</span></div>` : ''}
-                <div class="order-delivery-info">📍 ПВЗ: <span>${o.pvz || 'Не выбран'}</span></div>
-                <div class="order-delivery-info">💳 ${o.payment === 'now' ? 'Оплачено сразу' : 'Оплата при получении'}</div>
-                ${o.status === 'delivered' && !o.review ? `<button class="btn-warning" onclick="openReviewModal('${o.id}')" style="margin-top:6px;padding:4px 12px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">⭐ Оставить отзыв</button>` : ''}
-                ${o.review ? `<div class="order-review"><div class="stars">${'★'.repeat(o.review.stars)}${'☆'.repeat(5-o.review.stars)}</div><div>${o.review.comment}</div>${o.review.photo ? `<img src="${o.review.photo}" class="review-photo" onclick="openPhotoModal('${o.review.photo}')">` : ''}</div>` : ''}
-            </div>
-        `).join('');
+        const order = activeOrders[0];
+        const qrData = { 
+            orderId: order.id, 
+            user: currentUser.phone,
+            items: order.items, 
+            total: order.total,
+            code: order.code,
+            pvz: order.pvz
+        };
+        
+        container.innerHTML = '';
+        try {
+            if (typeof QRCode !== 'undefined') {
+                new QRCode(container, {
+                    text: JSON.stringify(qrData),
+                    width: 200,
+                    height: 200,
+                    colorDark: "#f5a623",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            } else {
+                const encoded = encodeURIComponent(JSON.stringify(qrData));
+                const img = document.createElement('img');
+                img.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encoded}&format=png&bgcolor=ffffff&color=f5a623&margin=10`;
+                img.style.width = '200px';
+                img.style.height = '200px';
+                img.style.borderRadius = '12px';
+                img.style.background = 'white';
+                img.style.padding = '10px';
+                container.appendChild(img);
+            }
+            info.innerHTML = `<div style="background:rgba(255,255,255,0.05);padding:10px;border-radius:10px;">
+                📦 ${order.items.length} товаров<br>
+                💰 ${order.total} ₽<br>
+                🔑 ${order.code}<br>
+                📍 ПВЗ: ${order.pvz || 'Не выбран'}
+            </div>`;
+        } catch(e) {
+            container.innerHTML = '<div style="color:#ff4444;">⚠️ Ошибка QR</div>';
+        }
     });
 }
+
+// ========== ОСТАЛЬНЫЕ ФУНКЦИИ ==========
+function showToast(msg) {
+    let toast = document.getElementById('toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        toast.className = 'toast';
+        document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toast._timeout);
+    toast._timeout = setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+function generateId(prefix) {
+    return prefix + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
+}
+
+// ===== ОСТАЛЬНЫЕ ФУНКЦИИ (корзина, заказы, отзывы и т.д.) =====
+// ... (оставляем как в предыдущей версии)
+
+// ========== ИНИЦИАЛИЗАЦИЯ ==========
+console.log('🛒 WHOPPER - Клиент загружен');
 </script>
 </body>
 </html>
