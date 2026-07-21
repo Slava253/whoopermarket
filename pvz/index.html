@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>WHOPPER - ПВЗ</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/qr-helper.js"></script>
+    <style>
+        .back-link { display:inline-block; color:#f5a623; text-decoration:none; font-size:0.8rem; margin-bottom:10px; }
+        .back-link:hover { text-decoration:underline; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <a href="../index.html" class="back-link">← На главную</a>
+    
+    <div class="header">
+        <div class="logo">📦 WHOPPER</div>
+        <div class="user-badge">👤 <span id="userNameDisplay">Гость</span> <button onclick="logout()">Выйти</button></div>
+    </div>
+
+    <div id="authBox" class="auth-box">
+        <h3>🏪 Вход ПВЗ</h3>
+        <div class="form-group"><label>Код ПВЗ</label><input type="text" id="pvzCode" placeholder="Введите код ПВЗ"></div>
+        <div class="auth-actions"><button class="btn-primary" onclick="login()">Войти</button></div>
+    </div>
+
+    <div id="mainContent" class="hidden">
+        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
+            <button class="btn-primary" onclick="viewOrders('collecting')">📥 Сборка</button>
+            <button class="btn-success" onclick="viewOrders('sent')">🚚 Отправленные</button>
+            <button class="btn-info" onclick="viewOrders('in_pvz')">🏪 В ПВЗ</button>
+            <button class="btn-warning" onclick="viewOrders('ready')">📤 Выдача</button>
+            <button class="btn-danger" onclick="viewOrders('return')">🔄 Возвраты</button>
+        </div>
+        
+        <div class="send-section">
+            <h4 style="color:#f5a623;font-size:0.85rem;margin-bottom:8px;">📤 Отправить товар</h4>
+            <div class="form-group">
+                <label>Выберите ПВЗ получатель</label>
+                <select id="sendPvzSelect"><option value="">-- Выберите ПВЗ --</option></select>
+            </div>
+            <div style="display:flex;gap:6px;">
+                <input type="text" id="sendOrderInput" placeholder="Введите код заказа" style="flex:1;padding:8px 14px;border-radius:30px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.05);color:#fff;font-size:0.85rem;outline:none;">
+                <button class="btn-cyan" onclick="sendOrder()">📤 Отправить</button>
+            </div>
+        </div>
+        
+        <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;">
+            <h4 style="color:#f5a623;font-size:0.85rem;margin-bottom:8px;">📷 Сканировать QR-код</h4>
+            <button class="btn-purple btn-block" onclick="startPhysicalScanner()">🔍 Сканировать сканером</button>
+            <div class="scanner-input-area">
+                <input type="text" id="scannerInput" placeholder="Введите данные с сканера..." oninput="processScannerInput(this.value)">
+                <button class="btn-info" onclick="processScannerInput(document.getElementById('scannerInput').value)">🔍</button>
+            </div>
+            <div class="scan-btn-group">
+                <button class="btn-info" onclick="startCameraScanner()">📷 Запустить камеру</button>
+                <button class="btn-danger" onclick="stopScanner()">⏹ Остановить</button>
+            </div>
+            <div id="scannerContainer" class="scanner-container hidden"><div class="scanner-overlay"></div></div>
+            <div id="scannedResult"></div>
+        </div>
+        
+        <div class="scan-area">
+            <h4 style="color:#f5a623;font-size:0.85rem;">🔑 Поиск по коду</h4>
+            <input type="text" id="pvzSearch" placeholder="6-значный код" maxlength="6" oninput="findOrder(this.value)">
+            <div id="pvzResult" style="margin-top:6px;"></div>
+        </div>
+        
+        <div id="ordersList"></div>
+    </div>
+</div>
+
+<script>
+// ========== ПЕРЕМЕННЫЕ ==========
+let currentUser = null;
+let currentPvzCode = null;
+let allPvzList = [];
+let html5QrCode = null;
+let currentView = 'collecting';
+
+function login() {
+    const code = document.getElementById('pvzCode').value.trim();
+    if (!code) { showToast('❌ Введите код ПВЗ'); return; }
+    db.ref('pvz').orderByChild('code').equalTo(code).once('value', (sn) => {
+        if (sn.exists()) {
+            let found = false;
+            sn.forEach(child => {
+                const pvz = child.val();
+                if (pvz.code === code) {
+                    currentPvzCode = code;
+                    currentUser = { name: 'ПВЗ ' + code, role: 'pvz' };
+                    found = true;
+                    document.getElementById('authBox').classList.add('hidden');
+                    document.getElementById('mainContent').classList.remove('hidden');
+                    document.getElementById('userNameDisplay').textContent = '🏪 ПВЗ ' + code;
+                    showToast('👋 Добро пожаловать в ПВЗ!');
+                    loadPvzList();
+                    viewOrders('collecting');
+                }
+            });
+            if (!found) showToast('❌ Неверный код ПВЗ');
+        } else {
+            showToast('❌ ПВЗ не найден');
+        }
+    });
+}
+
+function logout() {
+    currentUser = null;
+    currentPvzCode = null;
+    document.getElementById('authBox').classList.remove('hidden');
+    document.getElementById('mainContent').classList.add('hidden');
+    document.getElementById('userNameDisplay').textContent = 'Гость';
+    showToast('👋 Выход выполнен');
+}
+
+function loadPvzList() {
+    db.ref('pvz').on('value', (sn) => {
+        allPvzList = [];
+        sn.forEach(child => { allPvzList.push({ id: child.key, ...child.val() }); });
+        const select = document.getElementById('sendPvzSelect');
+        if (select) {
+            select.innerHTML = '<option value="">-- Выберите ПВЗ --</option>';
+            allPvzList.forEach(p => {
+                if (p.code === currentPvzCode) return;
+                const option = document.createElement('option');
+                option.value = p.code;
+                option.textContent = 'ПВЗ ' + p.code + ' - ' + (p.address || 'Адрес не указан');
+                select.appendChild(option);
+            });
+        }
+    });
+}
+
+function viewOrders(type) {
+    currentView = type;
+    const container = document.getElementById('ordersList');
+    const statusMap = { 'collecting': 'collecting', 'sent': 'sent', 'in_pvz': 'in_pvz', 'ready': 'ready', 'return': 'return' };
+    const status = statusMap[type] || 'collecting';
+    const statusNames = { 'collecting': '🟡 Собирается', 'sent': '🔵 Отправлен', 'in_pvz': '🟢 В ПВЗ', 'ready': '✅ Готов', 'return': '🔄 Возврат' };
+    
+    db.ref('orders').orderByChild('status').equalTo(status).on('value', (sn) => {
+        const orders = [];
+        sn.forEach(child => { orders.push({ id: child.key, ...child.val() }); });
+        if (!orders.length) { container.innerHTML = `<div style="text-align:center;color:#555;padding:20px;">📭 Нет заказов</div>`; return; }
+        container.innerHTML = orders.map(o => {
+            const isForThisPvz = o.pvz === currentPvzCode || o.sentToPvz === currentPvzCode;
+            if (!isForThisPvz && status !== 'sent') return '';
+            const itemsHtml = o.items.map(i => `
+                <div class="order-item-with-photo">
+                    ${i.image ? `<img src="${i.image}" onclick="event.stopPropagation();openPhotoModal('${i.image}')">` : '📦'}
+                    <div class="item-info">${i.name} x${i.qty}</div>
+                    <div style="color:#f5a623;">${i.price * i.qty} ₽</div>
+                </div>
+            `).join('');
+            return `
+                <div class="order-card">
+                    <div class="order-header">
+                        <span class="order-number">🆔 ${o.id}</span>
+                        <span class="order-status status-${o.status}">${statusNames[o.status] || o.status}</span>
+                    </div>
+                    <div>👤 ${o.userName || o.user}</div>
+                    <div>📱 ${o.phone || 'Не указан'}</div>
+                    <div style="margin:6px 0;">${itemsHtml}</div>
+                    <div style="font-weight:bold;">💰 ${o.total} ₽</div>
+                    <div class="order-code">🔑 ${o.code}</div>
+                    ${o.pickupNumber ? `<div style="text-align:center;margin:6px 0;"><span class="order-pickup-number">📋 ${o.pickupNumber}</span></div>` : ''}
+                    <div class="order-delivery-info">📍 ПВЗ: <span>${o.pvz || 'Не выбран'}</span></div>
+                    ${o.sentToPvz ? `<div class="order-delivery-info">📤 Отправлен в: <span>ПВЗ ${o.sentToPvz}</span></div>` : ''}
+                    <div class="order-delivery-info">💳 ${o.payment === 'now' ? 'Оплачено' : 'При получении'}</div>
+                    ${o.status === 'collecting' && o.pvz === currentPvzCode ? `<button class="btn-cyan" onclick="sendOrderFromList('${o.id}')" style="margin-top:4px;padding:4px 12px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">📤 Отправить</button>` : ''}
+                    ${o.status === 'sent' && o.sentToPvz === currentPvzCode ? `<button class="btn-success" onclick="receiveOrder('${o.id}')" style="margin-top:4px;padding:4px 12px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">📥 Принять</button>` : ''}
+                    ${o.status === 'in_pvz' && o.pvz === currentPvzCode ? `<button class="btn-success" onclick="readyOrder('${o.id}')" style="margin-top:4px;padding:4px 12px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">✅ Готов к выдаче</button>` : ''}
+                    ${o.status === 'ready' && o.pvz === currentPvzCode ? `<button class="btn-primary" onclick="deliverOrder('${o.id}')" style="margin-top:4px;padding:4px 12px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">📤 Выдать</button>` : ''}
+                    ${(o.status === 'collecting' || o.status === 'ready' || o.status === 'in_pvz') && o.pvz === currentPvzCode ? `<button class="btn-danger" onclick="returnOrder('${o.id}')" style="margin-top:4px;padding:4px 12px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">🔄 Возврат</button>` : ''}
+                </div>
+            `;
+        }).filter(html => html !== '').join('');
+    });
+}
+
+function sendOrderFromList(orderId) {
+    const targetPvz = document.getElementById('sendPvzSelect').value;
+    if (!targetPvz) { showToast('❌ Выберите ПВЗ получатель'); return; }
+    processSendOrder(orderId, targetPvz);
+}
+
+function sendOrder() {
+    const input = document.getElementById('sendOrderInput');
+    const value = input.value.trim();
+    const targetPvz = document.getElementById('sendPvzSelect').value;
+    if (!targetPvz) { showToast('❌ Выберите ПВЗ получатель'); return; }
+    if (!value) { showToast('❌ Введите код заказа'); return; }
+    db.ref('orders').once('value', (sn) => {
+        let found = false;
+        sn.forEach(child => {
+            const order = child.val();
+            if (order.id === value || order.code === value) {
+                found = true;
+                processSendOrder(order.id, targetPvz);
+            }
+        });
+        if (!found) showToast('❌ Заказ не найден');
+    });
+}
+
+function processSendOrder(orderId, targetPvz) {
+    db.ref('orders').orderByChild('id').equalTo(orderId).once('value', (sn) => {
+        sn.forEach(child => {
+            const order = child.val();
+            if (order.status !== 'collecting') { showToast('❌ Заказ уже отправлен'); return; }
+            db.ref('orders/' + child.key).update({ status: 'sent', sentToPvz: targetPvz, sentAt: Date.now() }).then(() => {
+                showToast('✅ Заказ отправлен в ПВЗ ' + targetPvz);
+                document.getElementById('sendOrderInput').value = '';
+                viewOrders('collecting');
+            });
+        });
+    });
+}
+
+function receiveOrder(orderId) {
+    if (!confirm('Принять заказ в ПВЗ ' + currentPvzCode + '?')) return;
+    db.ref('orders').orderByChild('id').equalTo(orderId).once('value', (sn) => {
+        sn.forEach(child => {
+            db.ref('orders/' + child.key).update({ status: 'in_pvz', receivedAt: Date.now() });
+            showToast('✅ Заказ принят в ПВЗ');
+            viewOrders('sent');
+        });
+    });
+}
+
+function generatePickupNumber() {
+    return new Promise((resolve) => {
+        db.ref('orders').once('value', (sn) => {
+            const used = [];
+            sn.forEach(child => { const order = child.val(); if (order.pickupNumber) used.push(order.pickupNumber); });
+            for (let i = 0; i < 1000; i++) { const num = String(i).padStart(3, '0'); if (!used.includes(num)) { resolve(num); return; } }
+            resolve(String(Math.floor(Math.random() * 900) + 100).padStart(3, '0'));
+        });
+    });
+}
+
+async function readyOrder(orderId) {
+    const pickupNumber = await generatePickupNumber();
+    db.ref('orders').orderByChild('id').equalTo(orderId).once('value', (sn) => {
+        sn.forEach(child => {
+            db.ref('orders/' + child.key).update({ status: 'ready', pickupNumber: pickupNumber });
+            showToast('✅ Заказ готов! Номер: ' + pickupNumber);
+        });
+    });
+}
+
+function deliverOrder(orderId) {
+    if (!confirm('Выдать заказ?')) return;
+    db.ref('orders').orderByChild('id').equalTo(orderId).once('value', (sn) => {
+        sn.forEach(child => {
+            const order = child.val();
+            db.ref('orders/' + child.key).update({ status: 'delivered' });
+            if (order.payment === 'on_delivery') {
+                db.ref('users').orderByChild('phone').equalTo(order.phone).once('value', (userSn) => {
+                    userSn.forEach(userChild => {
+                        const user = userChild.val();
+                        const newWallet = (user.wallet || 0) - order.total;
+                        db.ref('users/' + userChild.key).update({ wallet: newWallet });
+                        showToast('💳 Списано ' + order.total + ' ₽');
+                    });
+                });
+            }
+            showToast('✅ Заказ выдан!');
+        });
+    });
+}
+
+function returnOrder(orderId) {
+    if (!confirm('Оформить возврат?')) return;
+    db.ref('orders').orderByChild('id').equalTo(orderId).once('value', (sn) => {
+        sn.forEach(child => {
+            const order = child.val();
+            db.ref('orders/' + child.key).update({ status: 'return' });
+            db.ref('users').orderByChild('phone').equalTo(order.phone).once('value', (userSn) => {
+                userSn.forEach(userChild => {
+                    const user = userChild.val();
+                    const newWallet = (user.wallet || 0) + order.total;
+                    db.ref('users/' + userChild.key).update({ wallet: newWallet });
+                    showToast('💰 Возвращено ' + order.total + ' ₽');
+                });
+            });
+            showToast('🔄 Возврат оформлен');
+        });
+    });
+}
+
+function findOrder(code) {
+    const result = document.getElementById('pvzResult');
+    if (!code || code.length < 6) { result.innerHTML = ''; return; }
+    db.ref('orders').orderByChild('code').equalTo(code).once('value', (sn) => {
+        if (sn.exists()) {
+            sn.forEach(child => {
+                const o = child.val();
+                const itemsHtml = o.items.map(i => `
+                    <div class="order-item-with-photo">
+                        ${i.image ? `<img src="${i.image}" onclick="event.stopPropagation();openPhotoModal('${i.image}')">` : '📦'}
+                        <div class="item-info">${i.name} x${i.qty}</div>
+                        <div style="color:#f5a623;">${i.price * i.qty} ₽</div>
+                    </div>
+                `).join('');
+                result.innerHTML = `
+                    <div style="background:rgba(76,175,80,0.15);padding:12px;border-radius:12px;border:1px solid #4CAF50;">
+                        <div style="color:#4CAF50;font-weight:bold;">✅ Заказ найден!</div>
+                        <div>👤 ${o.userName || o.user}</div>
+                        <div>📱 ${o.phone || 'Не указан'}</div>
+                        <div style="margin:6px 0;">${itemsHtml}</div>
+                        <div style="font-weight:bold;">💰 ${o.total} ₽</div>
+                        <div>Код: ${o.code}</div>
+                        ${o.pickupNumber ? `<div>📋 Номер хранения: <span class="order-pickup-number">${o.pickupNumber}</span></div>` : ''}
+                        <div>📍 ПВЗ: ${o.pvz || 'Не выбран'}</div>
+                        <div>Статус: ${getStatusName(o.status)}</div>
+                        ${o.status === 'collecting' && o.pvz === currentPvzCode ? `<button class="btn-cyan" onclick="sendOrderFromList('${o.id}')" style="margin-top:8px;padding:8px 20px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">📤 Отправить</button>` : ''}
+                        ${o.status === 'sent' && o.sentToPvz === currentPvzCode ? `<button class="btn-success" onclick="receiveOrder('${o.id}')" style="margin-top:8px;padding:8px 20px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">📥 Принять</button>` : ''}
+                        ${o.status === 'in_pvz' && o.pvz === currentPvzCode ? `<button class="btn-success" onclick="readyOrder('${o.id}')" style="margin-top:8px;padding:8px 20px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">✅ Готов к выдаче</button>` : ''}
+                        ${o.status === 'ready' && o.pvz === currentPvzCode ? `<button class="btn-primary" onclick="deliverOrder('${o.id}')" style="margin-top:8px;padding:8px 20px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">📤 Выдать</button>` : ''}
+                    </div>
+                `;
+            });
+        } else {
+            result.innerHTML = '<div style="color:#ff4444;">❌ Заказ не найден</div>';
+        }
+    });
+}
+
+// ========== СКАНЕР ==========
+function startPhysicalScanner() {
+    showToast('🔍 Ожидание сканера...');
+    document.getElementById('scannerInput').focus();
+}
+
+function processScannerInput(value) {
+    if (!value || value.length < 3) return;
+    try {
+        const data = JSON.parse(value);
+        if (data.orderId) {
+            showToast('✅ Найден заказ: ' + data.orderId);
+            findOrderByText(data.orderId);
+            document.getElementById('scannerInput').value = '';
+            return;
+        }
+    } catch(e) {
+        findOrderByText(value);
+        document.getElementById('scannerInput').value = '';
+    }
+}
+
+function findOrderByText(text) {
+    const resultDiv = document.getElementById('scannedResult');
+    db.ref('orders').once('value', (sn) => {
+        let found = false;
+        sn.forEach(child => {
+            const order = child.val();
+            if (order.id === text || order.code === text) {
+                found = true;
+                const itemsHtml = order.items.map(i => `
+                    <div class="order-item-with-photo">
+                        ${i.image ? `<img src="${i.image}" onclick="event.stopPropagation();openPhotoModal('${i.image}')">` : '📦'}
+                        <div class="item-info">${i.name} x${i.qty}</div>
+                        <div style="color:#f5a623;">${i.price * i.qty} ₽</div>
+                    </div>
+                `).join('');
+                resultDiv.innerHTML = `
+                    <div class="scanned-order">
+                        <div style="color:#4CAF50;font-weight:bold;">✅ Заказ найден!</div>
+                        <div><span class="label">🆔</span> ${order.id}</div>
+                        <div><span class="label">👤</span> ${order.userName || order.user}</div>
+                        <div><span class="label">📱</span> ${order.phone || 'Не указан'}</div>
+                        <div style="margin:6px 0;">${itemsHtml}</div>
+                        <div style="font-weight:bold;">💰 ${order.total} ₽</div>
+                        <div><span class="label">🔑</span> ${order.code}</div>
+                        ${order.pickupNumber ? `<div><span class="label">📋 Номер хранения:</span> <span class="order-pickup-number">${order.pickupNumber}</span></div>` : ''}
+                        <div><span class="label">💳 Оплата:</span> ${order.payment === 'now' ? 'Сразу' : 'При получении'}</div>
+                        <div><span class="label">📍 ПВЗ:</span> ${order.pvz || 'Не выбран'}</div>
+                        <div><span class="label">📌 Статус:</span> ${getStatusName(order.status)}</div>
+                        ${order.status === 'collecting' && order.pvz === currentPvzCode ? `<button class="btn-cyan" onclick="sendOrderFromList('${order.id}')" style="margin-top:8px;padding:6px 16px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">📤 Отправить</button>` : ''}
+                        ${order.status === 'sent' && order.sentToPvz === currentPvzCode ? `<button class="btn-success" onclick="receiveOrder('${order.id}')" style="margin-top:8px;padding:6px 16px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">📥 Принять</button>` : ''}
+                        ${order.status === 'in_pvz' && order.pvz === currentPvzCode ? `<button class="btn-success" onclick="readyOrder('${order.id}')" style="margin-top:8px;padding:6px 16px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">✅ Готов к выдаче</button>` : ''}
+                        ${order.status === 'ready' && order.pvz === currentPvzCode ? `<button class="btn-primary" onclick="deliverOrder('${order.id}')" style="margin-top:8px;padding:6px 16px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">📤 Выдать</button>` : ''}
+                    </div>
+                `;
+            }
+        });
+        if (!found) {
+            resultDiv.innerHTML = '<div style="color:#ff4444;">❌ Заказ не найден</div>';
+        }
+    });
+}
+
+function startCameraScanner() {
+    const container = document.getElementById('scannerContainer');
+    const resultDiv = document.getElementById('scannedResult');
+    resultDiv.innerHTML = '';
+    container.classList.remove('hidden');
+    if (html5QrCode) { html5QrCode.stop(); html5QrCode.clear(); }
+    html5QrCode = new Html5Qrcode("scannerContainer");
+    const config = { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 };
+    html5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
+        document.getElementById('scannerContainer').classList.add('hidden');
+        stopScanner();
+        try { const data = JSON.parse(decodedText); findOrderByText(data.orderId); } 
+        catch(e) { findOrderByText(decodedText); }
+    }, (error) => {}).then(() => { showToast('📷 Камера запущена'); })
+    .catch(err => { showToast('❌ Ошибка камеры: ' + err); container.classList.add('hidden'); });
+}
+
+function stopScanner() {
+    if (html5QrCode) { html5QrCode.stop(); html5QrCode.clear(); }
+    document.getElementById('scannerContainer').classList.add('hidden');
+    showToast('⏹ Сканирование остановлено');
+}
+
+console.log('📦 WHOPPER - ПВЗ');
+</script>
+</body>
+</html>
