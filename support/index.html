@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>WHOPPER - Поддержка</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/utils.js"></script>
+    <style>
+        .back-link { display:inline-block; color:#f5a623; text-decoration:none; font-size:0.8rem; margin-bottom:10px; }
+        .back-link:hover { text-decoration:underline; }
+        .chat-user { background:rgba(255,255,255,0.03); border-radius:10px; padding:10px; margin-bottom:6px; cursor:pointer; border:1px solid rgba(255,255,255,0.05); }
+        .chat-user:hover { background:rgba(255,255,255,0.08); }
+        .chat-user .name { font-weight:bold; color:#f5a623; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <a href="../index.html" class="back-link">← На главную</a>
+    
+    <div class="header">
+        <div class="logo">💬 WHOPPER</div>
+        <div class="user-badge">👤 <span id="userNameDisplay">Гость</span> <button onclick="logout()">Выйти</button></div>
+    </div>
+
+    <div id="authBox" class="auth-box">
+        <h3>💬 Вход поддержки</h3>
+        <div class="form-group"><label>Логин</label><input type="text" id="supportLogin" placeholder="Логин"></div>
+        <div class="form-group"><label>Пароль</label><input type="password" id="supportPass" placeholder="Пароль"></div>
+        <div class="auth-actions">
+            <button class="btn-primary" onclick="login()">Войти</button>
+            <button class="btn-success" onclick="register()">Регистрация</button>
+        </div>
+    </div>
+
+    <div id="mainContent" class="hidden">
+        <div id="chatList"></div>
+    </div>
+</div>
+
+<script>
+let currentUser = null;
+let currentChatUser = null;
+
+function login() {
+    const login = document.getElementById('supportLogin').value.trim();
+    const pass = document.getElementById('supportPass').value.trim();
+    if (!login || !pass) { showToast('❌ Заполните все поля'); return; }
+    db.ref('support_users').orderByChild('login').equalTo(login).once('value', (sn) => {
+        if (sn.exists()) {
+            let found = false;
+            sn.forEach(child => {
+                const user = child.val();
+                if (user.password === pass) {
+                    currentUser = { login: login, name: user.name };
+                    found = true;
+                    showToast('👋 Добро пожаловать, ' + user.name + '!');
+                    enterMode();
+                }
+            });
+            if (!found) showToast('❌ Неверный пароль');
+        } else {
+            showToast('❌ Оператор не найден');
+        }
+    });
+}
+
+function register() {
+    const login = document.getElementById('supportLogin').value.trim();
+    const pass = document.getElementById('supportPass').value.trim();
+    if (!login || !pass) { showToast('❌ Заполните все поля'); return; }
+    db.ref('support_users').orderByChild('login').equalTo(login).once('value', (sn) => {
+        if (sn.exists()) { showToast('❌ Логин занят'); return; }
+        const user = { login, password: pass, name: 'Оператор ' + login };
+        db.ref('support_users').push().set(user).then(() => {
+            currentUser = { login: login, name: user.name };
+            showToast('✅ Регистрация оператора успешна!');
+            enterMode();
+        });
+    });
+}
+
+function logout() {
+    currentUser = null;
+    document.getElementById('authBox').classList.remove('hidden');
+    document.getElementById('mainContent').classList.add('hidden');
+    document.getElementById('userNameDisplay').textContent = 'Гость';
+    showToast('👋 Выход выполнен');
+}
+
+function enterMode() {
+    document.getElementById('authBox').classList.add('hidden');
+    document.getElementById('mainContent').classList.remove('hidden');
+    document.getElementById('userNameDisplay').textContent = '💬 ' + currentUser.name;
+    loadChats();
+}
+
+function loadChats() {
+    const container = document.getElementById('chatList');
+    db.ref('support_messages').once('value', (sn) => {
+        const users = new Set();
+        sn.forEach(child => { const msg = child.val(); if (msg.user) users.add(msg.user); });
+        if (!users.size) { container.innerHTML = '<div style="color:#555;padding:20px;text-align:center;">💬 Нет обращений</div>'; return; }
+        container.innerHTML = Array.from(users).map(user => `
+            <div class="chat-user" onclick="openChat('${user}')">
+                <div class="name">👤 ${user}</div>
+                <div style="font-size:0.7rem;color:#888;">Нажмите для открытия чата</div>
+            </div>
+        `).join('');
+    });
+}
+
+function openChat(userLogin) {
+    currentChatUser = userLogin;
+    const container = document.getElementById('chatList');
+    db.ref('support_messages').orderByChild('user').equalTo(userLogin).on('value', (sn) => {
+        const messages = [];
+        sn.forEach(child => { messages.push({ id: child.key, ...child.val() }); });
+        messages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        container.innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <div style="font-weight:bold;color:#f5a623;">💬 Чат с ${userLogin}</div>
+                <button class="btn-secondary" onclick="loadChats()" style="padding:4px 12px;font-size:0.7rem;">⬅ Назад</button>
+            </div>
+            <div id="chatMessages" style="max-height:300px;overflow-y:auto;margin-bottom:8px;">
+                ${messages.length ? messages.map(m => `
+                    <div class="support-message ${m.sender === 'support' ? 'admin' : 'client'}">
+                        <div class="sender">${m.sender === 'support' ? '💬 Поддержка' : '👤 ' + (m.userName || 'Клиент')}</div>
+                        <div class="text">${m.text}</div>
+                        <div class="time">${new Date(m.timestamp).toLocaleString()}</div>
+                    </div>
+                `).join('') : '<div style="color:#555;text-align:center;padding:20px;">Нет сообщений</div>'}
+            </div>
+            <div style="display:flex;gap:6px;">
+                <input type="text" id="replyInput" placeholder="Ответ..." style="flex:1;padding:8px 14px;border-radius:30px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.05);color:#fff;font-size:0.85rem;outline:none;">
+                <button class="btn-primary" onclick="sendReply()">📤</button>
+            </div>
+        `;
+        const chatMessages = document.getElementById('chatMessages');
+        if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+    });
+}
+
+function sendReply() {
+    const input = document.getElementById('replyInput');
+    const text = input.value.trim();
+    if (!text || !currentChatUser || !currentUser) return;
+    const msg = { user: currentChatUser, userName: 'Поддержка', text: text, sender: 'support', timestamp: Date.now(), read: true };
+    db.ref('support_messages').push().set(msg).then(() => {
+        input.value = '';
+        openChat(currentChatUser);
+    });
+}
+
+console.log('💬 WHOPPER - Поддержка');
+</script>
+</body>
+</html>
