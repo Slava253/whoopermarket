@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>WHOPPER - Продавец</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/qr-helper.js"></script>
+    <style>
+        .back-link { display:inline-block; color:#f5a623; text-decoration:none; font-size:0.8rem; margin-bottom:10px; }
+        .back-link:hover { text-decoration:underline; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <a href="../index.html" class="back-link">← На главную</a>
+    
+    <div class="header">
+        <div class="logo">🏪 WHOPPER</div>
+        <div class="user-badge">👤 <span id="userNameDisplay">Гость</span> <button onclick="logout()">Выйти</button></div>
+    </div>
+
+    <div id="authBox" class="auth-box">
+        <h3>🏪 Вход продавца</h3>
+        <div class="form-group"><label>Логин</label><input type="text" id="sellerLogin" placeholder="Логин"></div>
+        <div class="form-group"><label>Пароль</label><input type="password" id="sellerPass" placeholder="Пароль"></div>
+        <div class="auth-actions">
+            <button class="btn-primary" onclick="login()">Войти</button>
+            <button class="btn-success" onclick="register()">Регистрация</button>
+        </div>
+    </div>
+
+    <div id="mainContent" class="hidden">
+        <div class="wallet" onclick="addMoney()"><span>💰 Кошелёк</span><span class="amount" id="walletAmount">0 ₽</span></div>
+        
+        <div style="background:rgba(245,166,35,0.08);border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid #f5a623;">
+            <h4 style="color:#f5a623;font-size:0.9rem;">📋 Информация для QR-кода</h4>
+            <p style="color:#888;font-size:0.75rem;margin:6px 0;">Для каждого товара создаётся индивидуальный QR-код:</p>
+            <div class="qr-text-info">
+                <div class="label">📦 Формат QR-кода:</div>
+                <div class="value">{"productId":"PRODXXXXXXXXXX","name":"Название","price":999}</div>
+            </div>
+        </div>
+        
+        <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;">
+            <h4 style="color:#f5a623;">➕ Добавить товар</h4>
+            <div class="form-group"><label>Название</label><input type="text" id="productName" placeholder="Название"></div>
+            <div class="form-group"><label>Цена</label><input type="number" id="productPrice" placeholder="999"></div>
+            <div class="form-group">
+                <label>📸 Фото товара</label>
+                <div class="product-image-upload" onclick="document.getElementById('productImageInput').click()">
+                    <span>Нажмите чтобы загрузить фото</span>
+                    <input type="file" id="productImageInput" accept="image/*" style="display:none;" onchange="previewProductImage(event)">
+                    <div id="productImagePreview"></div>
+                </div>
+            </div>
+            <button class="btn-success btn-block" onclick="addProduct()">➕ Добавить товар</button>
+        </div>
+        
+        <h4 style="color:#f5a623;font-size:0.9rem;">📦 Мои товары</h4>
+        <div id="productsList"></div>
+    </div>
+</div>
+
+<!-- МОДАЛКА ТОВАРА С QR -->
+<div id="productModal" class="modal-overlay hidden" onclick="if(event.target===this) closeModal()">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <div id="modalImageContainer"></div>
+        <h3 id="modalName">Товар</h3>
+        <div id="modalPrice" style="color:#f5a623;font-size:1.3rem;font-weight:bold;">0 ₽</div>
+        <div id="modalSeller" style="color:#888;font-size:0.75rem;">Продавец</div>
+        <div class="product-qr-section">
+            <h4 style="color:#f5a623;font-size:0.8rem;">📱 QR-код товара</h4>
+            <div id="modalQrContainer" class="qr-code-container">
+                <div class="qr-placeholder">Загрузка QR...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ========== ПЕРЕМЕННЫЕ ==========
+let currentUser = null;
+let productImageData = null;
+
+function login() {
+    const login = document.getElementById('sellerLogin').value.trim();
+    const pass = document.getElementById('sellerPass').value.trim();
+    if (!login || !pass) { showToast('❌ Заполните все поля'); return; }
+    db.ref('sellers').orderByChild('login').equalTo(login).once('value', (sn) => {
+        if (sn.exists()) {
+            let found = false;
+            sn.forEach(child => {
+                const seller = child.val();
+                if (seller.password === pass) {
+                    currentUser = { id: child.key, login: login, name: seller.shopName, wallet: seller.wallet || 0 };
+                    found = true;
+                    showToast('👋 Добро пожаловать, ' + seller.shopName + '!');
+                    enterMode();
+                }
+            });
+            if (!found) showToast('❌ Неверный пароль');
+        } else {
+            showToast('❌ Продавец не найден');
+        }
+    });
+}
+
+function register() {
+    const login = document.getElementById('sellerLogin').value.trim();
+    const pass = document.getElementById('sellerPass').value.trim();
+    if (!login || !pass) { showToast('❌ Заполните все поля'); return; }
+    db.ref('sellers').orderByChild('login').equalTo(login).once('value', (sn) => {
+        if (sn.exists()) { showToast('❌ Логин занят'); return; }
+        const seller = { login, password: pass, wallet: 0, shopName: 'Магазин ' + login };
+        db.ref('sellers').push().set(seller).then(() => {
+            currentUser = { login: login, name: seller.shopName, wallet: 0 };
+            showToast('✅ Регистрация продавца успешна!');
+            enterMode();
+        });
+    });
+}
+
+function logout() {
+    currentUser = null;
+    document.getElementById('authBox').classList.remove('hidden');
+    document.getElementById('mainContent').classList.add('hidden');
+    document.getElementById('userNameDisplay').textContent = 'Гость';
+    showToast('👋 Выход выполнен');
+}
+
+function enterMode() {
+    document.getElementById('authBox').classList.add('hidden');
+    document.getElementById('mainContent').classList.remove('hidden');
+    document.getElementById('userNameDisplay').textContent = currentUser.name + ' 🏪';
+    document.getElementById('walletAmount').textContent = (currentUser.wallet || 0) + ' ₽';
+    loadProducts();
+}
+
+function loadProducts() {
+    const container = document.getElementById('productsList');
+    db.ref('products').orderByChild('seller').equalTo(currentUser.name).on('value', (sn) => {
+        const products = [];
+        sn.forEach(child => { products.push({ id: child.key, ...child.val() }); });
+        if (!products.length) { container.innerHTML = '<div style="color:#555;padding:8px;">Нет товаров</div>'; return; }
+        container.innerHTML = products.map(p => {
+            const qrText = JSON.stringify({ productId: p.id, name: p.name, price: p.price });
+            return `
+                <div class="product-item">
+                    <div class="product-header">
+                        <div class="product-info">
+                            ${p.image ? `<img src="${p.image}" onclick="event.stopPropagation();openPhotoModal('${p.image}')">` : ''}
+                            <div><div style="font-weight:bold;font-size:0.8rem;">${p.name}</div><div style="color:#f5a623;font-size:0.8rem;">${p.price} ₽</div></div>
+                        </div>
+                        <button class="btn-danger" onclick="deleteProduct('${p.id}')" style="padding:4px 10px;border:none;border-radius:30px;cursor:pointer;font-size:0.7rem;">✕</button>
+                    </div>
+                    <div class="qr-data"><div class="label">📋 Индивидуальные данные для QR-кода:</div><div>${qrText}</div></div>
+                    <button onclick="showProductQR('${p.id}')" style="margin-top:4px;padding:4px 12px;border-radius:30px;border:none;background:#f5a623;color:#1a1a2e;font-weight:bold;cursor:pointer;font-size:0.7rem;">📱 Показать QR</button>
+                </div>
+            `;
+        }).join('');
+    });
+}
+
+function showProductQR(productId) {
+    db.ref('products/' + productId).once('value', (sn) => {
+        const p = sn.val();
+        if (!p) return;
+        document.getElementById('modalImageContainer').innerHTML = p.image ? `<img src="${p.image}" style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;margin-bottom:10px;cursor:pointer;" onclick="event.stopPropagation();openPhotoModal('${p.image}')">` : '';
+        document.getElementById('modalName').textContent = p.name;
+        document.getElementById('modalPrice').textContent = p.price + ' ₽';
+        document.getElementById('modalSeller').textContent = '🏪 ' + (p.seller || 'Продавец');
+        generateQR(document.getElementById('modalQrContainer'), { productId: p.id, name: p.name, price: p.price });
+        document.getElementById('productModal').classList.remove('hidden');
+    });
+}
+
+function closeModal() {
+    document.getElementById('productModal').classList.add('hidden');
+}
+
+function previewProductImage(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            productImageData = e.target.result;
+            document.getElementById('productImagePreview').innerHTML = `<img src="${productImageData}" style="max-width:100%;max-height:150px;border-radius:10px;margin-top:6px;">`;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function addProduct() {
+    if (!currentUser) { showToast('❌ Войдите'); return; }
+    const name = document.getElementById('productName').value.trim();
+    const price = parseInt(document.getElementById('productPrice').value);
+    if (!name || !price || price <= 0) { showToast('❌ Заполните название и цену'); return; }
+    const productId = generateId('PROD');
+    const product = { id: productId, name, price, seller: currentUser.name, createdAt: Date.now() };
+    if (productImageData) product.image = productImageData;
+    db.ref('products/' + productId).set(product).then(() => {
+        document.getElementById('productName').value = '';
+        document.getElementById('productPrice').value = '';
+        document.getElementById('productImagePreview').innerHTML = '';
+        productImageData = null;
+        document.getElementById('productImageInput').value = '';
+        showToast('✅ Товар добавлен!');
+        showProductQR(productId);
+    });
+}
+
+function deleteProduct(productId) {
+    if (!confirm('Удалить товар?')) return;
+    db.ref('products/' + productId).remove().then(() => { showToast('🗑️ Удалено'); });
+}
+
+function addMoney() {
+    if (!currentUser) { showToast('❌ Войдите'); return; }
+    const amount = prompt('Введите сумму пополнения:', '500');
+    if (amount && !isNaN(amount) && parseInt(amount) > 0) {
+        currentUser.wallet += parseInt(amount);
+        db.ref('sellers/' + currentUser.id).update({ wallet: currentUser.wallet });
+        document.getElementById('walletAmount').textContent = currentUser.wallet + ' ₽';
+        showToast(`✅ +${amount} ₽`);
+    }
+}
+
+console.log('🏪 WHOPPER - Продавец');
+</script>
+</body>
+</html>
