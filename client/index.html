@@ -5,31 +5,129 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>WHOPPER - Клиент</title>
     
-    <!-- PWA Meta -->
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#f5a623">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="WHOPPER">
-    <link rel="apple-touch-icon" href="/icon-192.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+    <!-- ===== QR БИБЛИОТЕКА ДЛЯ ГЕНЕРАЦИИ ===== -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
-    <link rel="stylesheet" href="../css/style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    <!-- ===== FIREBASE ===== -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="../js/firebase-config.js"></script>
-    <script src="../js/utils.js"></script>
-    <script src="../js/qr-helper.js"></script>
+    
     <style>
-        .back-link { display:inline-block; color:#f5a623; text-decoration:none; font-size:0.8rem; margin-bottom:10px; }
-        .back-link:hover { text-decoration:underline; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:Arial,sans-serif; background:#0f0f1a; color:#fff; padding:10px; min-height:100vh; }
+        .container { max-width:500px; margin:0 auto; }
+        .hidden { display:none !important; }
+        
+        .header { display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:10px 14px; border-radius:16px; margin-bottom:12px; }
+        .logo { font-size:1.2rem; font-weight:bold; color:#f5a623; }
+        .user-badge { font-size:0.7rem; color:#888; background:rgba(255,255,255,0.05); padding:4px 12px; border-radius:30px; }
+        .user-badge button { background:none; border:none; color:#f5a623; cursor:pointer; margin-left:8px; }
+        
+        .btn { padding:8px 16px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; font-size:0.8rem; transition:0.2s; }
+        .btn-primary { background:#f5a623; color:#1a1a2e; }
+        .btn-success { background:#4CAF50; color:#fff; }
+        .btn-danger { background:#ef4444; color:#fff; }
+        .btn-secondary { background:rgba(255,255,255,0.08); color:#fff; }
+        .btn-warning { background:#ff9800; color:#fff; }
+        .btn-block { width:100%; padding:10px; }
+        
+        .form-group { margin-bottom:10px; }
+        .form-group label { display:block; font-size:0.7rem; color:#888; margin-bottom:4px; }
+        .form-group input, .form-group textarea, .form-group select { width:100%; padding:10px 14px; border-radius:30px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.05); color:#fff; font-size:0.85rem; outline:none; font-family:inherit; }
+        .form-group textarea { border-radius:14px; min-height:80px; resize:vertical; }
+        .form-group select option { background:#1a1a2e; color:#fff; }
+        
+        .auth-box { background:rgba(255,255,255,0.03); border-radius:16px; padding:20px; margin-bottom:16px; border:1px solid rgba(255,255,255,0.05); }
+        .auth-box h3 { margin-bottom:12px; color:#f5a623; font-size:1rem; }
+        .auth-actions { display:flex; gap:8px; margin-top:12px; }
+        .auth-actions button { flex:1; padding:10px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; font-size:0.8rem; }
+        
+        .product-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; margin-bottom:16px; }
+        .product-card { background:rgba(255,255,255,0.05); border-radius:14px; padding:12px; text-align:center; border:1px solid rgba(255,255,255,0.05); cursor:pointer; transition:0.2s; }
+        .product-card:hover { background:rgba(255,255,255,0.08); }
+        .product-card .product-image { width:100%; height:100px; object-fit:cover; border-radius:10px; margin-bottom:6px; background:rgba(255,255,255,0.05); }
+        .product-card .name { font-weight:600; font-size:0.85rem; margin-bottom:4px; }
+        .product-card .price { color:#f5a623; font-weight:bold; font-size:0.95rem; }
+        .product-card .add-btn { margin-top:8px; background:#f5a623; color:#1a1a2e; border:none; padding:6px 16px; border-radius:30px; font-weight:bold; cursor:pointer; font-size:0.7rem; }
+        
+        .cart-panel { background:rgba(255,255,255,0.03); border-radius:14px; padding:14px; margin-bottom:16px; border:1px solid rgba(255,255,255,0.05); }
+        .cart-panel .title { font-weight:bold; margin-bottom:10px; color:#f5a623; font-size:0.95rem; }
+        .cart-item { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.85rem; }
+        .cart-total { font-weight:bold; font-size:1.1rem; margin-top:10px; padding-top:10px; border-top:2px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; }
+        .cart-actions { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+        .cart-actions button { flex:1; padding:10px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; min-width:80px; font-size:0.8rem; }
+        
+        .wallet { background:rgba(255,255,255,0.03); border-radius:14px; padding:12px 16px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
+        .wallet .amount { font-size:1.2rem; font-weight:bold; color:#f5a623; }
+        
+        .order-card { background:rgba(255,255,255,0.04); border-radius:14px; padding:14px; margin-bottom:10px; border-left:4px solid #f5a623; }
+        .order-card .order-header { display:flex; justify-content:space-between; font-weight:bold; margin-bottom:6px; font-size:0.85rem; flex-wrap:wrap; gap:4px; }
+        .order-card .order-number { color:#f5a623; font-size:0.85rem; }
+        .order-card .order-status { font-size:0.65rem; padding:3px 12px; border-radius:30px; }
+        .status-collecting { background:#ff9800; color:#fff; }
+        .status-sent { background:#2196F3; color:#fff; }
+        .status-in_pvz { background:#4CAF50; color:#fff; }
+        .status-ready { background:#4CAF50; color:#fff; }
+        .status-delivered { background:#999; color:#fff; }
+        .status-return { background:#ef4444; color:#fff; }
+        .order-card .order-code { font-size:1.6rem; font-weight:bold; color:#f5a623; font-family:monospace; letter-spacing:6px; background:rgba(255,255,255,0.08); padding:10px; border-radius:12px; margin:8px 0; text-align:center; border:2px solid rgba(245,166,35,0.25); }
+        .order-card .order-pickup-number { font-size:1.3rem; font-weight:bold; color:#4CAF50; font-family:monospace; background:rgba(76,175,80,0.15); padding:6px 16px; border-radius:10px; display:inline-block; border:2px solid #4CAF50; letter-spacing:4px; }
+        .order-card .order-review { margin-top:10px; padding:10px; background:rgba(255,255,255,0.05); border-radius:10px; }
+        .order-card .order-review .stars { color:#f5a623; font-size:1.2rem; }
+        .order-card .order-review .review-photo { max-width:100%; max-height:150px; border-radius:10px; margin-top:6px; cursor:pointer; }
+        .order-delivery-info { font-size:0.8rem; color:#888; margin:4px 0; }
+        .order-delivery-info span { color:#f5a623; }
+        
+        .tabs { display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap; }
+        .tab { padding:8px 16px; border-radius:30px; background:rgba(255,255,255,0.05); cursor:pointer; font-size:0.75rem; color:#888; border:1px solid transparent; }
+        .tab.active { background:rgba(245,166,35,0.15); color:#f5a623; border-color:#f5a623; }
+        
+        .qr-code-container { display:flex; justify-content:center; padding:10px; min-height:200px; align-items:center; flex-direction:column; }
+        .qr-code-container img { border-radius:12px; background:white; padding:10px; max-width:100%; max-height:250px; }
+        .qr-placeholder { color:#888; font-size:0.9rem; text-align:center; padding:20px; }
+        
+        .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.85); z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px; }
+        .modal-content { background:#1a1a2e; border-radius:20px; padding:24px; max-width:450px; width:100%; max-height:90vh; overflow-y:auto; border:1px solid rgba(255,255,255,0.08); }
+        .modal-content h3 { color:#f5a623; margin-bottom:12px; font-size:1.1rem; }
+        .modal-close { float:right; background:none; border:none; color:#888; font-size:1.4rem; cursor:pointer; }
+        
+        .product-image-upload { border:2px dashed rgba(255,255,255,0.1); border-radius:14px; padding:14px; text-align:center; cursor:pointer; transition:0.2s; }
+        .product-image-upload:hover { border-color:#f5a623; background:rgba(255,255,255,0.03); }
+        .product-image-upload img { max-width:100%; max-height:150px; border-radius:10px; margin-top:6px; }
+        
+        .stars-input { display:flex; gap:8px; justify-content:center; margin:12px 0; }
+        .stars-input button { background:none; border:none; font-size:2rem; cursor:pointer; color:#555; transition:0.2s; }
+        .stars-input button.active { color:#f5a623; }
+        .stars-input button:hover { transform:scale(1.1); }
+        
+        .review-item { background:rgba(255,255,255,0.03); border-radius:12px; padding:12px; margin-bottom:8px; border-left:3px solid #f5a623; }
+        .review-item .review-header { display:flex; justify-content:space-between; font-size:0.8rem; color:#888; }
+        .review-item .review-header .review-user { color:#f5a623; font-weight:bold; }
+        .review-item .review-stars { color:#f5a623; font-size:1.1rem; }
+        .review-item .review-text { margin:6px 0; font-size:0.9rem; }
+        .review-item .review-photo { max-width:100%; max-height:150px; border-radius:10px; margin-top:6px; cursor:pointer; border:1px solid rgba(255,255,255,0.05); }
+        
+        .support-message { background:rgba(255,255,255,0.03); border-radius:10px; padding:10px 14px; margin-bottom:6px; }
+        .support-message .sender { font-weight:bold; font-size:0.75rem; color:#f5a623; }
+        .support-message .text { font-size:0.9rem; margin-top:4px; }
+        .support-message .time { font-size:0.65rem; color:#555; text-align:right; margin-top:4px; }
+        .support-message.admin { border-left:3px solid #f5a623; }
+        .support-message.client { border-left:3px solid #4CAF50; }
+        
+        .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:12px 24px; border-radius:40px; z-index:999; opacity:0; transition:0.3s; pointer-events:none; font-weight:600; max-width:90%; text-align:center; font-size:0.85rem; }
+        .toast.show { opacity:1; }
+        
+        .photo-modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.92); z-index:2000; display:flex; align-items:center; justify-content:center; padding:20px; cursor:pointer; }
+        .photo-modal-content { max-width:95%; max-height:95%; display:flex; align-items:center; justify-content:center; }
+        .photo-modal-content img { max-width:100%; max-height:90vh; border-radius:16px; object-fit:contain; box-shadow:0 0 40px rgba(0,0,0,0.5); }
+        .photo-modal-close { position:fixed; top:20px; right:20px; color:#fff; font-size:2rem; cursor:pointer; background:none; border:none; z-index:2001; opacity:0.7; transition:0.2s; }
+        .photo-modal-close:hover { opacity:1; transform:scale(1.1); }
+        
+        @media (max-width:400px) { .product-grid { grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); } }
     </style>
 </head>
 <body>
 <div class="container">
-    <a href="../index.html" class="back-link">← На главную</a>
     
     <div class="header">
         <div class="logo">🛒 WHOPPER</div>
@@ -119,7 +217,7 @@
             </select>
         </div>
         <div id="checkoutTotal" style="color:#f5a623;font-size:1.2rem;font-weight:bold;margin:10px 0;">Итого: 0 ₽</div>
-        <button class="btn-primary" onclick="confirmCheckout()" style="width:100%;padding:10px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">✅ Подтвердить</button>
+        <button class="btn-primary btn-block" onclick="confirmCheckout()">✅ Подтвердить</button>
     </div>
 </div>
 
@@ -147,11 +245,24 @@
                 <div id="reviewPhotoPreview"></div>
             </div>
         </div>
-        <button class="btn-primary" onclick="submitReview()" style="width:100%;padding:10px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">📝 Отправить</button>
+        <button class="btn-primary btn-block" onclick="submitReview()">📝 Отправить</button>
     </div>
 </div>
 
 <script>
+// ========== FIREBASE ==========
+const firebaseConfig = {
+    apiKey: "AIzaSyBlZ5ZtyTXgtXxSJAx1jOxwhTrzlHRJmo",
+    authDomain: "bk-cashier.firebaseapp.com",
+    databaseURL: "https://bk-cashier-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "bk-cashier",
+    storageBucket: "bk-cashier.firebasestorage.app",
+    messagingSenderId: "385000840969",
+    appId: "1:385000840969:web:1ec8d09176b6551dc0fdd8"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
 // ========== ПЕРЕМЕННЫЕ ==========
 let currentUser = null;
 let cart = [];
@@ -160,7 +271,27 @@ let reviewOrderId = null;
 let reviewPhotoData = null;
 let allPvzList = [];
 
-// ========== ФУНКЦИИ ==========
+// ========== ТОСТ ==========
+function showToast(msg) {
+    let toast = document.getElementById('toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        toast.className = 'toast';
+        document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toast._timeout);
+    toast._timeout = setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// ========== ГЕНЕРАЦИЯ ID ==========
+function generateId(prefix) {
+    return prefix + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
+}
+
+// ========== АВТОРИЗАЦИЯ ==========
 function login() {
     const phone = document.getElementById('clientPhone').value.trim();
     if (!phone) { showToast('❌ Введите номер телефона'); return; }
@@ -214,6 +345,7 @@ function enterMode() {
     renderCart();
 }
 
+// ========== ПВЗ ==========
 function loadPvzList() {
     db.ref('pvz').on('value', (sn) => {
         allPvzList = [];
@@ -231,6 +363,7 @@ function loadPvzList() {
     });
 }
 
+// ========== ТОВАРЫ ==========
 function loadProducts() {
     db.ref('products').on('value', (sn) => {
         const products = [];
@@ -283,6 +416,7 @@ function clearCart() {
     showToast('🗑️ Очищено');
 }
 
+// ========== ОФОРМЛЕНИЕ ==========
 function showCheckout() {
     if (!cart.length) { showToast('❌ Корзина пуста'); return; }
     const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
@@ -334,6 +468,7 @@ function confirmCheckout() {
     });
 }
 
+// ========== ЗАКАЗЫ ==========
 function loadOrders() {
     const container = document.getElementById('ordersList');
     if (!currentUser) return;
@@ -361,10 +496,17 @@ function loadOrders() {
     });
 }
 
+// ========== QR-КОД (ГЛАВНОЕ!) ==========
 function renderQR() {
     const container = document.getElementById('qrContainer');
     const info = document.getElementById('qrInfo');
-    if (!currentUser) return;
+    
+    if (!currentUser) {
+        container.innerHTML = '<div class="qr-placeholder">Войдите в аккаунт</div>';
+        info.textContent = '';
+        return;
+    }
+    
     db.ref('orders').orderByChild('user').equalTo(currentUser.phone).once('value', (sn) => {
         const activeOrders = [];
         sn.forEach(child => {
@@ -373,18 +515,81 @@ function renderQR() {
                 activeOrders.push({ id: child.key, ...order });
             }
         });
+        
         if (!activeOrders.length) {
             container.innerHTML = '<div class="qr-placeholder">Нет активных заказов</div>';
             info.textContent = 'Оформите заказ';
             return;
         }
+        
         const order = activeOrders[0];
-        const qrData = { orderId: order.id, user: currentUser.phone, items: order.items, total: order.total, code: order.code };
-        generateQR(container, qrData);
-        info.innerHTML = `<div style="background:rgba(255,255,255,0.05);padding:10px;border-radius:10px;">📦 ${order.items.length} товаров<br>💰 ${order.total} ₽<br>🔑 ${order.code}</div>`;
+        const qrData = { 
+            orderId: order.id, 
+            user: currentUser.phone,
+            items: order.items, 
+            total: order.total,
+            code: order.code,
+            pvz: order.pvz
+        };
+        
+        // ==== ГЕНЕРАЦИЯ QR ====
+        container.innerHTML = '';
+        
+        try {
+            // Проверяем, загружена ли библиотека
+            if (typeof QRCode === 'undefined') {
+                // Если библиотека не загружена - используем API
+                const encoded = encodeURIComponent(JSON.stringify(qrData));
+                const img = document.createElement('img');
+                img.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encoded}&format=png&bgcolor=ffffff&color=f5a623&margin=10`;
+                img.style.width = '200px';
+                img.style.height = '200px';
+                img.style.borderRadius = '12px';
+                img.style.background = 'white';
+                img.style.padding = '10px';
+                container.appendChild(img);
+            } else {
+                // Используем библиотеку QRCode
+                new QRCode(container, {
+                    text: JSON.stringify(qrData),
+                    width: 200,
+                    height: 200,
+                    colorDark: "#f5a623",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            }
+            
+            info.innerHTML = `<div style="background:rgba(255,255,255,0.05);padding:10px;border-radius:10px;">
+                📦 ${order.items.length} товаров<br>
+                💰 ${order.total} ₽<br>
+                🔑 ${order.code}<br>
+                📍 ПВЗ: ${order.pvz || 'Не выбран'}
+            </div>`;
+            
+        } catch(e) {
+            console.error('QR ошибка:', e);
+            // Резервный вариант - API
+            try {
+                const encoded = encodeURIComponent(JSON.stringify(qrData));
+                const img = document.createElement('img');
+                img.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encoded}&format=png&bgcolor=ffffff&color=f5a623&margin=10`;
+                img.style.width = '200px';
+                img.style.height = '200px';
+                img.style.borderRadius = '12px';
+                img.style.background = 'white';
+                img.style.padding = '10px';
+                container.innerHTML = '';
+                container.appendChild(img);
+                info.innerHTML = `<div style="background:rgba(255,255,255,0.05);padding:10px;border-radius:10px;">💰 ${order.total} ₽<br>🔑 ${order.code}</div>`;
+            } catch(e2) {
+                container.innerHTML = '<div style="color:#ff4444;">⚠️ Ошибка QR</div>';
+            }
+        }
     });
 }
 
+// ========== ОТЗЫВЫ ==========
 function loadReviews() {
     const container = document.getElementById('reviewsList');
     db.ref('orders').on('value', (sn) => {
@@ -459,6 +664,7 @@ function submitReview() {
     });
 }
 
+// ========== ПОДДЕРЖКА ==========
 function loadSupport() {
     const container = document.getElementById('supportChat');
     if (!currentUser) return;
@@ -486,6 +692,7 @@ function sendSupportMessage() {
     db.ref('support_messages').push().set(msg).then(() => { input.value = ''; });
 }
 
+// ========== КОШЕЛЁК ==========
 function addMoney() {
     if (!currentUser) { showToast('❌ Войдите'); return; }
     const amount = prompt('Введите сумму пополнения:', '500');
@@ -497,6 +704,20 @@ function addMoney() {
     }
 }
 
+// ========== СТАТУСЫ ==========
+function getStatusName(status) {
+    const map = {
+        'collecting': '🟡 Собирается',
+        'sent': '🔵 Отправлен',
+        'in_pvz': '🟢 В ПВЗ',
+        'ready': '✅ Готов',
+        'delivered': '📦 Выдан',
+        'return': '🔄 Возврат'
+    };
+    return map[status] || status;
+}
+
+// ========== ВКЛАДКИ ==========
 function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
     ['tabShop', 'tabOrders', 'tabQr', 'tabReviews', 'tabSupport'].forEach(id => {
@@ -508,14 +729,37 @@ function switchTab(tab) {
     if (tab === 'support') loadSupport();
 }
 
-// ========== PWA РЕГИСТРАЦИЯ ==========
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js')
-        .then(() => console.log('✅ SW зарегистрирован'))
-        .catch(err => console.log('❌ SW ошибка:', err));
+// ========== ОТКРЫТИЕ ФОТО ==========
+function openPhotoModal(imageSrc) {
+    if (!imageSrc) return;
+    let modal = document.getElementById('photoModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'photoModal';
+        modal.className = 'photo-modal-overlay hidden';
+        modal.innerHTML = `
+            <button class="photo-modal-close" onclick="closePhotoModal()">✕</button>
+            <div class="photo-modal-content" onclick="event.stopPropagation();">
+                <img id="photoModalImage" src="">
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    const img = document.getElementById('photoModalImage');
+    img.src = imageSrc;
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
 }
 
-console.log('🛒 WHOPPER - Клиент');
+function closePhotoModal() {
+    const modal = document.getElementById('photoModal');
+    if (modal) modal.classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+// ========== ИНИЦИАЛИЗАЦИЯ ==========
+console.log('🛒 WHOPPER - Клиент загружен');
+console.log('📱 QR-код готов');
 </script>
 </body>
 </html>
