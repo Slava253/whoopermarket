@@ -288,47 +288,6 @@ function generateId(prefix) {
     return prefix + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
 }
 
-// ========== СОХРАНЕНИЕ СЕССИИ ==========
-function saveSession(user) {
-    try {
-        localStorage.setItem('whoper_user', JSON.stringify({
-            id: user.id,
-            phone: user.phone,
-            name: user.name,
-            wallet: user.wallet
-        }));
-    } catch(e) {}
-}
-
-function loadSession() {
-    try {
-        const data = localStorage.getItem('whoper_user');
-        if (data) {
-            return JSON.parse(data);
-        }
-    } catch(e) {}
-    return null;
-}
-
-// ========== АВТОМАТИЧЕСКИЙ ВХОД ==========
-window.addEventListener('load', function() {
-    const session = loadSession();
-    if (session && session.id) {
-        db.ref('users/' + session.id).once('value', (sn) => {
-            const user = sn.val();
-            if (user) {
-                currentUser = { id: session.id, ...user };
-                document.getElementById('clientPhone').value = user.phone || '';
-                document.getElementById('nameInput').value = user.name || '';
-                enterMode();
-                showToast('👋 Добро пожаловать, ' + user.name + '!');
-            } else {
-                localStorage.removeItem('whoper_user');
-            }
-        });
-    }
-});
-
 // ========== ВХОД ==========
 function login() {
     const phone = document.getElementById('clientPhone').value.trim();
@@ -341,13 +300,12 @@ function login() {
                 const user = child.val();
                 currentUser = { id: child.key, ...user };
                 found = true;
-                saveSession(currentUser);
                 showToast('👋 Добро пожаловать, ' + user.name + '!');
                 enterMode();
             });
             if (!found) showToast('❌ Ошибка входа');
         } else {
-            showToast('❌ Пользователь не найден');
+            showToast('❌ Пользователь не найден. Зарегистрируйтесь.');
         }
     });
 }
@@ -376,7 +334,6 @@ function register() {
         
         db.ref('users/' + userId).set(user).then(() => {
             currentUser = { id: userId, ...user };
-            saveSession(currentUser);
             showToast('✅ Регистрация успешна! +1000 ₽');
             enterMode();
         });
@@ -390,7 +347,6 @@ function logout() {
     document.getElementById('authBox').classList.remove('hidden');
     document.getElementById('mainContent').classList.add('hidden');
     document.getElementById('userNameDisplay').textContent = 'Гость';
-    localStorage.removeItem('whoper_user');
     showToast('👋 Выход выполнен');
 }
 
@@ -521,7 +477,6 @@ function confirmCheckout() {
         currentUser.wallet -= total;
         db.ref('users/' + currentUser.id).update({ wallet: currentUser.wallet });
         document.getElementById('walletAmount').textContent = currentUser.wallet + ' ₽';
-        saveSession(currentUser);
     }
     db.ref('orders').push().set(order).then(() => {
         cart = [];
@@ -724,7 +679,6 @@ function addMoney() {
         currentUser.wallet += parseInt(amount);
         db.ref('users/' + currentUser.id).update({ wallet: currentUser.wallet });
         document.getElementById('walletAmount').textContent = currentUser.wallet + ' ₽';
-        saveSession(currentUser);
         showToast(`✅ +${amount} ₽`);
     }
 }
