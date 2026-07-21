@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>WHOPPER - Клиент</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/qr-helper.js"></script>
+    <style>
+        .back-link { display:inline-block; color:#f5a623; text-decoration:none; font-size:0.8rem; margin-bottom:10px; }
+        .back-link:hover { text-decoration:underline; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <a href="../index.html" class="back-link">← На главную</a>
+    
+    <div class="header">
+        <div class="logo">🛒 WHOPPER</div>
+        <div class="user-badge">👤 <span id="userNameDisplay">Гость</span> <button onclick="logout()">Выйти</button></div>
+    </div>
+
+    <!-- АВТОРИЗАЦИЯ -->
+    <div id="authBox" class="auth-box">
+        <h3>👤 Вход / Регистрация</h3>
+        <div class="form-group"><label>📱 Номер телефона</label><input type="tel" id="clientPhone" placeholder="+7 999 999 99 99"></div>
+        <div class="form-group"><label>👤 Имя</label><input type="text" id="nameInput" placeholder="Ваше имя"></div>
+        <div class="auth-actions">
+            <button class="btn-primary" onclick="login()">Войти</button>
+            <button class="btn-success" onclick="register()">Регистрация</button>
+        </div>
+    </div>
+
+    <!-- ОСНОВНОЙ КОНТЕНТ -->
+    <div id="mainContent" class="hidden">
+        <div class="wallet" onclick="addMoney()"><span>💰 Кошелёк</span><span class="amount" id="walletAmount">0 ₽</span></div>
+        
+        <div class="tabs">
+            <button class="tab active" data-tab="shop" onclick="switchTab('shop')">🛍️ Магазин</button>
+            <button class="tab" data-tab="orders" onclick="switchTab('orders')">📦 Заказы</button>
+            <button class="tab" data-tab="qr" onclick="switchTab('qr')">📱 QR-код</button>
+            <button class="tab" data-tab="reviews" onclick="switchTab('reviews')">⭐ Отзывы</button>
+            <button class="tab" data-tab="support" onclick="switchTab('support')">💬 Поддержка</button>
+        </div>
+
+        <!-- МАГАЗИН -->
+        <div id="tabShop">
+            <div class="product-grid" id="productsGrid"></div>
+            <div class="cart-panel">
+                <div class="title">🛒 Корзина</div>
+                <div id="cartItems"><div style="color:#555;">Пусто</div></div>
+                <div class="cart-total"><span>Итого:</span> <span id="cartTotal">0 ₽</span></div>
+                <div class="cart-actions">
+                    <button class="btn-primary" onclick="showCheckout()">💳 Оформить</button>
+                    <button class="btn-secondary" onclick="clearCart()">Очистить</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ЗАКАЗЫ -->
+        <div id="tabOrders" class="hidden"><div id="ordersList"></div></div>
+
+        <!-- QR-КОД -->
+        <div id="tabQr" class="hidden">
+            <div style="text-align:center;padding:20px;">
+                <h3 style="color:#f5a623;">📱 Ваш QR-код</h3>
+                <p style="color:#888;font-size:0.85rem;margin-bottom:15px;">Покажите в ПВЗ</p>
+                <div id="qrContainer" class="qr-code-container">
+                    <div class="qr-placeholder">⏳ Загрузка QR...</div>
+                </div>
+                <div id="qrInfo" style="margin-top:10px;color:#888;font-size:0.8rem;"></div>
+            </div>
+        </div>
+
+        <!-- ОТЗЫВЫ -->
+        <div id="tabReviews" class="hidden"><div id="reviewsList"></div></div>
+
+        <!-- ПОДДЕРЖКА -->
+        <div id="tabSupport" class="hidden">
+            <div id="supportChat" style="max-height:300px;overflow-y:auto;margin-bottom:10px;"></div>
+            <div style="display:flex;gap:8px;">
+                <input type="text" id="supportInput" placeholder="Сообщение..." style="flex:1;padding:10px 16px;border-radius:30px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.05);color:#fff;font-size:0.85rem;outline:none;">
+                <button class="btn-primary" onclick="sendSupportMessage()">📤</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- МОДАЛКИ -->
+<div id="checkoutModal" class="modal-overlay hidden" onclick="if(event.target===this) closeCheckoutModal()">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeCheckoutModal()">✕</button>
+        <h3>💳 Оформление заказа</h3>
+        <div class="form-group">
+            <label>📍 Выберите ПВЗ</label>
+            <select id="checkoutPvz"><option value="">-- Выберите ПВЗ --</option></select>
+        </div>
+        <div class="form-group">
+            <label>💳 Способ оплаты</label>
+            <select id="checkoutPayment">
+                <option value="now">Сразу (списание сейчас)</option>
+                <option value="on_delivery">При получении (списание при выдаче)</option>
+            </select>
+        </div>
+        <div id="checkoutTotal" style="color:#f5a623;font-size:1.2rem;font-weight:bold;margin:10px 0;">Итого: 0 ₽</div>
+        <button class="btn-primary" onclick="confirmCheckout()" style="width:100%;padding:10px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">✅ Подтвердить</button>
+    </div>
+</div>
+
+<div id="reviewModal" class="modal-overlay hidden" onclick="if(event.target===this) closeReviewModal()">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeReviewModal()">✕</button>
+        <h3>⭐ Оставить отзыв</h3>
+        <div id="reviewOrderId" style="display:none;"></div>
+        <div style="margin:10px 0;">
+            <label style="color:#888;font-size:0.8rem;">Оценка</label>
+            <div class="stars-input" id="starsInput">
+                <button data-star="1" onclick="selectStar(1)">★</button>
+                <button data-star="2" onclick="selectStar(2)">★</button>
+                <button data-star="3" onclick="selectStar(3)">★</button>
+                <button data-star="4" onclick="selectStar(4)">★</button>
+                <button data-star="5" onclick="selectStar(5)">★</button>
+            </div>
+        </div>
+        <div class="form-group"><label>Комментарий</label><textarea id="reviewComment" placeholder="Ваш отзыв..." rows="3"></textarea></div>
+        <div class="form-group">
+            <label>📸 Фото</label>
+            <div class="product-image-upload" onclick="document.getElementById('reviewPhotoInput').click()">
+                <span>Нажмите чтобы загрузить фото</span>
+                <input type="file" id="reviewPhotoInput" accept="image/*" style="display:none;" onchange="previewReviewPhoto(event)">
+                <div id="reviewPhotoPreview"></div>
+            </div>
+        </div>
+        <button class="btn-primary" onclick="submitReview()" style="width:100%;padding:10px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">📝 Отправить</button>
+    </div>
+</div>
+
+<script>
+// ========== ПЕРЕМЕННЫЕ ==========
+let currentUser = null;
+let cart = [];
+let selectedStar = 0;
+let reviewOrderId = null;
+let reviewPhotoData = null;
+let allPvzList = [];
+
+// ========== ФУНКЦИИ ==========
+function login() {
+    const phone = document.getElementById('clientPhone').value.trim();
+    if (!phone) { showToast('❌ Введите номер телефона'); return; }
+    db.ref('users').orderByChild('phone').equalTo(phone).once('value', (sn) => {
+        if (sn.exists()) {
+            sn.forEach(child => { currentUser = { id: child.key, ...child.val() }; });
+            showToast('👋 Добро пожаловать, ' + currentUser.name + '!');
+            enterMode();
+        } else {
+            showToast('❌ Пользователь не найден');
+        }
+    });
+}
+
+function register() {
+    const phone = document.getElementById('clientPhone').value.trim();
+    const name = document.getElementById('nameInput').value.trim();
+    if (!phone) { showToast('❌ Введите номер телефона'); return; }
+    if (!name) { showToast('❌ Введите имя'); return; }
+    db.ref('users').orderByChild('phone').equalTo(phone).once('value', (sn) => {
+        if (sn.exists()) { showToast('❌ Номер уже зарегистрирован'); return; }
+        const user = { phone, name, wallet: 1000 };
+        db.ref('users').push().set(user).then(() => {
+            currentUser = { id: child.key, ...user };
+            showToast('✅ Регистрация успешна! +1000 ₽');
+            enterMode();
+        });
+    });
+}
+
+function logout() {
+    currentUser = null;
+    cart = [];
+    document.getElementById('authBox').classList.remove('hidden');
+    document.getElementById('mainContent').classList.add('hidden');
+    document.getElementById('userNameDisplay').textContent = 'Гость';
+    showToast('👋 Выход выполнен');
+}
+
+function enterMode() {
+    document.getElementById('authBox').classList.add('hidden');
+    document.getElementById('mainContent').classList.remove('hidden');
+    document.getElementById('userNameDisplay').textContent = currentUser.name + ' 📱';
+    document.getElementById('walletAmount').textContent = currentUser.wallet + ' ₽';
+    loadProducts();
+    loadOrders();
+    renderQR();
+    loadReviews();
+    loadSupport();
+    loadPvzList();
+    renderCart();
+}
+
+function loadPvzList() {
+    db.ref('pvz').on('value', (sn) => {
+        allPvzList = [];
+        sn.forEach(child => { allPvzList.push({ id: child.key, ...child.val() }); });
+        const select = document.getElementById('checkoutPvz');
+        if (select) {
+            select.innerHTML = '<option value="">-- Выберите ПВЗ --</option>';
+            allPvzList.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p.code;
+                option.textContent = 'ПВЗ ' + p.code + ' - ' + (p.address || 'Адрес не указан');
+                select.appendChild(option);
+            });
+        }
+    });
+}
+
+function loadProducts() {
+    db.ref('products').on('value', (sn) => {
+        const products = [];
+        sn.forEach(child => { products.push({ id: child.key, ...child.val() }); });
+        const grid = document.getElementById('productsGrid');
+        if (!products.length) { grid.innerHTML = '<div style="text-align:center;color:#555;padding:15px;">Товаров нет</div>'; return; }
+        grid.innerHTML = products.map(p => `
+            <div class="product-card" onclick="addToCart('${p.id}')">
+                ${p.image ? `<img src="${p.image}" class="product-image" onerror="this.style.display='none'">` : '<div class="product-image" style="display:flex;align-items:center;justify-content:center;color:#555;">📷</div>'}
+                <div class="name">${p.name}</div>
+                <div class="price">${p.price} ₽</div>
+                <button class="add-btn" onclick="event.stopPropagation();addToCart('${p.id}')">➕</button>
+            </div>
+        `).join('');
+    });
+}
+
+function addToCart(productId) {
+    db.ref('products/' + productId).once('value', (sn) => {
+        const p = sn.val();
+        if (!p) return;
+        const existing = cart.find(i => i.id === productId);
+        if (existing) existing.qty++;
+        else cart.push({ id: productId, name: p.name, price: p.price, qty: 1, seller: p.seller, image: p.image });
+        renderCart();
+        showToast(`✅ ${p.name} добавлен`);
+    });
+}
+
+function renderCart() {
+    const container = document.getElementById('cartItems');
+    const totalSpan = document.getElementById('cartTotal');
+    if (!cart.length) { container.innerHTML = '<div style="color:#555;">Пусто</div>'; totalSpan.textContent = '0 ₽'; return; }
+    let total = 0;
+    container.innerHTML = cart.map((item, idx) => {
+        total += item.price * item.qty;
+        return `<div class="cart-item"><span>${item.name} x${item.qty}</span><span>${(item.price * item.qty)} ₽ <button onclick="removeFromCart(${idx})" style="background:none;border:none;color:#ff4444;cursor:pointer;">✕</button></span></div>`;
+    }).join('');
+    totalSpan.textContent = total + ' ₽';
+}
+
+function removeFromCart(idx) {
+    cart.splice(idx, 1);
+    renderCart();
+}
+
+function clearCart() {
+    cart = [];
+    renderCart();
+    showToast('🗑️ Очищено');
+}
+
+function showCheckout() {
+    if (!cart.length) { showToast('❌ Корзина пуста'); return; }
+    const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    document.getElementById('checkoutTotal').textContent = 'Итого: ' + total + ' ₽';
+    document.getElementById('checkoutModal').classList.remove('hidden');
+}
+
+function closeCheckoutModal() {
+    document.getElementById('checkoutModal').classList.add('hidden');
+}
+
+function confirmCheckout() {
+    if (!currentUser) { showToast('❌ Войдите в аккаунт'); return; }
+    const pvzCode = document.getElementById('checkoutPvz').value;
+    if (!pvzCode) { showToast('❌ Выберите ПВЗ'); return; }
+    const payment = document.getElementById('checkoutPayment').value;
+    const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    if (payment === 'now' && currentUser.wallet < total) {
+        showToast('❌ Недостаточно средств');
+        return;
+    }
+    const orderId = generateId('ORD');
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const order = {
+        id: orderId,
+        user: currentUser.phone,
+        userName: currentUser.name,
+        phone: currentUser.phone,
+        items: cart.map(i => ({ name: i.name, price: i.price, qty: i.qty, image: i.image || null })),
+        total: total,
+        code: code,
+        pvz: pvzCode,
+        payment: payment,
+        status: 'collecting',
+        createdAt: Date.now()
+    };
+    if (payment === 'now') {
+        currentUser.wallet -= total;
+        db.ref('users/' + currentUser.id).update({ wallet: currentUser.wallet });
+        document.getElementById('walletAmount').textContent = currentUser.wallet + ' ₽';
+    }
+    db.ref('orders').push().set(order).then(() => {
+        cart = [];
+        renderCart();
+        loadOrders();
+        renderQR();
+        closeCheckoutModal();
+        showToast(`✅ Заказ #${orderId} оформлен! Код: ${code}`);
+    });
+}
+
+function loadOrders() {
+    const container = document.getElementById('ordersList');
+    if (!currentUser) return;
+    db.ref('orders').orderByChild('user').equalTo(currentUser.phone).on('value', (sn) => {
+        const orders = [];
+        sn.forEach(child => { orders.push({ id: child.key, ...child.val() }); });
+        orders.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        if (!orders.length) { container.innerHTML = '<div style="text-align:center;color:#555;padding:20px;">📭 Нет заказов</div>'; return; }
+        container.innerHTML = orders.map(o => `
+            <div class="order-card">
+                <div class="order-header">
+                    <span class="order-number">🆔 ${o.id}</span>
+                    <span class="order-status status-${o.status}">${getStatusName(o.status)}</span>
+                </div>
+                <div>${o.items.map(i => `${i.name} x${i.qty}`).join(', ')}</div>
+                <div style="font-weight:bold;">💰 ${o.total} ₽</div>
+                <div class="order-code">🔑 ${o.code}</div>
+                ${o.pickupNumber ? `<div style="text-align:center;margin:6px 0;"><span class="order-pickup-number">📋 ${o.pickupNumber}</span></div>` : ''}
+                <div class="order-delivery-info">📍 ПВЗ: <span>${o.pvz || 'Не выбран'}</span></div>
+                <div class="order-delivery-info">💳 ${o.payment === 'now' ? 'Оплачено сразу' : 'Оплата при получении'}</div>
+                ${o.status === 'delivered' && !o.review ? `<button class="btn-warning" onclick="openReviewModal('${o.id}')" style="margin-top:6px;padding:4px 12px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">⭐ Оставить отзыв</button>` : ''}
+                ${o.review ? `<div class="order-review"><div class="stars">${'★'.repeat(o.review.stars)}${'☆'.repeat(5-o.review.stars)}</div><div>${o.review.comment}</div>${o.review.photo ? `<img src="${o.review.photo}" class="review-photo" onclick="openPhotoModal('${o.review.photo}')">` : ''}</div>` : ''}
+            </div>
+        `).join('');
+    });
+}
+
+function renderQR() {
+    const container = document.getElementById('qrContainer');
+    const info = document.getElementById('qrInfo');
+    if (!currentUser) return;
+    db.ref('orders').orderByChild('user').equalTo(currentUser.phone).once('value', (sn) => {
+        const activeOrders = [];
+        sn.forEach(child => {
+            const order = child.val();
+            if (order.status !== 'delivered' && order.status !== 'return') {
+                activeOrders.push({ id: child.key, ...order });
+            }
+        });
+        if (!activeOrders.length) {
+            container.innerHTML = '<div class="qr-placeholder">Нет активных заказов</div>';
+            info.textContent = 'Оформите заказ';
+            return;
+        }
+        const order = activeOrders[0];
+        const qrData = { orderId: order.id, user: currentUser.phone, items: order.items, total: order.total, code: order.code };
+        generateQR(container, qrData);
+        info.innerHTML = `<div style="background:rgba(255,255,255,0.05);padding:10px;border-radius:10px;">📦 ${order.items.length} товаров<br>💰 ${order.total} ₽<br>🔑 ${order.code}</div>`;
+    });
+}
+
+function loadReviews() {
+    const container = document.getElementById('reviewsList');
+    db.ref('orders').on('value', (sn) => {
+        const reviews = [];
+        sn.forEach(child => {
+            const order = child.val();
+            if (order.review) reviews.push({ user: order.userName || order.user, review: order.review, orderId: order.id });
+        });
+        reviews.sort((a, b) => (b.review.createdAt || 0) - (a.review.createdAt || 0));
+        if (!reviews.length) { container.innerHTML = '<div style="text-align:center;color:#555;padding:20px;">⭐ Пока нет отзывов</div>'; return; }
+        container.innerHTML = reviews.map(r => `
+            <div class="review-item">
+                <div class="review-header"><span class="review-user">👤 ${r.user}</span><span style="font-size:0.7rem;color:#555;">${new Date(r.review.createdAt).toLocaleString()}</span></div>
+                <div class="review-stars">${'★'.repeat(r.review.stars)}${'☆'.repeat(5-r.review.stars)}</div>
+                <div class="review-text">${r.review.comment}</div>
+                ${r.review.photo ? `<img src="${r.review.photo}" class="review-photo" onclick="openPhotoModal('${r.review.photo}')">` : ''}
+                <div style="font-size:0.7rem;color:#555;margin-top:4px;">📦 ${r.orderId}</div>
+            </div>
+        `).join('');
+    });
+}
+
+function openReviewModal(orderId) {
+    reviewOrderId = orderId;
+    selectedStar = 0;
+    reviewPhotoData = null;
+    document.getElementById('reviewPhotoPreview').innerHTML = '';
+    document.getElementById('reviewPhotoInput').value = '';
+    document.querySelectorAll('#starsInput button').forEach(b => b.classList.remove('active'));
+    document.getElementById('reviewComment').value = '';
+    document.getElementById('reviewModal').classList.remove('hidden');
+}
+
+function closeReviewModal() {
+    document.getElementById('reviewModal').classList.add('hidden');
+    reviewOrderId = null;
+}
+
+function selectStar(star) {
+    selectedStar = star;
+    document.querySelectorAll('#starsInput button').forEach(b => {
+        b.classList.toggle('active', parseInt(b.dataset.star) <= star);
+    });
+}
+
+function previewReviewPhoto(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            reviewPhotoData = e.target.result;
+            document.getElementById('reviewPhotoPreview').innerHTML = `<img src="${reviewPhotoData}" style="max-width:100%;max-height:150px;border-radius:10px;margin-top:6px;">`;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function submitReview() {
+    if (!reviewOrderId) { showToast('❌ Ошибка'); return; }
+    if (selectedStar === 0) { showToast('❌ Выберите оценку'); return; }
+    const comment = document.getElementById('reviewComment').value.trim();
+    const review = { stars: selectedStar, comment: comment || 'Без комментария', createdAt: Date.now(), photo: reviewPhotoData || null };
+    db.ref('orders').orderByChild('id').equalTo(reviewOrderId).once('value', (sn) => {
+        sn.forEach(child => {
+            db.ref('orders/' + child.key).update({ review: review }).then(() => {
+                showToast('✅ Спасибо за отзыв! ⭐');
+                closeReviewModal();
+                loadOrders();
+                loadReviews();
+            });
+        });
+    });
+}
+
+function loadSupport() {
+    const container = document.getElementById('supportChat');
+    if (!currentUser) return;
+    db.ref('support_messages').orderByChild('user').equalTo(currentUser.phone).on('value', (sn) => {
+        const messages = [];
+        sn.forEach(child => { messages.push({ id: child.key, ...child.val() }); });
+        messages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        if (!messages.length) { container.innerHTML = '<div style="text-align:center;color:#555;padding:20px;">💬 Нет сообщений</div>'; return; }
+        container.innerHTML = messages.map(m => `
+            <div class="support-message ${m.sender === 'support' ? 'admin' : 'client'}">
+                <div class="sender">${m.sender === 'support' ? '💬 Поддержка' : '👤 ' + (m.userName || 'Клиент')}</div>
+                <div class="text">${m.text}</div>
+                <div class="time">${new Date(m.timestamp).toLocaleString()}</div>
+            </div>
+        `).join('');
+        container.scrollTop = container.scrollHeight;
+    });
+}
+
+function sendSupportMessage() {
+    const input = document.getElementById('supportInput');
+    const text = input.value.trim();
+    if (!text || !currentUser) return;
+    const msg = { user: currentUser.phone, userName: currentUser.name, text: text, sender: 'client', timestamp: Date.now(), read: false };
+    db.ref('support_messages').push().set(msg).then(() => { input.value = ''; });
+}
+
+function addMoney() {
+    if (!currentUser) { showToast('❌ Войдите'); return; }
+    const amount = prompt('Введите сумму пополнения:', '500');
+    if (amount && !isNaN(amount) && parseInt(amount) > 0) {
+        currentUser.wallet += parseInt(amount);
+        db.ref('users/' + currentUser.id).update({ wallet: currentUser.wallet });
+        document.getElementById('walletAmount').textContent = currentUser.wallet + ' ₽';
+        showToast(`✅ +${amount} ₽`);
+    }
+}
+
+function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    ['tabShop', 'tabOrders', 'tabQr', 'tabReviews', 'tabSupport'].forEach(id => {
+        document.getElementById(id).classList.toggle('hidden', id !== 'tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+    });
+    if (tab === 'orders') loadOrders();
+    if (tab === 'qr') renderQR();
+    if (tab === 'reviews') loadReviews();
+    if (tab === 'support') loadSupport();
+}
+
+// ========== ИНИЦИАЛИЗАЦИЯ ==========
+console.log('🛒 WHOPPER - Клиент');
+</script>
+</body>
+</html>
