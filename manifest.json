@@ -1,0 +1,44 @@
+{
+  "name": "WHOPPER MARKET",
+  "short_name": "WHOPPER",
+  "description": "Маркетплейс с доставкой через ПВЗ",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#0f0f1a",
+  "theme_color": "#f5a623",
+  "orientation": "portrait",
+  "categories": ["shopping", "business"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot-1.png",
+      "sizes": "1080x1920",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "🛒 Магазин",
+      "url": "/client/index.html",
+      "description": "Перейти в магазин"
+    },
+    {
+      "name": "📦 ПВЗ",
+      "url": "/pvz/index.html",
+      "description": "Перейти в ПВЗ"
+    }
+  ]
+}
