@@ -11,11 +11,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="WHOPPER">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    
-    <!-- Иконки -->
-    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
     
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -32,6 +30,7 @@
         .app-card.full { grid-column:span 2; }
         .install-btn { background:#f5a623; color:#1a1a2e; border:none; padding:12px 24px; border-radius:40px; font-weight:bold; font-size:1rem; cursor:pointer; margin-top:20px; display:none; }
         .install-btn:hover { opacity:0.8; }
+        .install-btn.show { display:block; }
         @media (max-width:400px) { .app-grid { grid-template-columns:1fr; } .app-card.full { grid-column:span 1; } }
     </style>
 </head>
@@ -67,7 +66,6 @@
             </a>
         </div>
         
-        <!-- Кнопка установки PWA -->
         <button id="installBtn" class="install-btn">📱 Установить приложение</button>
     </div>
 
@@ -87,7 +85,7 @@
             e.preventDefault();
             deferredPrompt = e;
             const installBtn = document.getElementById('installBtn');
-            installBtn.style.display = 'block';
+            installBtn.classList.add('show');
             installBtn.addEventListener('click', () => {
                 if (deferredPrompt) {
                     deferredPrompt.prompt();
@@ -98,7 +96,7 @@
                             console.log('❌ Установка отменена');
                         }
                         deferredPrompt = null;
-                        installBtn.style.display = 'none';
+                        installBtn.classList.remove('show');
                     });
                 }
             });
@@ -107,7 +105,7 @@
         // Обработка успешной установки
         window.addEventListener('appinstalled', (e) => {
             console.log('✅ WHOPPER установлен как PWA');
-            document.getElementById('installBtn').style.display = 'none';
+            document.getElementById('installBtn').classList.remove('show');
             showToast('🎉 Приложение успешно установлено!');
         });
 
