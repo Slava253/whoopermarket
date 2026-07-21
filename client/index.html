@@ -5,15 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>WHOPPER - Клиент</title>
     
-    <!-- ===== ЗАПРЕТ КЕШИРОВАНИЯ ===== -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <!-- ===== QR БИБЛИОТЕКА ===== -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    
-    <!-- ===== FIREBASE ===== -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
@@ -27,8 +23,6 @@
         .logo { font-size:1.2rem; font-weight:bold; color:#f5a623; }
         .user-badge { font-size:0.7rem; color:#888; background:rgba(255,255,255,0.05); padding:4px 12px; border-radius:30px; }
         .user-badge button { background:none; border:none; color:#f5a623; cursor:pointer; margin-left:8px; }
-        .bell { position:relative; cursor:pointer; font-size:1.2rem; margin-right:8px; }
-        .bell .badge { position:absolute; top:-6px; right:-8px; background:#ef4444; color:#fff; font-size:0.5rem; padding:2px 5px; border-radius:50%; }
         
         .btn { padding:8px 16px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; font-size:0.8rem; transition:0.2s; }
         .btn-primary { background:#f5a623; color:#1a1a2e; }
@@ -36,12 +30,11 @@
         .btn-danger { background:#ef4444; color:#fff; }
         .btn-secondary { background:rgba(255,255,255,0.08); color:#fff; }
         .btn-warning { background:#ff9800; color:#fff; }
-        .btn-info { background:#2196F3; color:#fff; }
         .btn-block { width:100%; padding:10px; }
         
         .form-group { margin-bottom:10px; }
         .form-group label { display:block; font-size:0.7rem; color:#888; margin-bottom:4px; }
-        .form-group input, .form-group textarea, .form-group select { width:100%; padding:10px 14px; border-radius:30px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.05); color:#fff; font-size:0.85rem; outline:none; font-family:inherit; }
+        .form-group input, .form-group textarea, .form-group select { width:100%; padding:10px 14px; border-radius:30px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.05); color:#fff; font-size:0.85rem; outline:none; }
         .form-group textarea { border-radius:14px; min-height:80px; resize:vertical; }
         .form-group select option { background:#1a1a2e; color:#fff; }
         
@@ -60,7 +53,7 @@
         .product-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; margin-bottom:16px; }
         .product-card { background:rgba(255,255,255,0.05); border-radius:14px; padding:12px; text-align:center; border:1px solid rgba(255,255,255,0.05); cursor:pointer; transition:0.2s; }
         .product-card:hover { background:rgba(255,255,255,0.08); }
-        .product-card .product-image { width:100%; height:100px; object-fit:cover; border-radius:10px; margin-bottom:6px; background:rgba(255,255,255,0.05); }
+        .product-card .product-image { width:100%; height:100px; object-fit:cover; border-radius:10px; margin-bottom:6px; }
         .product-card .name { font-weight:600; font-size:0.85rem; margin-bottom:4px; }
         .product-card .price { color:#f5a623; font-weight:bold; font-size:0.95rem; }
         .product-card .add-btn { margin-top:8px; background:#f5a623; color:#1a1a2e; border:none; padding:6px 16px; border-radius:30px; font-weight:bold; cursor:pointer; font-size:0.7rem; }
@@ -111,7 +104,7 @@
         .review-item .review-header .review-user { color:#f5a623; font-weight:bold; }
         .review-item .review-stars { color:#f5a623; font-size:1.1rem; }
         .review-item .review-text { margin:6px 0; font-size:0.9rem; }
-        .review-item .review-photo { max-width:100%; max-height:150px; border-radius:10px; margin-top:6px; cursor:pointer; border:1px solid rgba(255,255,255,0.05); }
+        .review-item .review-photo { max-width:100%; max-height:150px; border-radius:10px; margin-top:6px; cursor:pointer; }
         
         .support-message { background:rgba(255,255,255,0.03); border-radius:10px; padding:10px 14px; margin-bottom:6px; }
         .support-message .sender { font-weight:bold; font-size:0.75rem; color:#f5a623; }
@@ -129,12 +122,6 @@
         .photo-modal-close { position:fixed; top:20px; right:20px; color:#fff; font-size:2rem; cursor:pointer; background:none; border:none; z-index:2001; opacity:0.7; transition:0.2s; }
         .photo-modal-close:hover { opacity:1; transform:scale(1.1); }
         
-        .notification-list { max-height:300px; overflow-y:auto; }
-        .notification-item { background:rgba(255,255,255,0.03); padding:10px; border-radius:10px; margin-bottom:6px; border-left:3px solid #f5a623; }
-        .notification-item .time { font-size:0.6rem; color:#555; }
-        
-        .code-input { font-size:1.5rem; letter-spacing:10px; text-align:center; }
-        
         @media (max-width:400px) { .product-grid { grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); } }
     </style>
 </head>
@@ -143,11 +130,7 @@
     
     <div class="header">
         <div class="logo">🛒 WHOPPER</div>
-        <div class="user-badge">
-            <span class="bell" onclick="showNotifications()">🔔 <span id="notifBadge" class="badge hidden">0</span></span>
-            👤 <span id="userNameDisplay">Гость</span>
-            <button onclick="logout()">Выйти</button>
-        </div>
+        <div class="user-badge">👤 <span id="userNameDisplay">Гость</span> <button onclick="logout()">Выйти</button></div>
     </div>
 
     <!-- АВТОРИЗАЦИЯ -->
@@ -158,10 +141,6 @@
         <div class="auth-actions">
             <button class="btn-primary" onclick="login()">Войти</button>
             <button class="btn-success" onclick="register()">Регистрация</button>
-        </div>
-        <div id="codeAuth" class="hidden" style="margin-top:12px;">
-            <div class="form-group"><label>🔑 Введите код из уведомлений</label><input type="text" id="codeInput" class="code-input" maxlength="6" placeholder="000000"></div>
-            <button class="btn-primary btn-block" onclick="confirmCode()">✅ Подтвердить</button>
         </div>
     </div>
 
@@ -262,15 +241,6 @@
     </div>
 </div>
 
-<!-- МОДАЛКА УВЕДОМЛЕНИЙ -->
-<div id="notifModal" class="modal-overlay hidden" onclick="if(event.target===this) closeNotifModal()">
-    <div class="modal-content">
-        <button class="modal-close" onclick="closeNotifModal()">✕</button>
-        <h3>🔔 Уведомления</h3>
-        <div id="notifList" class="notification-list"></div>
-    </div>
-</div>
-
 <script>
 // ========== FIREBASE ==========
 const firebaseConfig = {
@@ -297,44 +267,63 @@ let selectedStar = 0;
 let reviewOrderId = null;
 let reviewPhotoData = null;
 let allPvzList = [];
-let pendingLogin = null;
+
+// ========== ТОСТ ==========
+function showToast(msg) {
+    let toast = document.getElementById('toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        toast.className = 'toast';
+        document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toast._timeout);
+    toast._timeout = setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// ========== ГЕНЕРАЦИЯ ID ==========
+function generateId(prefix) {
+    return prefix + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
+}
 
 // ========== СОХРАНЕНИЕ СЕССИИ ==========
 function saveSession(user) {
-    localStorage.setItem('whoper_session', JSON.stringify({
-        phone: user.phone,
-        name: user.name,
-        wallet: user.wallet,
-        id: user.id,
-        timestamp: Date.now()
-    }));
+    try {
+        localStorage.setItem('whoper_user', JSON.stringify({
+            id: user.id,
+            phone: user.phone,
+            name: user.name,
+            wallet: user.wallet
+        }));
+    } catch(e) {}
 }
 
 function loadSession() {
-    const data = localStorage.getItem('whoper_session');
-    if (data) {
-        try {
-            const session = JSON.parse(data);
-            if (Date.now() - session.timestamp < 30 * 24 * 60 * 60 * 1000) { // 30 дней
-                return session;
-            }
-        } catch(e) {}
-    }
+    try {
+        const data = localStorage.getItem('whoper_user');
+        if (data) {
+            return JSON.parse(data);
+        }
+    } catch(e) {}
     return null;
 }
 
 // ========== АВТОМАТИЧЕСКИЙ ВХОД ==========
 window.addEventListener('load', function() {
     const session = loadSession();
-    if (session) {
+    if (session && session.id) {
         db.ref('users/' + session.id).once('value', (sn) => {
             const user = sn.val();
             if (user) {
                 currentUser = { id: session.id, ...user };
-                document.getElementById('clientPhone').value = user.phone;
-                document.getElementById('nameInput').value = user.name;
+                document.getElementById('clientPhone').value = user.phone || '';
+                document.getElementById('nameInput').value = user.name || '';
                 enterMode();
                 showToast('👋 Добро пожаловать, ' + user.name + '!');
+            } else {
+                localStorage.removeItem('whoper_user');
             }
         });
     }
@@ -347,155 +336,20 @@ function login() {
     
     db.ref('users').orderByChild('phone').equalTo(phone).once('value', (sn) => {
         if (sn.exists()) {
+            let found = false;
             sn.forEach(child => {
                 const user = child.val();
-                const deviceId = getDeviceId();
-                const activeDevices = user.devices || [];
-                
-                // Проверяем, есть ли уже устройство
-                if (activeDevices.includes(deviceId)) {
-                    // Это знакомое устройство - вход без кода
-                    currentUser = { id: child.key, ...user };
-                    saveSession(currentUser);
-                    showToast('👋 Добро пожаловать, ' + user.name + '!');
-                    enterMode();
-                } else {
-                    // Новое устройство - запрашиваем код
-                    pendingLogin = { id: child.key, user: user, phone: phone };
-                    const code = Math.floor(100000 + Math.random() * 900000).toString();
-                    // Сохраняем код в Firebase
-                    db.ref('auth_codes/' + child.key).set({
-                        code: code,
-                        createdAt: Date.now(),
-                        phone: phone,
-                        device: deviceId
-                    });
-                    // Добавляем уведомление
-                    addNotification(child.key, {
-                        title: '🔑 Код подтверждения',
-                        text: 'Введите код ' + code + ' для входа на новом устройстве',
-                        type: 'auth',
-                        code: code
-                    });
-                    document.getElementById('codeAuth').classList.remove('hidden');
-                    document.getElementById('codeInput').focus();
-                    showToast('📱 Код отправлен в уведомления');
-                }
+                currentUser = { id: child.key, ...user };
+                found = true;
+                saveSession(currentUser);
+                showToast('👋 Добро пожаловать, ' + user.name + '!');
+                enterMode();
             });
+            if (!found) showToast('❌ Ошибка входа');
         } else {
             showToast('❌ Пользователь не найден');
         }
     });
-}
-
-function confirmCode() {
-    const code = document.getElementById('codeInput').value.trim();
-    if (!code || code.length < 6) { showToast('❌ Введите 6-значный код'); return; }
-    if (!pendingLogin) { showToast('❌ Ошибка входа'); return; }
-    
-    db.ref('auth_codes/' + pendingLogin.id).once('value', (sn) => {
-        const data = sn.val();
-        if (data && data.code === code) {
-            // Код верный - добавляем устройство
-            const deviceId = getDeviceId();
-            const devices = pendingLogin.user.devices || [];
-            if (!devices.includes(deviceId)) {
-                devices.push(deviceId);
-                db.ref('users/' + pendingLogin.id + '/devices').set(devices);
-            }
-            currentUser = { id: pendingLogin.id, ...pendingLogin.user };
-            saveSession(currentUser);
-            document.getElementById('codeAuth').classList.add('hidden');
-            document.getElementById('codeInput').value = '';
-            showToast('👋 Добро пожаловать, ' + currentUser.name + '!');
-            enterMode();
-            pendingLogin = null;
-            // Удаляем код
-            db.ref('auth_codes/' + currentUser.id).remove();
-        } else {
-            showToast('❌ Неверный код');
-        }
-    });
-}
-
-function getDeviceId() {
-    let id = localStorage.getItem('whoper_device_id');
-    if (!id) {
-        id = 'DEV_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 6);
-        localStorage.setItem('whoper_device_id', id);
-    }
-    return id;
-}
-
-// ========== УВЕДОМЛЕНИЯ ==========
-function addNotification(userId, notif) {
-    const ref = db.ref('notifications/' + userId).push();
-    ref.set({
-        ...notif,
-        read: false,
-        createdAt: Date.now()
-    });
-}
-
-function loadNotifications() {
-    if (!currentUser) return;
-    db.ref('notifications/' + currentUser.id).orderByChild('createdAt').limitToLast(20).on('value', (sn) => {
-        const notifs = [];
-        let unread = 0;
-        sn.forEach(child => {
-            const data = child.val();
-            notifs.push({ id: child.key, ...data });
-            if (!data.read) unread++;
-        });
-        notifs.reverse();
-        
-        // Обновляем бейдж
-        const badge = document.getElementById('notifBadge');
-        if (unread > 0) {
-            badge.classList.remove('hidden');
-            badge.textContent = unread;
-        } else {
-            badge.classList.add('hidden');
-        }
-        
-        // Сохраняем для отображения
-        window._notifications = notifs;
-    });
-}
-
-function showNotifications() {
-    const container = document.getElementById('notifList');
-    const notifs = window._notifications || [];
-    
-    if (!notifs.length) {
-        container.innerHTML = '<div style="color:#555;padding:20px;text-align:center;">Нет уведомлений</div>';
-    } else {
-        container.innerHTML = notifs.map(n => `
-            <div class="notification-item" style="${n.read ? 'opacity:0.5;' : ''}">
-                <div style="font-weight:bold;color:#f5a623;">${n.title || 'Уведомление'}</div>
-                <div style="font-size:0.85rem;">${n.text || ''}</div>
-                ${n.code ? `<div style="font-size:1.5rem;font-weight:bold;color:#f5a623;letter-spacing:6px;margin-top:4px;">${n.code}</div>` : ''}
-                <div class="time">${new Date(n.createdAt).toLocaleString()}</div>
-            </div>
-        `).join('');
-    }
-    
-    // Отмечаем как прочитанные
-    if (currentUser) {
-        db.ref('notifications/' + currentUser.id).once('value', (sn) => {
-            sn.forEach(child => {
-                if (!child.val().read) {
-                    db.ref('notifications/' + currentUser.id + '/' + child.key + '/read').set(true);
-                }
-            });
-        });
-    }
-    
-    document.getElementById('notifModal').classList.remove('hidden');
-}
-
-function closeNotifModal() {
-    document.getElementById('notifModal').classList.add('hidden');
 }
 
 // ========== РЕГИСТРАЦИЯ ==========
@@ -506,11 +360,21 @@ function register() {
     if (!name) { showToast('❌ Введите имя'); return; }
     
     db.ref('users').orderByChild('phone').equalTo(phone).once('value', (sn) => {
-        if (sn.exists()) { showToast('❌ Номер уже зарегистрирован'); return; }
-        const user = { phone, name, wallet: 1000, devices: [getDeviceId()] };
-        db.ref('users').push().set(user).then((ref) => {
-            const userId = ref.key;
-            db.ref('users/' + userId).update({ id: userId });
+        if (sn.exists()) { 
+            showToast('❌ Номер уже зарегистрирован'); 
+            return; 
+        }
+        
+        const userId = generateId('USR');
+        const user = { 
+            id: userId,
+            phone: phone, 
+            name: name, 
+            wallet: 1000,
+            createdAt: Date.now()
+        };
+        
+        db.ref('users/' + userId).set(user).then(() => {
             currentUser = { id: userId, ...user };
             saveSession(currentUser);
             showToast('✅ Регистрация успешна! +1000 ₽');
@@ -519,41 +383,191 @@ function register() {
     });
 }
 
+// ========== ВЫХОД ==========
 function logout() {
     currentUser = null;
     cart = [];
     document.getElementById('authBox').classList.remove('hidden');
     document.getElementById('mainContent').classList.add('hidden');
     document.getElementById('userNameDisplay').textContent = 'Гость';
-    localStorage.removeItem('whoper_session');
+    localStorage.removeItem('whoper_user');
     showToast('👋 Выход выполнен');
 }
 
+// ========== ВХОД В ПРИЛОЖЕНИЕ ==========
 function enterMode() {
     document.getElementById('authBox').classList.add('hidden');
     document.getElementById('mainContent').classList.remove('hidden');
     document.getElementById('userNameDisplay').textContent = currentUser.name + ' 📱';
-    document.getElementById('walletAmount').textContent = currentUser.wallet + ' ₽';
+    document.getElementById('walletAmount').textContent = (currentUser.wallet || 0) + ' ₽';
     loadProducts();
     loadOrders();
     renderQR();
     loadReviews();
     loadSupport();
     loadPvzList();
-    loadNotifications();
     renderCart();
 }
 
-// ========== QR-КОД ДЛЯ КЛИЕНТА ==========
+// ========== ПВЗ ==========
+function loadPvzList() {
+    db.ref('pvz').on('value', (sn) => {
+        allPvzList = [];
+        sn.forEach(child => { allPvzList.push({ id: child.key, ...child.val() }); });
+        const select = document.getElementById('checkoutPvz');
+        if (select) {
+            select.innerHTML = '<option value="">-- Выберите ПВЗ --</option>';
+            allPvzList.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p.code;
+                option.textContent = 'ПВЗ ' + p.code + ' - ' + (p.address || 'Адрес не указан');
+                select.appendChild(option);
+            });
+        }
+    });
+}
+
+// ========== ТОВАРЫ ==========
+function loadProducts() {
+    db.ref('products').on('value', (sn) => {
+        const products = [];
+        sn.forEach(child => { products.push({ id: child.key, ...child.val() }); });
+        const grid = document.getElementById('productsGrid');
+        if (!products.length) { grid.innerHTML = '<div style="text-align:center;color:#555;padding:15px;">Товаров нет</div>'; return; }
+        grid.innerHTML = products.map(p => `
+            <div class="product-card" onclick="addToCart('${p.id}')">
+                ${p.image ? `<img src="${p.image}" class="product-image" onerror="this.style.display='none'">` : '<div class="product-image" style="display:flex;align-items:center;justify-content:center;color:#555;">📷</div>'}
+                <div class="name">${p.name}</div>
+                <div class="price">${p.price} ₽</div>
+                <button class="add-btn" onclick="event.stopPropagation();addToCart('${p.id}')">➕</button>
+            </div>
+        `).join('');
+    });
+}
+
+function addToCart(productId) {
+    db.ref('products/' + productId).once('value', (sn) => {
+        const p = sn.val();
+        if (!p) return;
+        const existing = cart.find(i => i.id === productId);
+        if (existing) existing.qty++;
+        else cart.push({ id: productId, name: p.name, price: p.price, qty: 1, seller: p.seller, image: p.image });
+        renderCart();
+        showToast(`✅ ${p.name} добавлен`);
+    });
+}
+
+function renderCart() {
+    const container = document.getElementById('cartItems');
+    const totalSpan = document.getElementById('cartTotal');
+    if (!cart.length) { container.innerHTML = '<div style="color:#555;">Пусто</div>'; totalSpan.textContent = '0 ₽'; return; }
+    let total = 0;
+    container.innerHTML = cart.map((item, idx) => {
+        total += item.price * item.qty;
+        return `<div class="cart-item"><span>${item.name} x${item.qty}</span><span>${(item.price * item.qty)} ₽ <button onclick="removeFromCart(${idx})" style="background:none;border:none;color:#ff4444;cursor:pointer;">✕</button></span></div>`;
+    }).join('');
+    totalSpan.textContent = total + ' ₽';
+}
+
+function removeFromCart(idx) {
+    cart.splice(idx, 1);
+    renderCart();
+}
+
+function clearCart() {
+    cart = [];
+    renderCart();
+    showToast('🗑️ Очищено');
+}
+
+// ========== ОФОРМЛЕНИЕ ==========
+function showCheckout() {
+    if (!cart.length) { showToast('❌ Корзина пуста'); return; }
+    const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    document.getElementById('checkoutTotal').textContent = 'Итого: ' + total + ' ₽';
+    document.getElementById('checkoutModal').classList.remove('hidden');
+}
+
+function closeCheckoutModal() {
+    document.getElementById('checkoutModal').classList.add('hidden');
+}
+
+function confirmCheckout() {
+    if (!currentUser) { showToast('❌ Войдите в аккаунт'); return; }
+    const pvzCode = document.getElementById('checkoutPvz').value;
+    if (!pvzCode) { showToast('❌ Выберите ПВЗ'); return; }
+    const payment = document.getElementById('checkoutPayment').value;
+    const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    if (payment === 'now' && currentUser.wallet < total) {
+        showToast('❌ Недостаточно средств');
+        return;
+    }
+    const orderId = generateId('ORD');
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const order = {
+        id: orderId,
+        user: currentUser.phone,
+        userName: currentUser.name,
+        phone: currentUser.phone,
+        items: cart.map(i => ({ name: i.name, price: i.price, qty: i.qty, image: i.image || null })),
+        total: total,
+        code: code,
+        pvz: pvzCode,
+        payment: payment,
+        status: 'collecting',
+        createdAt: Date.now()
+    };
+    if (payment === 'now') {
+        currentUser.wallet -= total;
+        db.ref('users/' + currentUser.id).update({ wallet: currentUser.wallet });
+        document.getElementById('walletAmount').textContent = currentUser.wallet + ' ₽';
+        saveSession(currentUser);
+    }
+    db.ref('orders').push().set(order).then(() => {
+        cart = [];
+        renderCart();
+        loadOrders();
+        renderQR();
+        closeCheckoutModal();
+        showToast(`✅ Заказ #${orderId} оформлен! Код: ${code}`);
+    });
+}
+
+// ========== ЗАКАЗЫ ==========
+function loadOrders() {
+    const container = document.getElementById('ordersList');
+    if (!currentUser) return;
+    
+    db.ref('orders').orderByChild('user').equalTo(currentUser.phone).on('value', (sn) => {
+        const orders = [];
+        sn.forEach(child => { orders.push({ id: child.key, ...child.val() }); });
+        orders.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        if (!orders.length) { container.innerHTML = '<div style="text-align:center;color:#555;padding:20px;">📭 Нет заказов</div>'; return; }
+        
+        container.innerHTML = orders.map(o => `
+            <div class="order-card">
+                <div class="order-header">
+                    <span class="order-number">🆔 ${o.id}</span>
+                    <span class="order-status status-${o.status}">${getStatusName(o.status)}</span>
+                </div>
+                <div>${o.items.map(i => `${i.name} x${i.qty}`).join(', ')}</div>
+                <div style="font-weight:bold;">💰 ${o.total} ₽</div>
+                <div class="order-code">🔑 ${o.code}</div>
+                ${o.pickupNumber ? `<div style="text-align:center;margin:6px 0;"><span class="order-pickup-number">📋 ${o.pickupNumber}</span></div>` : ''}
+                <div class="order-delivery-info">📍 ПВЗ: <span>${o.pvz || 'Не выбран'}</span></div>
+                <div class="order-delivery-info">💳 ${o.payment === 'now' ? 'Оплачено сразу' : 'Оплата при получении'}</div>
+                ${o.status === 'delivered' && !o.review ? `<button class="btn-warning" onclick="openReviewModal('${o.id}')" style="margin-top:6px;padding:4px 12px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">⭐ Оставить отзыв</button>` : ''}
+                ${o.review ? `<div class="order-review"><div class="stars">${'★'.repeat(o.review.stars)}${'☆'.repeat(5-o.review.stars)}</div><div>${o.review.comment}</div>${o.review.photo ? `<img src="${o.review.photo}" class="review-photo" onclick="openPhotoModal('${o.review.photo}')">` : ''}</div>` : ''}
+            </div>
+        `).join('');
+    });
+}
+
+// ========== QR-КОД ==========
 function renderQR() {
     const container = document.getElementById('qrContainer');
     const info = document.getElementById('qrInfo');
-    
-    if (!currentUser) {
-        container.innerHTML = '<div class="qr-placeholder">Войдите в аккаунт</div>';
-        info.textContent = '';
-        return;
-    }
+    if (!currentUser) return;
     
     db.ref('orders').orderByChild('user').equalTo(currentUser.phone).once('value', (sn) => {
         const activeOrders = [];
@@ -563,23 +577,13 @@ function renderQR() {
                 activeOrders.push({ id: child.key, ...order });
             }
         });
-        
         if (!activeOrders.length) {
             container.innerHTML = '<div class="qr-placeholder">Нет активных заказов</div>';
             info.textContent = 'Оформите заказ';
             return;
         }
-        
         const order = activeOrders[0];
-        const qrData = { 
-            orderId: order.id, 
-            user: currentUser.phone,
-            items: order.items, 
-            total: order.total,
-            code: order.code,
-            pvz: order.pvz
-        };
-        
+        const qrData = { orderId: order.id, user: currentUser.phone, items: order.items, total: order.total, code: order.code, pvz: order.pvz };
         container.innerHTML = '';
         try {
             if (typeof QRCode !== 'undefined') {
@@ -602,39 +606,179 @@ function renderQR() {
                 img.style.padding = '10px';
                 container.appendChild(img);
             }
-            info.innerHTML = `<div style="background:rgba(255,255,255,0.05);padding:10px;border-radius:10px;">
-                📦 ${order.items.length} товаров<br>
-                💰 ${order.total} ₽<br>
-                🔑 ${order.code}<br>
-                📍 ПВЗ: ${order.pvz || 'Не выбран'}
-            </div>`;
+            info.innerHTML = `<div style="background:rgba(255,255,255,0.05);padding:10px;border-radius:10px;">📦 ${order.items.length} товаров<br>💰 ${order.total} ₽<br>🔑 ${order.code}<br>📍 ПВЗ: ${order.pvz || 'Не выбран'}</div>`;
         } catch(e) {
             container.innerHTML = '<div style="color:#ff4444;">⚠️ Ошибка QR</div>';
         }
     });
 }
 
-// ========== ОСТАЛЬНЫЕ ФУНКЦИИ ==========
-function showToast(msg) {
-    let toast = document.getElementById('toast');
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'toast';
-        toast.className = 'toast';
-        document.body.appendChild(toast);
+// ========== ОТЗЫВЫ ==========
+function loadReviews() {
+    const container = document.getElementById('reviewsList');
+    db.ref('orders').on('value', (sn) => {
+        const reviews = [];
+        sn.forEach(child => {
+            const order = child.val();
+            if (order.review) reviews.push({ user: order.userName || order.user, review: order.review, orderId: order.id });
+        });
+        reviews.sort((a, b) => (b.review.createdAt || 0) - (a.review.createdAt || 0));
+        if (!reviews.length) { container.innerHTML = '<div style="text-align:center;color:#555;padding:20px;">⭐ Пока нет отзывов</div>'; return; }
+        container.innerHTML = reviews.map(r => `
+            <div class="review-item">
+                <div class="review-header"><span class="review-user">👤 ${r.user}</span><span style="font-size:0.7rem;color:#555;">${new Date(r.review.createdAt).toLocaleString()}</span></div>
+                <div class="review-stars">${'★'.repeat(r.review.stars)}${'☆'.repeat(5-r.review.stars)}</div>
+                <div class="review-text">${r.review.comment}</div>
+                ${r.review.photo ? `<img src="${r.review.photo}" class="review-photo" onclick="openPhotoModal('${r.review.photo}')">` : ''}
+                <div style="font-size:0.7rem;color:#555;margin-top:4px;">📦 ${r.orderId}</div>
+            </div>
+        `).join('');
+    });
+}
+
+function openReviewModal(orderId) {
+    reviewOrderId = orderId;
+    selectedStar = 0;
+    reviewPhotoData = null;
+    document.getElementById('reviewPhotoPreview').innerHTML = '';
+    document.getElementById('reviewPhotoInput').value = '';
+    document.querySelectorAll('#starsInput button').forEach(b => b.classList.remove('active'));
+    document.getElementById('reviewComment').value = '';
+    document.getElementById('reviewModal').classList.remove('hidden');
+}
+
+function closeReviewModal() {
+    document.getElementById('reviewModal').classList.add('hidden');
+    reviewOrderId = null;
+}
+
+function selectStar(star) {
+    selectedStar = star;
+    document.querySelectorAll('#starsInput button').forEach(b => {
+        b.classList.toggle('active', parseInt(b.dataset.star) <= star);
+    });
+}
+
+function previewReviewPhoto(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            reviewPhotoData = e.target.result;
+            document.getElementById('reviewPhotoPreview').innerHTML = `<img src="${reviewPhotoData}" style="max-width:100%;max-height:150px;border-radius:10px;margin-top:6px;">`;
+        };
+        reader.readAsDataURL(file);
     }
-    toast.textContent = msg;
-    toast.classList.add('show');
-    clearTimeout(toast._timeout);
-    toast._timeout = setTimeout(() => toast.classList.remove('show'), 2500);
 }
 
-function generateId(prefix) {
-    return prefix + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
+function submitReview() {
+    if (!reviewOrderId) { showToast('❌ Ошибка'); return; }
+    if (selectedStar === 0) { showToast('❌ Выберите оценку'); return; }
+    const comment = document.getElementById('reviewComment').value.trim();
+    const review = { stars: selectedStar, comment: comment || 'Без комментария', createdAt: Date.now(), photo: reviewPhotoData || null };
+    db.ref('orders').orderByChild('id').equalTo(reviewOrderId).once('value', (sn) => {
+        sn.forEach(child => {
+            db.ref('orders/' + child.key).update({ review: review }).then(() => {
+                showToast('✅ Спасибо за отзыв! ⭐');
+                closeReviewModal();
+                loadOrders();
+                loadReviews();
+            });
+        });
+    });
 }
 
-// ===== ОСТАЛЬНЫЕ ФУНКЦИИ (корзина, заказы, отзывы и т.д.) =====
-// ... (оставляем как в предыдущей версии)
+// ========== ПОДДЕРЖКА ==========
+function loadSupport() {
+    const container = document.getElementById('supportChat');
+    if (!currentUser) return;
+    db.ref('support_messages').orderByChild('user').equalTo(currentUser.phone).on('value', (sn) => {
+        const messages = [];
+        sn.forEach(child => { messages.push({ id: child.key, ...child.val() }); });
+        messages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        if (!messages.length) { container.innerHTML = '<div style="text-align:center;color:#555;padding:20px;">💬 Нет сообщений</div>'; return; }
+        container.innerHTML = messages.map(m => `
+            <div class="support-message ${m.sender === 'support' ? 'admin' : 'client'}">
+                <div class="sender">${m.sender === 'support' ? '💬 Поддержка' : '👤 ' + (m.userName || 'Клиент')}</div>
+                <div class="text">${m.text}</div>
+                <div class="time">${new Date(m.timestamp).toLocaleString()}</div>
+            </div>
+        `).join('');
+        container.scrollTop = container.scrollHeight;
+    });
+}
+
+function sendSupportMessage() {
+    const input = document.getElementById('supportInput');
+    const text = input.value.trim();
+    if (!text || !currentUser) return;
+    const msg = { user: currentUser.phone, userName: currentUser.name, text: text, sender: 'client', timestamp: Date.now(), read: false };
+    db.ref('support_messages').push().set(msg).then(() => { input.value = ''; });
+}
+
+// ========== КОШЕЛЁК ==========
+function addMoney() {
+    if (!currentUser) { showToast('❌ Войдите'); return; }
+    const amount = prompt('Введите сумму пополнения:', '500');
+    if (amount && !isNaN(amount) && parseInt(amount) > 0) {
+        currentUser.wallet += parseInt(amount);
+        db.ref('users/' + currentUser.id).update({ wallet: currentUser.wallet });
+        document.getElementById('walletAmount').textContent = currentUser.wallet + ' ₽';
+        saveSession(currentUser);
+        showToast(`✅ +${amount} ₽`);
+    }
+}
+
+// ========== СТАТУСЫ ==========
+function getStatusName(status) {
+    const map = {
+        'collecting': '🟡 Собирается',
+        'ready': '✅ Готов',
+        'delivered': '📦 Выдан',
+        'return': '🔄 Возврат'
+    };
+    return map[status] || status;
+}
+
+// ========== ВКЛАДКИ ==========
+function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    ['tabShop', 'tabOrders', 'tabQr', 'tabReviews', 'tabSupport'].forEach(id => {
+        document.getElementById(id).classList.toggle('hidden', id !== 'tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+    });
+    if (tab === 'orders') loadOrders();
+    if (tab === 'qr') renderQR();
+    if (tab === 'reviews') loadReviews();
+    if (tab === 'support') loadSupport();
+}
+
+// ========== ОТКРЫТИЕ ФОТО ==========
+function openPhotoModal(imageSrc) {
+    if (!imageSrc) return;
+    let modal = document.getElementById('photoModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'photoModal';
+        modal.className = 'photo-modal-overlay hidden';
+        modal.innerHTML = `
+            <button class="photo-modal-close" onclick="closePhotoModal()">✕</button>
+            <div class="photo-modal-content" onclick="event.stopPropagation();">
+                <img id="photoModalImage" src="">
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    const img = document.getElementById('photoModalImage');
+    img.src = imageSrc;
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closePhotoModal() {
+    const modal = document.getElementById('photoModal');
+    if (modal) modal.classList.add('hidden');
+    document.body.style.overflow = '';
+}
 
 // ========== ИНИЦИАЛИЗАЦИЯ ==========
 console.log('🛒 WHOPPER - Клиент загружен');
