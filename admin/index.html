@@ -39,8 +39,10 @@
         .tabs { display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap; }
         .tab { padding:8px 16px; border-radius:30px; background:rgba(255,255,255,0.05); cursor:pointer; font-size:0.75rem; color:#888; border:1px solid transparent; transition:0.15s; }
         .tab.active { background:rgba(245,166,35,0.15); color:#f5a623; border-color:#f5a623; }
-        .scan-hint { font-size:0.7rem; color:#888; margin:8px 0; padding:8px; background:rgba(255,255,255,0.03); border-radius:8px; border:1px dashed rgba(255,255,255,0.1); }
-        .scan-hint code { color:#f5a623; font-family:monospace; }
+        .barcode-input-area { display:flex; gap:8px; margin:10px 0; align-items:center; }
+        .barcode-input-area input { flex:1; padding:10px 16px; border-radius:30px; border:2px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.05); color:#fff; font-size:0.85rem; outline:none; font-family:monospace; letter-spacing:1px; }
+        .barcode-input-area input:focus { border-color:#f5a623; }
+        .barcode-input-area button { padding:10px 24px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; }
         @media (max-width:400px) { .pvz-item { padding:8px; } }
     </style>
 </head>
@@ -54,13 +56,13 @@
     <div id="authBox" class="auth-box">
         <h3>👑 Вход администратора</h3>
         
-        <!-- ШТРИХ-КОД -->
-        <div class="scan-hint">
-            📷 Отсканируйте штрих-код: <code>VXOD-ADMIN23472203</code>
-        </div>
+        <!-- СКАНИРОВАНИЕ ШТРИХ-КОДА -->
         <div class="form-group">
-            <label>🔑 Или введите код из штрих-кода</label>
-            <input type="text" id="adminBarcode" placeholder="VXOD-ADMIN23472203" oninput="barcodeLogin(this.value)">
+            <label>📷 Отсканируйте штрих-код</label>
+            <div class="barcode-input-area">
+                <input type="text" id="adminBarcode" placeholder="Наведите сканер..." autofocus>
+                <button class="btn-primary" onclick="barcodeLogin()">🔓 Войти</button>
+            </div>
         </div>
         
         <div style="text-align:center;color:#555;margin:10px 0;">━━━ или ━━━</div>
@@ -71,7 +73,6 @@
     </div>
 
     <div id="mainContent" class="hidden">
-        <!-- ВКЛАДКИ -->
         <div class="tabs">
             <button class="tab active" data-tab="pvz" onclick="switchAdminTab('pvz')">🏪 ПВЗ</button>
             <button class="tab" data-tab="courier" onclick="switchAdminTab('courier')">🚚 Курьеры</button>
@@ -79,7 +80,6 @@
             <button class="tab" data-tab="stats" onclick="switchAdminTab('stats')">📊 Статистика</button>
         </div>
         
-        <!-- ПВЗ -->
         <div id="tabPvz">
             <h4 style="color:#f5a623;margin-bottom:10px;">🏪 Управление ПВЗ</h4>
             <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;">
@@ -90,7 +90,6 @@
             <div id="pvzList" class="admin-pvz-list"></div>
         </div>
         
-        <!-- КУРЬЕРЫ -->
         <div id="tabCourier" class="hidden">
             <h4 style="color:#f5a623;margin-bottom:10px;">🚚 Управление курьерами</h4>
             <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;">
@@ -102,7 +101,6 @@
             <div id="courierList" style="max-height:200px;overflow-y:auto;"></div>
         </div>
         
-        <!-- ПОДДЕРЖКА -->
         <div id="tabSupport" class="hidden">
             <h4 style="color:#f5a623;margin-bottom:10px;">💬 Управление поддержкой</h4>
             <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;">
@@ -113,7 +111,6 @@
             <div id="supportList" style="max-height:200px;overflow-y:auto;"></div>
         </div>
         
-        <!-- СТАТИСТИКА -->
         <div id="tabStats" class="hidden">
             <h4 style="color:#f5a623;margin-bottom:10px;">📊 Статистика</h4>
             <div id="stats" style="background:rgba(255,255,255,0.03);border-radius:14px;padding:12px;"></div>
@@ -148,23 +145,47 @@ function showToast(msg, err = false) {
 }
 
 // ========== ВХОД ПО ШТРИХ-КОДУ ==========
-function barcodeLogin(value) {
-    const barcode = value.trim().toUpperCase();
-    if (barcode === 'VXOD-ADMIN23472203') {
-        // Автоматический вход
+function barcodeLogin() {
+    const barcode = document.getElementById('adminBarcode').value.trim();
+    
+    if (!barcode) {
+        showToast('❌ Отсканируйте штрих-код', true);
+        return;
+    }
+    
+    // Проверяем штрих-код (безопасно, не показываем код в подсказках)
+    const allowedBarcodes = ['VXOD-ADMIN23472203'];
+    
+    if (allowedBarcodes.includes(barcode)) {
         currentUser = { login: '2347', name: 'Администратор' };
         document.getElementById('authBox').classList.add('hidden');
         document.getElementById('mainContent').classList.remove('hidden');
         document.getElementById('userNameDisplay').textContent = '👑 Администратор';
-        showToast('👑 Добро пожаловать, Администратор! (штрих-код)');
+        showToast('👑 Добро пожаловать, Администратор!');
+        document.getElementById('adminBarcode').value = '';
         loadPvz();
         loadCouriers();
         loadSupport();
         loadStats();
-        // Очищаем поле
+    } else {
+        showToast('❌ Неверный штрих-код', true);
         document.getElementById('adminBarcode').value = '';
+        document.getElementById('adminBarcode').focus();
     }
 }
+
+// Обработка Enter в поле штрих-кода
+document.addEventListener('DOMContentLoaded', function() {
+    const input = document.getElementById('adminBarcode');
+    if (input) {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                barcodeLogin();
+            }
+        });
+    }
+});
 
 // ========== ОБЫЧНЫЙ ВХОД ==========
 function login() {
@@ -380,7 +401,6 @@ function loadStats() {
 }
 
 console.log('👑 WHOPPER - Администратор загружен');
-console.log('📷 Вход по штрих-коду: VXOD-ADMIN23472203');
 </script>
 </body>
 </html>
