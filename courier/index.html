@@ -164,22 +164,30 @@ function getStatusName(s) {
 
 function loadOrders() {
     const container = document.getElementById('courierOrders');
-    db.ref('orders').orderByChild('delivery').equalTo('courier').on('value', (sn) => {
+    
+    // Показываем ВСЕ заказы с доставкой, которые в статусах ready или курьерских
+    db.ref('orders').on('value', (sn) => {
         const orders = [];
         sn.forEach(child => {
             const o = child.val();
-            if (o.status === 'ready' || 
-                o.status === 'courier_to_pvz' || 
-                o.status === 'courier_out' || 
-                o.status === 'courier_arrived') {
-                orders.push({ id: child.key, ...o });
+            // Показываем заказы с доставкой курьером
+            if (o.delivery === 'courier') {
+                // Показываем только те, которые в нужных статусах
+                if (o.status === 'ready' || 
+                    o.status === 'courier_to_pvz' || 
+                    o.status === 'courier_out' || 
+                    o.status === 'courier_arrived') {
+                    orders.push({ id: child.key, ...o });
+                }
             }
         });
         orders.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        
         if (!orders.length) { 
             container.innerHTML = '<div style="text-align:center;color:#555;padding:20px;">📭 Нет заказов для доставки</div>'; 
             return; 
         }
+        
         container.innerHTML = orders.map(o => `
             <div class="order-card">
                 <div class="order-header">
@@ -206,7 +214,6 @@ function courierGoToPvz(orderId) {
         sn.forEach(child => {
             db.ref('orders/' + child.key).update({ status: 'courier_to_pvz' });
             showToast('🚚 Курьер едет в ПВЗ');
-            loadOrders();
         });
     });
 }
@@ -216,7 +223,6 @@ function courierGoOut(orderId) {
         sn.forEach(child => {
             db.ref('orders/' + child.key).update({ status: 'courier_out' });
             showToast('🚚 Курьер выехал к клиенту');
-            loadOrders();
         });
     });
 }
@@ -226,7 +232,6 @@ function courierArrived(orderId) {
         sn.forEach(child => {
             db.ref('orders/' + child.key).update({ status: 'courier_arrived' });
             showToast('📍 Курьер прибыл на место');
-            loadOrders();
         });
     });
 }
@@ -260,7 +265,6 @@ function deliverByCode() {
                     `;
                     document.getElementById('deliverCodeInput').value = '';
                     showToast('✅ Заказ выдан клиенту!');
-                    loadOrders();
                     setTimeout(() => { resultDiv.innerHTML = ''; }, 5000);
                 } else {
                     resultDiv.innerHTML = `<div style="color:#ff4444;">❌ Заказ не готов к выдаче (статус: ${getStatusName(o.status)})</div>`;
