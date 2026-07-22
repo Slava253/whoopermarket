@@ -4,67 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>WHOPPER - Клиент</title>
-    
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:Arial,sans-serif; background:#0f0f1a; color:#fff; padding:10px; min-height:100vh; }
         .container { max-width:500px; margin:0 auto; }
         .hidden { display:none !important; }
-        
         .header { display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:10px 14px; border-radius:16px; margin-bottom:12px; }
         .logo { font-size:1.2rem; font-weight:bold; color:#f5a623; }
         .user-badge { font-size:0.7rem; color:#888; background:rgba(255,255,255,0.05); padding:4px 12px; border-radius:30px; }
         .user-badge button { background:none; border:none; color:#f5a623; cursor:pointer; margin-left:8px; }
-        
-        .btn { padding:8px 16px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; font-size:0.8rem; transition:0.2s; }
+        .btn { padding:8px 16px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; font-size:0.8rem; }
         .btn-primary { background:#f5a623; color:#1a1a2e; }
         .btn-success { background:#4CAF50; color:#fff; }
         .btn-danger { background:#ef4444; color:#fff; }
         .btn-secondary { background:rgba(255,255,255,0.08); color:#fff; }
         .btn-warning { background:#ff9800; color:#fff; }
         .btn-block { width:100%; padding:10px; }
-        
         .form-group { margin-bottom:10px; }
         .form-group label { display:block; font-size:0.7rem; color:#888; margin-bottom:4px; }
         .form-group input, .form-group textarea, .form-group select { width:100%; padding:10px 14px; border-radius:30px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.05); color:#fff; font-size:0.85rem; outline:none; }
         .form-group textarea { border-radius:14px; min-height:80px; resize:vertical; }
         .form-group select option { background:#1a1a2e; color:#fff; }
-        
         .auth-box { background:rgba(255,255,255,0.03); border-radius:16px; padding:20px; margin-bottom:16px; border:1px solid rgba(255,255,255,0.05); }
         .auth-box h3 { margin-bottom:12px; color:#f5a623; font-size:1rem; }
         .auth-actions { display:flex; gap:8px; margin-top:12px; }
         .auth-actions button { flex:1; padding:10px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; font-size:0.8rem; }
-        
         .wallet { background:rgba(255,255,255,0.03); border-radius:14px; padding:12px 16px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
         .wallet .amount { font-size:1.2rem; font-weight:bold; color:#f5a623; }
-        
         .tabs { display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap; }
         .tab { padding:8px 16px; border-radius:30px; background:rgba(255,255,255,0.05); cursor:pointer; font-size:0.75rem; color:#888; border:1px solid transparent; }
         .tab.active { background:rgba(245,166,35,0.15); color:#f5a623; border-color:#f5a623; }
-        
         .product-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; margin-bottom:16px; }
-        .product-card { background:rgba(255,255,255,0.05); border-radius:14px; padding:12px; text-align:center; border:1px solid rgba(255,255,255,0.05); cursor:pointer; transition:0.2s; }
+        .product-card { background:rgba(255,255,255,0.05); border-radius:14px; padding:12px; text-align:center; border:1px solid rgba(255,255,255,0.05); cursor:pointer; }
         .product-card:hover { background:rgba(255,255,255,0.08); }
         .product-card .product-image { width:100%; height:100px; object-fit:cover; border-radius:10px; margin-bottom:6px; }
         .product-card .name { font-weight:600; font-size:0.85rem; margin-bottom:4px; }
         .product-card .price { color:#f5a623; font-weight:bold; font-size:0.95rem; }
         .product-card .add-btn { margin-top:8px; background:#f5a623; color:#1a1a2e; border:none; padding:6px 16px; border-radius:30px; font-weight:bold; cursor:pointer; font-size:0.7rem; }
-        
         .cart-panel { background:rgba(255,255,255,0.03); border-radius:14px; padding:14px; margin-bottom:16px; border:1px solid rgba(255,255,255,0.05); }
         .cart-panel .title { font-weight:bold; margin-bottom:10px; color:#f5a623; font-size:0.95rem; }
         .cart-item { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.85rem; }
         .cart-total { font-weight:bold; font-size:1.1rem; margin-top:10px; padding-top:10px; border-top:2px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; }
         .cart-actions { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
         .cart-actions button { flex:1; padding:10px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; min-width:80px; font-size:0.8rem; }
-        
         .order-card { background:rgba(255,255,255,0.04); border-radius:14px; padding:14px; margin-bottom:10px; border-left:4px solid #f5a623; }
         .order-card .order-header { display:flex; justify-content:space-between; font-weight:bold; margin-bottom:6px; font-size:0.85rem; flex-wrap:wrap; gap:4px; }
         .order-card .order-number { color:#f5a623; font-size:0.85rem; }
@@ -81,59 +66,48 @@
         .order-delivery-info span { color:#f5a623; }
         .order-item { display:flex; align-items:center; gap:10px; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.03); }
         .order-item .item-info { flex:1; font-size:0.85rem; }
-        
         .qr-code-container { display:flex; justify-content:center; padding:10px; min-height:200px; align-items:center; flex-direction:column; }
         .qr-code-container img { border-radius:12px; background:white; padding:10px; max-width:100%; max-height:250px; }
         .qr-placeholder { color:#888; font-size:0.9rem; text-align:center; padding:20px; }
-        
         .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.85); z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px; }
         .modal-content { background:#1a1a2e; border-radius:20px; padding:24px; max-width:450px; width:100%; max-height:90vh; overflow-y:auto; border:1px solid rgba(255,255,255,0.08); }
         .modal-content h3 { color:#f5a623; margin-bottom:12px; font-size:1.1rem; }
         .modal-close { float:right; background:none; border:none; color:#888; font-size:1.4rem; cursor:pointer; }
-        
-        .product-image-upload { border:2px dashed rgba(255,255,255,0.1); border-radius:14px; padding:14px; text-align:center; cursor:pointer; transition:0.2s; }
+        .product-image-upload { border:2px dashed rgba(255,255,255,0.1); border-radius:14px; padding:14px; text-align:center; cursor:pointer; }
         .product-image-upload:hover { border-color:#f5a623; background:rgba(255,255,255,0.03); }
         .product-image-upload img { max-width:100%; max-height:150px; border-radius:10px; margin-top:6px; }
-        
         .stars-input { display:flex; gap:8px; justify-content:center; margin:12px 0; }
         .stars-input button { background:none; border:none; font-size:2rem; cursor:pointer; color:#555; transition:0.2s; }
         .stars-input button.active { color:#f5a623; }
-        
         .review-item { background:rgba(255,255,255,0.03); border-radius:12px; padding:12px; margin-bottom:8px; border-left:3px solid #f5a623; }
         .review-item .review-header { display:flex; justify-content:space-between; font-size:0.8rem; color:#888; }
         .review-item .review-header .review-user { color:#f5a623; font-weight:bold; }
         .review-item .review-stars { color:#f5a623; font-size:1.1rem; }
         .review-item .review-text { margin:6px 0; font-size:0.9rem; }
         .review-item .review-photo { max-width:100%; max-height:150px; border-radius:10px; margin-top:6px; cursor:pointer; }
-        
         .support-message { background:rgba(255,255,255,0.03); border-radius:10px; padding:10px 14px; margin-bottom:6px; }
         .support-message .sender { font-weight:bold; font-size:0.75rem; color:#f5a623; }
         .support-message .text { font-size:0.9rem; margin-top:4px; }
         .support-message .time { font-size:0.65rem; color:#555; text-align:right; margin-top:4px; }
         .support-message.admin { border-left:3px solid #f5a623; }
         .support-message.client { border-left:3px solid #4CAF50; }
-        
         .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:12px 24px; border-radius:40px; z-index:999; opacity:0; transition:0.3s; pointer-events:none; font-weight:600; max-width:90%; text-align:center; font-size:0.85rem; }
         .toast.show { opacity:1; }
-        
         .photo-modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.92); z-index:2000; display:flex; align-items:center; justify-content:center; padding:20px; cursor:pointer; }
         .photo-modal-content { max-width:95%; max-height:95%; display:flex; align-items:center; justify-content:center; }
         .photo-modal-content img { max-width:100%; max-height:90vh; border-radius:16px; object-fit:contain; box-shadow:0 0 40px rgba(0,0,0,0.5); }
-        .photo-modal-close { position:fixed; top:20px; right:20px; color:#fff; font-size:2rem; cursor:pointer; background:none; border:none; z-index:2001; opacity:0.7; transition:0.2s; }
+        .photo-modal-close { position:fixed; top:20px; right:20px; color:#fff; font-size:2rem; cursor:pointer; background:none; border:none; z-index:2001; opacity:0.7; }
         .photo-modal-close:hover { opacity:1; transform:scale(1.1); }
-        
         @media (max-width:400px) { .product-grid { grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); } }
     </style>
 </head>
 <body>
 <div class="container">
-    
     <div class="header">
         <div class="logo">🛒 WHOPPER</div>
         <div class="user-badge">👤 <span id="userNameDisplay">Гость</span> <button onclick="logout()">Выйти</button></div>
     </div>
 
-    <!-- АВТОРИЗАЦИЯ -->
     <div id="authBox" class="auth-box">
         <h3>👤 Вход / Регистрация</h3>
         <div class="form-group"><label>📱 Номер телефона</label><input type="tel" id="clientPhone" placeholder="+7 999 999 99 99"></div>
@@ -145,7 +119,6 @@
         <div id="loginError" style="color:#ef4444;margin-top:8px;font-size:0.8rem;display:none;"></div>
     </div>
 
-    <!-- ОСНОВНОЙ КОНТЕНТ -->
     <div id="mainContent" class="hidden">
         <div class="wallet" onclick="addMoney()"><span>💰 Кошелёк</span><span class="amount" id="walletAmount">0 ₽</span></div>
         
@@ -193,7 +166,6 @@
     </div>
 </div>
 
-<!-- МОДАЛКИ -->
 <div id="checkoutModal" class="modal-overlay hidden" onclick="if(event.target===this) closeCheckoutModal()">
     <div class="modal-content">
         <button class="modal-close" onclick="closeCheckoutModal()">✕</button>
@@ -256,145 +228,78 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// ========== ВКЛЮЧАЕМ PERSISTENCE ==========
-firebase.database().setPersistenceEnabled(true)
-    .then(() => console.log('✅ Данные сохраняются локально'))
-    .catch(err => console.log('❌ Ошибка persistence:', err));
-
 // ========== ПЕРЕМЕННЫЕ ==========
 let currentUser = null;
 let cart = [];
+let allPvzList = [];
 let selectedStar = 0;
 let reviewOrderId = null;
 let reviewPhotoData = null;
-let allPvzList = [];
 
 // ========== ТОСТ ==========
-function showToast(msg, isError = false) {
-    let toast = document.getElementById('toast');
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'toast';
-        toast.className = 'toast';
-        document.body.appendChild(toast);
-    }
-    toast.textContent = msg;
-    toast.style.background = isError ? '#ef4444' : '#333';
-    toast.classList.add('show');
-    clearTimeout(toast._timeout);
-    toast._timeout = setTimeout(() => {
-        toast.classList.remove('show');
-        toast.style.background = '#333';
-    }, 3000);
+function showToast(msg, err = false) {
+    let t = document.getElementById('toast');
+    if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; document.body.appendChild(t); }
+    t.textContent = msg;
+    t.style.background = err ? '#ef4444' : '#1a1a2e';
+    t.classList.add('show');
+    clearTimeout(t._timeout);
+    t._timeout = setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// ========== ГЕНЕРАЦИЯ ID ==========
-function generateId(prefix) {
-    return prefix + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
-}
+function generateId(p) { return p + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase(); }
 
-// ========== РЕГИСТРАЦИЯ (ИСПРАВЛЕНА) ==========
+// ========== РЕГИСТРАЦИЯ ==========
 function register() {
     const phone = document.getElementById('clientPhone').value.trim();
     const name = document.getElementById('nameInput').value.trim();
-    const errorDiv = document.getElementById('loginError');
-    errorDiv.style.display = 'none';
-    
-    if (!phone) { showToast('❌ Введите номер телефона', true); return; }
+    document.getElementById('loginError').style.display = 'none';
+    if (!phone) { showToast('❌ Введите номер', true); return; }
     if (!name) { showToast('❌ Введите имя', true); return; }
     
-    // Сначала проверяем, есть ли пользователь
-    db.ref('users').orderByChild('phone').equalTo(phone).once('value')
-        .then((sn) => {
-            if (sn.exists()) {
-                showToast('❌ Этот номер уже зарегистрирован', true);
-                return null;
-            }
-            
-            // Создаём пользователя
-            const userId = generateId('USR');
-            const userData = {
-                id: userId,
-                phone: phone,
-                name: name,
-                wallet: 1000,
-                createdAt: Date.now()
-            };
-            
-            return db.ref('users/' + userId).set(userData).then(() => {
-                // Сразу используем созданного пользователя
-                currentUser = {
-                    id: userId,
-                    phone: phone,
-                    name: name,
-                    wallet: 1000
-                };
-                showToast('✅ Регистрация успешна! +1000 ₽');
-                enterMode();
-            });
-        })
-        .catch((error) => {
-            console.error('Ошибка регистрации:', error);
-            showToast('❌ Ошибка регистрации: ' + error.message, true);
+    db.ref('users').orderByChild('phone').equalTo(phone).once('value', (sn) => {
+        if (sn.exists()) { showToast('❌ Номер занят', true); return; }
+        const id = generateId('USR');
+        const data = { id, phone, name, wallet: 1000, createdAt: Date.now() };
+        db.ref('users/' + id).set(data).then(() => {
+            currentUser = { id, phone, name, wallet: 1000 };
+            showToast('✅ Регистрация успешна! +1000 ₽');
+            enterMode();
         });
+    });
 }
 
 // ========== ВХОД ==========
 function login() {
     const phone = document.getElementById('clientPhone').value.trim();
-    const errorDiv = document.getElementById('loginError');
-    errorDiv.style.display = 'none';
+    document.getElementById('loginError').style.display = 'none';
+    if (!phone) { showToast('❌ Введите номер', true); return; }
     
-    if (!phone) { 
-        showToast('❌ Введите номер телефона', true); 
-        return; 
-    }
-    
-    db.ref('users').orderByChild('phone').equalTo(phone).once('value')
-        .then((sn) => {
-            if (sn.exists()) {
-                let userFound = false;
-                sn.forEach(child => {
-                    const user = child.val();
-                    currentUser = {
-                        id: child.key,
-                        phone: user.phone,
-                        name: user.name,
-                        wallet: user.wallet || 0
-                    };
-                    userFound = true;
-                });
-                
-                if (userFound) {
-                    showToast('👋 Добро пожаловать, ' + currentUser.name + '!');
-                    enterMode();
-                } else {
-                    showToast('❌ Ошибка входа', true);
-                }
-            } else {
-                errorDiv.textContent = '❌ Пользователь с номером ' + phone + ' не найден. Зарегистрируйтесь.';
-                errorDiv.style.display = 'block';
-                showToast('❌ Пользователь не найден', true);
-            }
-        })
-        .catch((error) => {
-            console.error('Ошибка входа:', error);
-            showToast('❌ Ошибка подключения к базе данных', true);
-        });
+    db.ref('users').orderByChild('phone').equalTo(phone).once('value', (sn) => {
+        if (sn.exists()) {
+            sn.forEach(child => {
+                const u = child.val();
+                currentUser = { id: child.key, phone: u.phone, name: u.name, wallet: u.wallet || 0 };
+            });
+            showToast('👋 Добро пожаловать, ' + currentUser.name + '!');
+            enterMode();
+        } else {
+            document.getElementById('loginError').textContent = '❌ Пользователь не найден. Зарегистрируйтесь.';
+            document.getElementById('loginError').style.display = 'block';
+            showToast('❌ Пользователь не найден', true);
+        }
+    });
 }
 
-// ========== ВЫХОД ==========
 function logout() {
     currentUser = null;
     cart = [];
     document.getElementById('authBox').classList.remove('hidden');
     document.getElementById('mainContent').classList.add('hidden');
     document.getElementById('userNameDisplay').textContent = 'Гость';
-    document.getElementById('loginError').style.display = 'none';
     showToast('👋 Выход выполнен');
 }
 
-// ========== ВХОД В ПРИЛОЖЕНИЕ ==========
 function enterMode() {
     document.getElementById('authBox').classList.add('hidden');
     document.getElementById('mainContent').classList.remove('hidden');
@@ -409,25 +314,23 @@ function enterMode() {
     renderCart();
 }
 
-// ========== ПВЗ ==========
 function loadPvzList() {
     db.ref('pvz').on('value', (sn) => {
         allPvzList = [];
         sn.forEach(child => { allPvzList.push({ id: child.key, ...child.val() }); });
-        const select = document.getElementById('checkoutPvz');
-        if (select) {
-            select.innerHTML = '<option value="">-- Выберите ПВЗ --</option>';
+        const sel = document.getElementById('checkoutPvz');
+        if (sel) {
+            sel.innerHTML = '<option value="">-- Выберите ПВЗ --</option>';
             allPvzList.forEach(p => {
-                const option = document.createElement('option');
-                option.value = p.code;
-                option.textContent = 'ПВЗ ' + p.code + ' - ' + (p.address || 'Адрес не указан');
-                select.appendChild(option);
+                const opt = document.createElement('option');
+                opt.value = p.code;
+                opt.textContent = 'ПВЗ ' + p.code + ' - ' + (p.address || 'Адрес не указан');
+                sel.appendChild(opt);
             });
         }
     });
 }
 
-// ========== ТОВАРЫ ==========
 function loadProducts() {
     db.ref('products').on('value', (sn) => {
         const products = [];
@@ -445,77 +348,55 @@ function loadProducts() {
     });
 }
 
-function addToCart(productId) {
-    db.ref('products/' + productId).once('value', (sn) => {
+function addToCart(id) {
+    db.ref('products/' + id).once('value', (sn) => {
         const p = sn.val();
         if (!p) return;
-        const existing = cart.find(i => i.id === productId);
-        if (existing) existing.qty++;
-        else cart.push({ id: productId, name: p.name, price: p.price, qty: 1, seller: p.seller, image: p.image });
+        const ex = cart.find(i => i.id === id);
+        if (ex) ex.qty++;
+        else cart.push({ id, name: p.name, price: p.price, qty: 1, seller: p.seller, image: p.image });
         renderCart();
         showToast(`✅ ${p.name} добавлен`);
     });
 }
 
 function renderCart() {
-    const container = document.getElementById('cartItems');
-    const totalSpan = document.getElementById('cartTotal');
-    if (!cart.length) { container.innerHTML = '<div style="color:#555;">Пусто</div>'; totalSpan.textContent = '0 ₽'; return; }
+    const c = document.getElementById('cartItems');
+    const t = document.getElementById('cartTotal');
+    if (!cart.length) { c.innerHTML = '<div style="color:#555;">Пусто</div>'; t.textContent = '0 ₽'; return; }
     let total = 0;
-    container.innerHTML = cart.map((item, idx) => {
+    c.innerHTML = cart.map((item, idx) => {
         total += item.price * item.qty;
         return `<div class="cart-item"><span>${item.name} x${item.qty}</span><span>${(item.price * item.qty)} ₽ <button onclick="removeFromCart(${idx})" style="background:none;border:none;color:#ff4444;cursor:pointer;">✕</button></span></div>`;
     }).join('');
-    totalSpan.textContent = total + ' ₽';
+    t.textContent = total + ' ₽';
 }
 
-function removeFromCart(idx) {
-    cart.splice(idx, 1);
-    renderCart();
-}
+function removeFromCart(idx) { cart.splice(idx, 1); renderCart(); }
+function clearCart() { cart = []; renderCart(); showToast('🗑️ Очищено'); }
 
-function clearCart() {
-    cart = [];
-    renderCart();
-    showToast('🗑️ Очищено');
-}
-
-// ========== ОФОРМЛЕНИЕ ==========
 function showCheckout() {
     if (!cart.length) { showToast('❌ Корзина пуста'); return; }
     const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
     document.getElementById('checkoutTotal').textContent = 'Итого: ' + total + ' ₽';
     document.getElementById('checkoutModal').classList.remove('hidden');
 }
-
-function closeCheckoutModal() {
-    document.getElementById('checkoutModal').classList.add('hidden');
-}
+function closeCheckoutModal() { document.getElementById('checkoutModal').classList.add('hidden'); }
 
 function confirmCheckout() {
-    if (!currentUser) { showToast('❌ Войдите в аккаунт'); return; }
-    const pvzCode = document.getElementById('checkoutPvz').value;
-    if (!pvzCode) { showToast('❌ Выберите ПВЗ'); return; }
+    if (!currentUser) { showToast('❌ Войдите'); return; }
+    const pvz = document.getElementById('checkoutPvz').value;
+    if (!pvz) { showToast('❌ Выберите ПВЗ'); return; }
     const payment = document.getElementById('checkoutPayment').value;
     const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
-    if (payment === 'now' && currentUser.wallet < total) {
-        showToast('❌ Недостаточно средств');
-        return;
-    }
+    if (payment === 'now' && currentUser.wallet < total) { showToast('❌ Недостаточно средств'); return; }
     const orderId = generateId('ORD');
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const order = {
-        id: orderId,
-        user: currentUser.phone,
-        userName: currentUser.name,
+        id: orderId, user: currentUser.phone, userName: currentUser.name,
         phone: currentUser.phone,
         items: cart.map(i => ({ name: i.name, price: i.price, qty: i.qty, image: i.image || null })),
-        total: total,
-        code: code,
-        pvz: pvzCode,
-        payment: payment,
-        status: 'collecting',
-        createdAt: Date.now()
+        total, code, pvz, payment, status: 'collecting', createdAt: Date.now()
     };
     if (payment === 'now') {
         currentUser.wallet -= total;
@@ -523,26 +404,19 @@ function confirmCheckout() {
         document.getElementById('walletAmount').textContent = currentUser.wallet + ' ₽';
     }
     db.ref('orders').push().set(order).then(() => {
-        cart = [];
-        renderCart();
-        loadOrders();
-        renderQR();
-        closeCheckoutModal();
+        cart = []; renderCart(); loadOrders(); renderQR(); closeCheckoutModal();
         showToast(`✅ Заказ #${orderId} оформлен! Код: ${code}`);
     });
 }
 
-// ========== ЗАКАЗЫ ==========
 function loadOrders() {
     const container = document.getElementById('ordersList');
     if (!currentUser) return;
-    
     db.ref('orders').orderByChild('user').equalTo(currentUser.phone).on('value', (sn) => {
         const orders = [];
         sn.forEach(child => { orders.push({ id: child.key, ...child.val() }); });
         orders.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
         if (!orders.length) { container.innerHTML = '<div style="text-align:center;color:#555;padding:20px;">📭 Нет заказов</div>'; return; }
-        
         container.innerHTML = orders.map(o => `
             <div class="order-card">
                 <div class="order-header">
@@ -562,78 +436,74 @@ function loadOrders() {
     });
 }
 
-// ========== QR-КОД ==========
 function renderQR() {
     const container = document.getElementById('qrContainer');
     const info = document.getElementById('qrInfo');
-    if (!currentUser) {
-        container.innerHTML = '<div class="qr-placeholder">Войдите в аккаунт</div>';
-        info.textContent = '';
-        return;
-    }
-    
+    if (!currentUser) { container.innerHTML = '<div class="qr-placeholder">Войдите</div>'; info.textContent = ''; return; }
     db.ref('orders').orderByChild('user').equalTo(currentUser.phone).once('value', (sn) => {
-        const activeOrders = [];
+        const active = [];
         sn.forEach(child => {
-            const order = child.val();
-            if (order.status !== 'delivered' && order.status !== 'return') {
-                activeOrders.push({ id: child.key, ...order });
-            }
+            const o = child.val();
+            if (o.status !== 'delivered' && o.status !== 'return') active.push({ id: child.key, ...o });
         });
-        if (!activeOrders.length) {
-            container.innerHTML = '<div class="qr-placeholder">Нет активных заказов</div>';
-            info.textContent = 'Оформите заказ';
-            return;
-        }
-        const order = activeOrders[0];
-        const qrData = { orderId: order.id, user: currentUser.phone, items: order.items, total: order.total, code: order.code, pvz: order.pvz };
+        if (!active.length) { container.innerHTML = '<div class="qr-placeholder">Нет активных заказов</div>'; info.textContent = 'Оформите заказ'; return; }
+        const order = active[0];
+        const data = { orderId: order.id, user: currentUser.phone, items: order.items, total: order.total, code: order.code, pvz: order.pvz };
         container.innerHTML = '';
         try {
             if (typeof QRCode !== 'undefined') {
-                new QRCode(container, {
-                    text: JSON.stringify(qrData),
-                    width: 200,
-                    height: 200,
-                    colorDark: "#f5a623",
-                    colorLight: "#ffffff",
-                    correctLevel: QRCode.CorrectLevel.H
-                });
+                new QRCode(container, { text: JSON.stringify(data), width: 200, height: 200, colorDark: "#f5a623", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
             } else {
-                const encoded = encodeURIComponent(JSON.stringify(qrData));
+                const enc = encodeURIComponent(JSON.stringify(data));
                 const img = document.createElement('img');
-                img.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encoded}&format=png&bgcolor=ffffff&color=f5a623&margin=10`;
-                img.style.width = '200px';
-                img.style.height = '200px';
-                img.style.borderRadius = '12px';
-                img.style.background = 'white';
-                img.style.padding = '10px';
+                img.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${enc}&format=png&bgcolor=ffffff&color=f5a623&margin=10`;
+                img.style.width = '200px'; img.style.height = '200px'; img.style.borderRadius = '12px'; img.style.background = 'white'; img.style.padding = '10px';
                 container.appendChild(img);
             }
-            info.innerHTML = `<div style="background:rgba(255,255,255,0.05);padding:10px;border-radius:10px;">
-                📦 ${order.items.length} товаров<br>
-                💰 ${order.total} ₽<br>
-                🔑 ${order.code}<br>
-                📍 ПВЗ: ${order.pvz || 'Не выбран'}
-            </div>`;
-        } catch(e) {
-            container.innerHTML = '<div style="color:#ff4444;">⚠️ Ошибка QR</div>';
-            info.innerHTML = '';
-        }
+            info.innerHTML = `<div style="background:rgba(255,255,255,0.05);padding:10px;border-radius:10px;">📦 ${order.items.length} товаров<br>💰 ${order.total} ₽<br>🔑 ${order.code}</div>`;
+        } catch(e) { container.innerHTML = '<div style="color:#ff4444;">⚠️ Ошибка QR</div>'; }
     });
+}
+
+function getStatusName(s) {
+    const m = { 'collecting': '🟡 Собирается', 'ready': '✅ Готов', 'delivered': '📦 Выдан', 'return': '🔄 Возврат' };
+    return m[s] || s;
+}
+
+function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    ['tabShop', 'tabOrders', 'tabQr', 'tabReviews', 'tabSupport'].forEach(id => {
+        document.getElementById(id).classList.toggle('hidden', id !== 'tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+    });
+    if (tab === 'orders') loadOrders();
+    if (tab === 'qr') renderQR();
+    if (tab === 'reviews') loadReviews();
+    if (tab === 'support') loadSupport();
+}
+
+function addMoney() {
+    if (!currentUser) { showToast('❌ Войдите'); return; }
+    const a = prompt('Сумма:', '500');
+    if (a && !isNaN(a) && parseInt(a) > 0) {
+        currentUser.wallet += parseInt(a);
+        db.ref('users/' + currentUser.id).update({ wallet: currentUser.wallet });
+        document.getElementById('walletAmount').textContent = currentUser.wallet + ' ₽';
+        showToast(`✅ +${a} ₽`);
+    }
 }
 
 // ========== ОТЗЫВЫ ==========
 function loadReviews() {
-    const container = document.getElementById('reviewsList');
+    const c = document.getElementById('reviewsList');
     db.ref('orders').on('value', (sn) => {
         const reviews = [];
         sn.forEach(child => {
-            const order = child.val();
-            if (order.review) reviews.push({ user: order.userName || order.user, review: order.review, orderId: order.id });
+            const o = child.val();
+            if (o.review) reviews.push({ user: o.userName || o.user, review: o.review, orderId: o.id });
         });
         reviews.sort((a, b) => (b.review.createdAt || 0) - (a.review.createdAt || 0));
-        if (!reviews.length) { container.innerHTML = '<div style="text-align:center;color:#555;padding:20px;">⭐ Пока нет отзывов</div>'; return; }
-        container.innerHTML = reviews.map(r => `
+        if (!reviews.length) { c.innerHTML = '<div style="text-align:center;color:#555;padding:20px;">⭐ Пока нет отзывов</div>'; return; }
+        c.innerHTML = reviews.map(r => `
             <div class="review-item">
                 <div class="review-header"><span class="review-user">👤 ${r.user}</span><span style="font-size:0.7rem;color:#555;">${new Date(r.review.createdAt).toLocaleString()}</span></div>
                 <div class="review-stars">${'★'.repeat(r.review.stars)}${'☆'.repeat(5-r.review.stars)}</div>
@@ -645,41 +515,10 @@ function loadReviews() {
     });
 }
 
-function openReviewModal(orderId) {
-    reviewOrderId = orderId;
-    selectedStar = 0;
-    reviewPhotoData = null;
-    document.getElementById('reviewPhotoPreview').innerHTML = '';
-    document.getElementById('reviewPhotoInput').value = '';
-    document.querySelectorAll('#starsInput button').forEach(b => b.classList.remove('active'));
-    document.getElementById('reviewComment').value = '';
-    document.getElementById('reviewModal').classList.remove('hidden');
-}
-
-function closeReviewModal() {
-    document.getElementById('reviewModal').classList.add('hidden');
-    reviewOrderId = null;
-}
-
-function selectStar(star) {
-    selectedStar = star;
-    document.querySelectorAll('#starsInput button').forEach(b => {
-        b.classList.toggle('active', parseInt(b.dataset.star) <= star);
-    });
-}
-
-function previewReviewPhoto(event) {
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            reviewPhotoData = e.target.result;
-            document.getElementById('reviewPhotoPreview').innerHTML = `<img src="${reviewPhotoData}" style="max-width:100%;max-height:150px;border-radius:10px;margin-top:6px;">`;
-        };
-        reader.readAsDataURL(file);
-    }
-}
-
+function openReviewModal(id) { reviewOrderId = id; selectedStar = 0; reviewPhotoData = null; document.getElementById('reviewPhotoPreview').innerHTML = ''; document.getElementById('reviewPhotoInput').value = ''; document.querySelectorAll('#starsInput button').forEach(b => b.classList.remove('active')); document.getElementById('reviewComment').value = ''; document.getElementById('reviewModal').classList.remove('hidden'); }
+function closeReviewModal() { document.getElementById('reviewModal').classList.add('hidden'); reviewOrderId = null; }
+function selectStar(s) { selectedStar = s; document.querySelectorAll('#starsInput button').forEach(b => b.classList.toggle('active', parseInt(b.dataset.star) <= s)); }
+function previewReviewPhoto(e) { const f = e.target.files[0]; if (f) { const r = new FileReader(); r.onload = (ev) => { reviewPhotoData = ev.target.result; document.getElementById('reviewPhotoPreview').innerHTML = `<img src="${reviewPhotoData}" style="max-width:100%;max-height:150px;border-radius:10px;margin-top:6px;">`; }; r.readAsDataURL(f); } }
 function submitReview() {
     if (!reviewOrderId) { showToast('❌ Ошибка'); return; }
     if (selectedStar === 0) { showToast('❌ Выберите оценку'); return; }
@@ -699,98 +538,51 @@ function submitReview() {
 
 // ========== ПОДДЕРЖКА ==========
 function loadSupport() {
-    const container = document.getElementById('supportChat');
+    const c = document.getElementById('supportChat');
     if (!currentUser) return;
     db.ref('support_messages').orderByChild('user').equalTo(currentUser.phone).on('value', (sn) => {
-        const messages = [];
-        sn.forEach(child => { messages.push({ id: child.key, ...child.val() }); });
-        messages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-        if (!messages.length) { container.innerHTML = '<div style="text-align:center;color:#555;padding:20px;">💬 Нет сообщений</div>'; return; }
-        container.innerHTML = messages.map(m => `
+        const msgs = []; sn.forEach(child => { msgs.push({ id: child.key, ...child.val() }); });
+        msgs.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        if (!msgs.length) { c.innerHTML = '<div style="text-align:center;color:#555;padding:20px;">💬 Нет сообщений</div>'; return; }
+        c.innerHTML = msgs.map(m => `
             <div class="support-message ${m.sender === 'support' ? 'admin' : 'client'}">
                 <div class="sender">${m.sender === 'support' ? '💬 Поддержка' : '👤 ' + (m.userName || 'Клиент')}</div>
                 <div class="text">${m.text}</div>
                 <div class="time">${new Date(m.timestamp).toLocaleString()}</div>
             </div>
         `).join('');
-        container.scrollTop = container.scrollHeight;
+        c.scrollTop = c.scrollHeight;
     });
 }
-
 function sendSupportMessage() {
     const input = document.getElementById('supportInput');
     const text = input.value.trim();
     if (!text || !currentUser) return;
-    const msg = { user: currentUser.phone, userName: currentUser.name, text: text, sender: 'client', timestamp: Date.now(), read: false };
+    const msg = { user: currentUser.phone, userName: currentUser.name, text, sender: 'client', timestamp: Date.now(), read: false };
     db.ref('support_messages').push().set(msg).then(() => { input.value = ''; });
 }
 
-// ========== КОШЕЛЁК ==========
-function addMoney() {
-    if (!currentUser) { showToast('❌ Войдите'); return; }
-    const amount = prompt('Введите сумму пополнения:', '500');
-    if (amount && !isNaN(amount) && parseInt(amount) > 0) {
-        currentUser.wallet += parseInt(amount);
-        db.ref('users/' + currentUser.id).update({ wallet: currentUser.wallet });
-        document.getElementById('walletAmount').textContent = currentUser.wallet + ' ₽';
-        showToast(`✅ +${amount} ₽`);
-    }
-}
-
-// ========== СТАТУСЫ ==========
-function getStatusName(status) {
-    const map = {
-        'collecting': '🟡 Собирается',
-        'ready': '✅ Готов',
-        'delivered': '📦 Выдан',
-        'return': '🔄 Возврат'
-    };
-    return map[status] || status;
-}
-
-// ========== ВКЛАДКИ ==========
-function switchTab(tab) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-    ['tabShop', 'tabOrders', 'tabQr', 'tabReviews', 'tabSupport'].forEach(id => {
-        document.getElementById(id).classList.toggle('hidden', id !== 'tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
-    });
-    if (tab === 'orders') loadOrders();
-    if (tab === 'qr') renderQR();
-    if (tab === 'reviews') loadReviews();
-    if (tab === 'support') loadSupport();
-}
-
-// ========== ОТКРЫТИЕ ФОТО ==========
-function openPhotoModal(imageSrc) {
-    if (!imageSrc) return;
+function openPhotoModal(src) {
+    if (!src) return;
     let modal = document.getElementById('photoModal');
     if (!modal) {
         modal = document.createElement('div');
         modal.id = 'photoModal';
         modal.className = 'photo-modal-overlay hidden';
-        modal.innerHTML = `
-            <button class="photo-modal-close" onclick="closePhotoModal()">✕</button>
-            <div class="photo-modal-content" onclick="event.stopPropagation();">
-                <img id="photoModalImage" src="">
-            </div>
-        `;
+        modal.innerHTML = `<button class="photo-modal-close" onclick="closePhotoModal()">✕</button><div class="photo-modal-content" onclick="event.stopPropagation();"><img id="photoModalImage" src=""></div>`;
         document.body.appendChild(modal);
     }
-    const img = document.getElementById('photoModalImage');
-    img.src = imageSrc;
+    document.getElementById('photoModalImage').src = src;
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 }
-
 function closePhotoModal() {
-    const modal = document.getElementById('photoModal');
-    if (modal) modal.classList.add('hidden');
+    const m = document.getElementById('photoModal');
+    if (m) m.classList.add('hidden');
     document.body.style.overflow = '';
 }
 
-// ========== ЗАПУСК ==========
 console.log('🛒 WHOPPER - Клиент загружен');
-console.log('📱 Для входа используйте номер телефона');
 </script>
 </body>
 </html>
