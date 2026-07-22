@@ -16,7 +16,7 @@
         .logo { font-size:1.2rem; font-weight:bold; color:#f5a623; }
         .user-badge { font-size:0.7rem; color:#888; background:rgba(255,255,255,0.05); padding:4px 12px; border-radius:30px; }
         .user-badge button { background:none; border:none; color:#f5a623; cursor:pointer; margin-left:8px; }
-        .btn { padding:8px 16px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; font-size:0.8rem; transition:0.2s; }
+        .btn { padding:8px 16px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; font-size:0.8rem; }
         .btn-primary { background:#f5a623; color:#1a1a2e; }
         .btn-success { background:#4CAF50; color:#fff; }
         .btn-danger { background:#ef4444; color:#fff; }
@@ -63,7 +63,6 @@
 </head>
 <body>
 <div class="container">
-    
     <div class="header">
         <div class="logo">📦 WHOPPER ПВЗ</div>
         <div class="user-badge">👤 <span id="userNameDisplay">Гость</span> <button onclick="logout()">Выйти</button></div>
@@ -82,19 +81,15 @@
             <button class="btn-danger" onclick="viewOrders('return')">🔄 Возвраты</button>
         </div>
         
-        <!-- ===== СКАНИРОВАНИЕ УПАКОВКИ ===== -->
         <div style="background:rgba(245,166,35,0.1);border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid #f5a623;">
             <h4 style="color:#f5a623;font-size:0.85rem;margin-bottom:8px;">📦 Сканировать упаковку</h4>
             <p style="color:#888;font-size:0.75rem;margin-bottom:8px;">Отсканируйте QR-код на упаковке товара</p>
             <button class="btn-cyan btn-block" onclick="startPackageScanner()">📷 Сканировать упаковку</button>
-            <div id="packageScanner" class="scanner-container hidden">
-                <div class="scanner-overlay"></div>
-            </div>
+            <div id="packageScanner" class="scanner-container hidden"><div class="scanner-overlay"></div></div>
             <button class="btn-danger btn-block" onclick="stopPackageScanner()" style="margin-top:6px;">⏹ Остановить</button>
             <div id="scannedPackageResult"></div>
         </div>
         
-        <!-- ===== QR СКАНЕР ДЛЯ ЗАКАЗОВ ===== -->
         <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;">
             <h4 style="color:#f5a623;font-size:0.85rem;margin-bottom:8px;">📷 Сканировать заказ</h4>
             <button class="btn-purple btn-block" onclick="startOrderScanner()">🔍 Сканировать заказ</button>
@@ -118,7 +113,6 @@
 </div>
 
 <script>
-// ========== FIREBASE ==========
 const firebaseConfig = {
     apiKey: "AIzaSyBlZ5ZtyTXgtXxSJAx1jOxwhTrzlHRJmo",
     authDomain: "bk-cashier.firebaseapp.com",
@@ -131,7 +125,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// ========== ПЕРЕМЕННЫЕ ==========
 let currentUser = null;
 let currentPvzCode = null;
 let orderScanner = null;
@@ -139,31 +132,25 @@ let packageScanner = null;
 let scannedOrderId = null;
 let usedPickupNumbers = [];
 
-// ========== ТОСТ ==========
-function showToast(msg) {
-    let toast = document.getElementById('toast');
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'toast';
-        toast.className = 'toast';
-        document.body.appendChild(toast);
-    }
-    toast.textContent = msg;
-    toast.classList.add('show');
-    clearTimeout(toast._timeout);
-    toast._timeout = setTimeout(() => toast.classList.remove('show'), 3000);
+function showToast(msg, err = false) {
+    let t = document.getElementById('toast');
+    if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; document.body.appendChild(t); }
+    t.textContent = msg;
+    t.style.background = err ? '#ef4444' : '#1a1a2e';
+    t.classList.add('show');
+    clearTimeout(t._timeout);
+    t._timeout = setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// ========== АВТОРИЗАЦИЯ ==========
 function login() {
     const code = document.getElementById('pvzCode').value.trim();
-    if (!code) { showToast('❌ Введите код ПВЗ'); return; }
+    if (!code) { showToast('❌ Введите код ПВЗ', true); return; }
     db.ref('pvz').orderByChild('code').equalTo(code).once('value', (sn) => {
         if (sn.exists()) {
             let found = false;
             sn.forEach(child => {
-                const pvz = child.val();
-                if (pvz.code === code) {
+                const p = child.val();
+                if (p.code === code) {
                     currentPvzCode = code;
                     currentUser = { name: 'ПВЗ ' + code };
                     found = true;
@@ -175,141 +162,87 @@ function login() {
                     viewOrders('collecting');
                 }
             });
-            if (!found) showToast('❌ Неверный код ПВЗ');
-        } else {
-            showToast('❌ ПВЗ не найден');
-        }
+            if (!found) showToast('❌ Неверный код ПВЗ', true);
+        } else { showToast('❌ ПВЗ не найден', true); }
     });
 }
 
 function logout() {
-    currentUser = null;
-    currentPvzCode = null;
+    currentUser = null; currentPvzCode = null;
     document.getElementById('authBox').classList.remove('hidden');
     document.getElementById('mainContent').classList.add('hidden');
     document.getElementById('userNameDisplay').textContent = 'Гость';
     showToast('👋 Выход выполнен');
 }
 
-// ========== ЗАГРУЗКА ИСПОЛЬЗОВАННЫХ НОМЕРОВ ==========
 function loadUsedNumbers() {
     db.ref('orders').once('value', (sn) => {
         usedPickupNumbers = [];
         sn.forEach(child => {
-            const order = child.val();
-            if (order.pickupNumber) {
-                usedPickupNumbers.push(order.pickupNumber);
-            }
+            const o = child.val();
+            if (o.pickupNumber) usedPickupNumbers.push(o.pickupNumber);
         });
-        console.log('📋 Загружено использованных номеров:', usedPickupNumbers.length);
     });
 }
 
-// ========== ГЕНЕРАЦИЯ СЛУЧАЙНОГО НОМЕРА (РАНДОМНЫЙ ПОРЯДОК) ==========
 function generateRandomPickupNumber() {
     return new Promise((resolve) => {
-        // Сначала обновляем список использованных номеров
         db.ref('orders').once('value', (sn) => {
             const used = [];
-            sn.forEach(child => {
-                const order = child.val();
-                if (order.pickupNumber) {
-                    used.push(order.pickupNumber);
-                }
-            });
+            sn.forEach(child => { const o = child.val(); if (o.pickupNumber) used.push(o.pickupNumber); });
             usedPickupNumbers = used;
-            
-            // Создаём массив всех возможных номеров от 001 до 999
-            const allNumbers = [];
-            for (let i = 0; i < 1000; i++) {
-                allNumbers.push(String(i).padStart(3, '0'));
-            }
-            
-            // Убираем использованные номера
-            const available = allNumbers.filter(num => !used.includes(num));
-            
-            if (available.length === 0) {
-                // Если все номера заняты (маловероятно) - генерируем случайный
-                const random = String(Math.floor(Math.random() * 900) + 100).padStart(3, '0');
-                resolve(random);
-                return;
-            }
-            
-            // Выбираем случайный номер из доступных
-            const randomIndex = Math.floor(Math.random() * available.length);
-            const selected = available[randomIndex];
-            console.log('🎲 Доступно номеров:', available.length, 'Выбран:', selected);
-            resolve(selected);
+            const all = [];
+            for (let i = 0; i < 1000; i++) all.push(String(i).padStart(3, '0'));
+            const avail = all.filter(n => !used.includes(n));
+            if (!avail.length) { resolve(String(Math.floor(Math.random() * 900) + 100).padStart(3, '0')); return; }
+            resolve(avail[Math.floor(Math.random() * avail.length)]);
         });
     });
 }
 
-// ========== СТАТУСЫ ==========
-function getStatusName(status) {
-    const map = {
-        'collecting': '🟡 Собирается',
-        'ready': '✅ Готов',
-        'delivered': '📦 Выдан',
-        'return': '🔄 Возврат'
-    };
-    return map[status] || status;
+function getStatusName(s) {
+    const m = { 'collecting': '🟡 Собирается', 'ready': '✅ Готов', 'delivered': '📦 Выдан', 'return': '🔄 Возврат' };
+    return m[s] || s;
 }
 
-// ========== ПРОСМОТР ЗАКАЗОВ ==========
 function viewOrders(type) {
     const container = document.getElementById('ordersList');
-    const statusMap = { 'collecting': 'collecting', 'ready': 'ready', 'return': 'return' };
-    const status = statusMap[type] || 'collecting';
-    const statusNames = { 'collecting': '🟡 Собирается', 'ready': '✅ Готов', 'return': '🔄 Возврат' };
-    
+    const status = { 'collecting': 'collecting', 'ready': 'ready', 'return': 'return' }[type] || 'collecting';
+    const names = { 'collecting': '🟡 Собирается', 'ready': '✅ Готов', 'return': '🔄 Возврат' };
     db.ref('orders').orderByChild('status').equalTo(status).on('value', (sn) => {
         const orders = [];
         sn.forEach(child => { orders.push({ id: child.key, ...child.val() }); });
         if (!orders.length) { container.innerHTML = `<div style="text-align:center;color:#555;padding:20px;">📭 Нет заказов</div>`; return; }
-        container.innerHTML = orders.map(o => {
-            return `
-                <div class="order-card">
-                    <div class="order-header">
-                        <span class="order-number">🆔 ${o.id}</span>
-                        <span class="order-status status-${o.status}">${statusNames[o.status] || o.status}</span>
-                    </div>
-                    <div>👤 ${o.userName || o.user}</div>
-                    <div>📱 ${o.phone || 'Не указан'}</div>
-                    <div style="margin:6px 0;">${o.items.map(i => `<div class="order-item"><div class="item-info">${i.name} x${i.qty}</div><div style="color:#f5a623;">${i.price * i.qty} ₽</div></div>`).join('')}</div>
-                    <div style="font-weight:bold;">💰 ${o.total} ₽</div>
-                    <div class="order-code">🔑 ${o.code}</div>
-                    ${o.pickupNumber ? `<div style="text-align:center;margin:6px 0;"><span class="order-pickup-number">📋 ${o.pickupNumber}</span></div>` : ''}
-                    <div class="order-delivery-info">📍 ПВЗ: <span>${o.pvz || 'Не выбран'}</span></div>
-                    <div class="order-delivery-info">💳 ${o.payment === 'now' ? 'Оплачено' : 'При получении'}</div>
-                    ${o.status === 'collecting' ? `<button class="btn-success" onclick="readyOrder('${o.id}')" style="margin-top:4px;padding:4px 12px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">✅ Готов к выдаче</button>` : ''}
-                    ${o.status === 'ready' ? `<button class="btn-primary" onclick="deliverOrder('${o.id}')" style="margin-top:4px;padding:4px 12px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">📤 Выдать</button>` : ''}
-                    ${(o.status === 'collecting' || o.status === 'ready') ? `<button class="btn-danger" onclick="returnOrder('${o.id}')" style="margin-top:4px;padding:4px 12px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">🔄 Возврат</button>` : ''}
+        container.innerHTML = orders.map(o => `
+            <div class="order-card">
+                <div class="order-header">
+                    <span class="order-number">🆔 ${o.id}</span>
+                    <span class="order-status status-${o.status}">${names[o.status] || o.status}</span>
                 </div>
-            `;
-        }).join('');
+                <div>👤 ${o.userName || o.user}</div>
+                <div>📱 ${o.phone || 'Не указан'}</div>
+                <div style="margin:6px 0;">${o.items.map(i => `<div class="order-item"><div class="item-info">${i.name} x${i.qty}</div><div style="color:#f5a623;">${i.price * i.qty} ₽</div></div>`).join('')}</div>
+                <div style="font-weight:bold;">💰 ${o.total} ₽</div>
+                <div class="order-code">🔑 ${o.code}</div>
+                ${o.pickupNumber ? `<div style="text-align:center;margin:6px 0;"><span class="order-pickup-number">📋 ${o.pickupNumber}</span></div>` : ''}
+                <div class="order-delivery-info">📍 ПВЗ: <span>${o.pvz || 'Не выбран'}</span></div>
+                <div class="order-delivery-info">💳 ${o.payment === 'now' ? 'Оплачено' : 'При получении'}</div>
+                ${o.status === 'collecting' ? `<button class="btn-success" onclick="readyOrder('${o.id}')" style="margin-top:4px;padding:4px 12px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">✅ Готов к выдаче</button>` : ''}
+                ${o.status === 'ready' ? `<button class="btn-primary" onclick="deliverOrder('${o.id}')" style="margin-top:4px;padding:4px 12px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">📤 Выдать</button>` : ''}
+                ${(o.status === 'collecting' || o.status === 'ready') ? `<button class="btn-danger" onclick="returnOrder('${o.id}')" style="margin-top:4px;padding:4px 12px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">🔄 Возврат</button>` : ''}
+            </div>
+        `).join('');
     });
 }
 
-// ========== ГОТОВ К ВЫДАЧЕ (С ГЕНЕРАЦИЕЙ СЛУЧАЙНОГО НОМЕРА) ==========
 async function readyOrder(orderId) {
-    // Проверяем, отсканирована ли упаковка
-    if (scannedOrderId !== orderId) {
-        showToast('❌ Сначала отсканируйте QR-код на упаковке!');
-        return;
-    }
-    
-    // Генерируем случайный номер
-    const pickupNumber = await generateRandomPickupNumber();
-    
+    if (scannedOrderId !== orderId) { showToast('❌ Сначала отсканируйте упаковку!', true); return; }
+    const num = await generateRandomPickupNumber();
     db.ref('orders').orderByChild('id').equalTo(orderId).once('value', (sn) => {
         sn.forEach(child => {
-            db.ref('orders/' + child.key).update({ 
-                status: 'ready', 
-                pickupNumber: pickupNumber 
-            });
-            // Добавляем номер в список использованных
-            usedPickupNumbers.push(pickupNumber);
-            showToast('✅ Заказ готов! Номер хранения: ' + pickupNumber);
+            db.ref('orders/' + child.key).update({ status: 'ready', pickupNumber: num });
+            usedPickupNumbers.push(num);
+            showToast('✅ Заказ готов! Номер: ' + num);
             scannedOrderId = null;
             document.getElementById('scannedPackageResult').innerHTML = '';
             viewOrders('collecting');
@@ -317,134 +250,81 @@ async function readyOrder(orderId) {
     });
 }
 
-// ========== ВЫДАТЬ ЗАКАЗ ==========
 function deliverOrder(orderId) {
     if (!confirm('Выдать заказ?')) return;
     db.ref('orders').orderByChild('id').equalTo(orderId).once('value', (sn) => {
         sn.forEach(child => {
-            const order = child.val();
+            const o = child.val();
             db.ref('orders/' + child.key).update({ status: 'delivered', deliveredAt: Date.now() });
-            
-            if (order.payment === 'on_delivery') {
-                db.ref('users').orderByChild('phone').equalTo(order.phone).once('value', (userSn) => {
+            if (o.payment === 'on_delivery') {
+                db.ref('users').orderByChild('phone').equalTo(o.phone).once('value', (userSn) => {
                     userSn.forEach(userChild => {
-                        const user = userChild.val();
-                        const newWallet = (user.wallet || 0) - order.total;
-                        db.ref('users/' + userChild.key).update({ wallet: newWallet });
-                        showToast('💳 Списано ' + order.total + ' ₽ за заказ');
+                        const u = userChild.val();
+                        const newW = (u.wallet || 0) - o.total;
+                        db.ref('users/' + userChild.key).update({ wallet: newW });
+                        showToast('💳 Списано ' + o.total + ' ₽');
                     });
                 });
             }
-            
             showToast('✅ Заказ выдан!');
             viewOrders('ready');
         });
     });
 }
 
-// ========== ВОЗВРАТ ==========
 function returnOrder(orderId) {
     db.ref('orders').orderByChild('id').equalTo(orderId).once('value', (sn) => {
         sn.forEach(child => {
-            const order = child.val();
-            
-            // Проверяем, прошло ли 14 дней
-            if (order.status === 'delivered' && order.deliveredAt) {
-                const daysSinceDelivery = (Date.now() - order.deliveredAt) / (1000 * 60 * 60 * 24);
-                if (daysSinceDelivery > 14) {
-                    showToast('❌ Прошло более 14 дней, возврат невозможен');
-                    return;
-                }
+            const o = child.val();
+            if (o.status === 'delivered' && o.deliveredAt) {
+                const days = (Date.now() - o.deliveredAt) / (1000 * 60 * 60 * 24);
+                if (days > 14) { showToast('❌ Прошло более 14 дней', true); return; }
             }
-            
-            if (!confirm('Оформить возврат заказа #' + order.id + '?')) return;
-            
+            if (!confirm('Возврат заказа #' + o.id + '?')) return;
             db.ref('orders/' + child.key).update({ status: 'return', returnedAt: Date.now() });
-            
-            db.ref('users').orderByChild('phone').equalTo(order.phone).once('value', (userSn) => {
+            db.ref('users').orderByChild('phone').equalTo(o.phone).once('value', (userSn) => {
                 userSn.forEach(userChild => {
-                    const user = userChild.val();
-                    const newWallet = (user.wallet || 0) + order.total;
-                    db.ref('users/' + userChild.key).update({ wallet: newWallet });
-                    showToast('💰 Возвращено ' + order.total + ' ₽ на кошелёк');
+                    const u = userChild.val();
+                    const newW = (u.wallet || 0) + o.total;
+                    db.ref('users/' + userChild.key).update({ wallet: newW });
+                    showToast('💰 Возвращено ' + o.total + ' ₽');
                 });
             });
-            
             showToast('🔄 Возврат оформлен');
             viewOrders('collecting');
         });
     });
 }
 
-// ========== СКАНИРОВАНИЕ УПАКОВКИ ==========
 function startPackageScanner() {
     const container = document.getElementById('packageScanner');
     const resultDiv = document.getElementById('scannedPackageResult');
-    
     container.classList.remove('hidden');
     resultDiv.innerHTML = '';
     showToast('📷 Наведите на QR-код на упаковке...');
-    
-    if (packageScanner) {
-        packageScanner.stop().then(() => {
-            packageScanner.clear();
-            startPackageScannerNow();
-        }).catch(() => { startPackageScannerNow(); });
-    } else {
-        startPackageScannerNow();
-    }
+    if (packageScanner) { packageScanner.stop().then(() => { packageScanner.clear(); startPackageScannerNow(); }).catch(() => { startPackageScannerNow(); }); } 
+    else { startPackageScannerNow(); }
 }
 
 function startPackageScannerNow() {
     packageScanner = new Html5Qrcode("packageScanner");
-    
-    const config = {
-        fps: 10,
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0
-    };
-    
-    packageScanner.start(
-        { facingMode: "environment" },
-        config,
-        onPackageScanSuccess,
-        onPackageScanError
-    ).then(() => {
-        showToast('📷 Сканирование упаковки...');
-    }).catch(err => {
-        showToast('❌ Ошибка: ' + err);
-        document.getElementById('packageScanner').classList.add('hidden');
-    });
+    const config = { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 };
+    packageScanner.start({ facingMode: "environment" }, config, onPackageScanSuccess, onPackageScanError)
+        .then(() => showToast('📷 Сканирование упаковки...'))
+        .catch(err => { showToast('❌ Ошибка: ' + err, true); document.getElementById('packageScanner').classList.add('hidden'); });
 }
 
 function onPackageScanSuccess(decodedText) {
     showToast('✅ Упаковка отсканирована!');
     document.getElementById('packageScanner').classList.add('hidden');
     stopPackageScanner();
-    
-    try {
-        const data = JSON.parse(decodedText);
-        if (data.orderId) {
-            findOrderByPackage(data.orderId);
-        } else if (data.code) {
-            findOrderByPackage(data.code);
-        } else {
-            findOrderByPackage(decodedText);
-        }
-    } catch(e) {
-        findOrderByPackage(decodedText);
-    }
+    try { const data = JSON.parse(decodedText); findOrderByPackage(data.orderId || data.code || decodedText); } 
+    catch(e) { findOrderByPackage(decodedText); }
 }
-
 function onPackageScanError(error) {}
 
 function stopPackageScanner() {
-    if (packageScanner) {
-        try {
-            packageScanner.stop();
-            packageScanner.clear();
-        } catch(e) {}
-    }
+    if (packageScanner) { try { packageScanner.stop(); packageScanner.clear(); } catch(e) {} }
     document.getElementById('packageScanner').classList.add('hidden');
 }
 
@@ -453,101 +333,60 @@ function findOrderByPackage(text) {
     db.ref('orders').once('value', (sn) => {
         let found = false;
         sn.forEach(child => {
-            const order = child.val();
-            if (order.id === text || order.code === text) {
+            const o = child.val();
+            if (o.id === text || o.code === text) {
                 found = true;
-                scannedOrderId = order.id;
+                scannedOrderId = o.id;
                 resultDiv.innerHTML = `
                     <div class="scanned-package">
                         <div style="color:#4CAF50;font-weight:bold;">✅ Упаковка отсканирована!</div>
-                        <div>📦 Заказ: ${order.id}</div>
-                        <div>👤 ${order.userName || order.user}</div>
-                        <div>📱 ${order.phone || 'Не указан'}</div>
-                        <div>📌 Статус: ${getStatusName(order.status)}</div>
+                        <div>📦 Заказ: ${o.id}</div>
+                        <div>👤 ${o.userName || o.user}</div>
+                        <div>📱 ${o.phone || 'Не указан'}</div>
+                        <div>📌 Статус: ${getStatusName(o.status)}</div>
                         <div style="margin-top:8px;color:#888;font-size:0.8rem;">Теперь можно нажать "Готов к выдаче"</div>
-                        <div class="code-display">📋 Номер для выдачи: ${order.pickupNumber || 'Будет сгенерирован случайно'}</div>
+                        <div class="code-display">📋 Номер для выдачи: ${o.pickupNumber || 'Будет сгенерирован случайно'}</div>
                     </div>
                 `;
             }
         });
-        if (!found) {
-            resultDiv.innerHTML = '<div style="color:#ff4444;padding:12px;border:1px solid #ff4444;border-radius:12px;">❌ Заказ не найден</div>';
-        }
+        if (!found) { resultDiv.innerHTML = '<div style="color:#ff4444;padding:12px;border:1px solid #ff4444;border-radius:12px;">❌ Заказ не найден</div>'; }
     });
 }
 
-// ========== СКАНИРОВАНИЕ ЗАКАЗА ==========
 function startOrderScanner() {
     const container = document.getElementById('orderScanner');
     const resultDiv = document.getElementById('scannedResult');
-    
     container.classList.remove('hidden');
     resultDiv.innerHTML = '';
     showToast('📷 Сканирование заказа...');
-    
-    if (orderScanner) {
-        orderScanner.stop().then(() => {
-            orderScanner.clear();
-            startOrderScannerNow();
-        }).catch(() => { startOrderScannerNow(); });
-    } else {
-        startOrderScannerNow();
-    }
+    if (orderScanner) { orderScanner.stop().then(() => { orderScanner.clear(); startOrderScannerNow(); }).catch(() => { startOrderScannerNow(); }); } 
+    else { startOrderScannerNow(); }
 }
 
 function startOrderScannerNow() {
     orderScanner = new Html5Qrcode("orderScanner");
-    
-    const config = {
-        fps: 10,
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0
-    };
-    
-    orderScanner.start(
-        { facingMode: "environment" },
-        config,
-        onOrderScanSuccess,
-        onOrderScanError
-    ).then(() => {
-        showToast('📷 Камера работает');
-    }).catch(err => {
-        showToast('❌ Ошибка: ' + err);
-        document.getElementById('orderScanner').classList.add('hidden');
-    });
+    const config = { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 };
+    orderScanner.start({ facingMode: "environment" }, config, onOrderScanSuccess, onOrderScanError)
+        .then(() => showToast('📷 Камера работает'))
+        .catch(err => { showToast('❌ Ошибка: ' + err, true); document.getElementById('orderScanner').classList.add('hidden'); });
 }
 
 function onOrderScanSuccess(decodedText) {
     showToast('✅ QR-код считан!');
     document.getElementById('orderScanner').classList.add('hidden');
     stopOrderScanner();
-    
-    try {
-        const data = JSON.parse(decodedText);
-        if (data.orderId) {
-            findOrderByText(data.orderId);
-        } else {
-            findOrderByText(decodedText);
-        }
-    } catch(e) {
-        findOrderByText(decodedText);
-    }
+    try { const data = JSON.parse(decodedText); findOrderByText(data.orderId || decodedText); } 
+    catch(e) { findOrderByText(decodedText); }
 }
-
 function onOrderScanError(error) {}
 
 function stopOrderScanner() {
-    if (orderScanner) {
-        try {
-            orderScanner.stop();
-            orderScanner.clear();
-        } catch(e) {}
-    }
+    if (orderScanner) { try { orderScanner.stop(); orderScanner.clear(); } catch(e) {} }
     document.getElementById('orderScanner').classList.add('hidden');
     showToast('⏹ Сканирование остановлено');
 }
 
-// ========== РУЧНОЙ ПОИСК ==========
 function manualSearch(value) {
     if (!value || value.length < 3) return;
     findOrderByText(value);
@@ -559,33 +398,30 @@ function findOrderByText(text) {
     db.ref('orders').once('value', (sn) => {
         let found = false;
         sn.forEach(child => {
-            const order = child.val();
-            if (order.id === text || order.code === text) {
+            const o = child.val();
+            if (o.id === text || o.code === text) {
                 found = true;
                 resultDiv.innerHTML = `
                     <div class="scanned-order">
                         <div style="color:#4CAF50;font-weight:bold;">✅ Заказ найден!</div>
-                        <div><span class="label">🆔</span> ${order.id}</div>
-                        <div><span class="label">👤</span> ${order.userName || order.user}</div>
-                        <div><span class="label">📱</span> ${order.phone || 'Не указан'}</div>
-                        <div><span class="label">💰</span> ${order.total} ₽</div>
-                        <div><span class="label">🔑</span> ${order.code}</div>
-                        ${order.pickupNumber ? `<div><span class="label">📋 Номер:</span> <span class="order-pickup-number">${order.pickupNumber}</span></div>` : ''}
-                        <div><span class="label">📌 Статус:</span> ${getStatusName(order.status)}</div>
-                        ${order.status === 'collecting' ? `<button class="btn-success" onclick="readyOrder('${order.id}')" style="margin-top:8px;padding:8px 20px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">✅ Готов</button>` : ''}
-                        ${order.status === 'ready' ? `<button class="btn-primary" onclick="deliverOrder('${order.id}')" style="margin-top:8px;padding:8px 20px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">📤 Выдать</button>` : ''}
-                        ${(order.status === 'collecting' || order.status === 'ready') ? `<button class="btn-danger" onclick="returnOrder('${order.id}')" style="margin-top:8px;padding:8px 20px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">🔄 Возврат</button>` : ''}
+                        <div><span class="label">🆔</span> ${o.id}</div>
+                        <div><span class="label">👤</span> ${o.userName || o.user}</div>
+                        <div><span class="label">📱</span> ${o.phone || 'Не указан'}</div>
+                        <div><span class="label">💰</span> ${o.total} ₽</div>
+                        <div><span class="label">🔑</span> ${o.code}</div>
+                        ${o.pickupNumber ? `<div><span class="label">📋 Номер:</span> <span class="order-pickup-number">${o.pickupNumber}</span></div>` : ''}
+                        <div><span class="label">📌 Статус:</span> ${getStatusName(o.status)}</div>
+                        ${o.status === 'collecting' ? `<button class="btn-success" onclick="readyOrder('${o.id}')" style="margin-top:8px;padding:8px 20px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">✅ Готов</button>` : ''}
+                        ${o.status === 'ready' ? `<button class="btn-primary" onclick="deliverOrder('${o.id}')" style="margin-top:8px;padding:8px 20px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">📤 Выдать</button>` : ''}
+                        ${(o.status === 'collecting' || o.status === 'ready') ? `<button class="btn-danger" onclick="returnOrder('${o.id}')" style="margin-top:8px;padding:8px 20px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">🔄 Возврат</button>` : ''}
                     </div>
                 `;
             }
         });
-        if (!found) {
-            resultDiv.innerHTML = '<div style="color:#ff4444;">❌ Заказ не найден</div>';
-        }
+        if (!found) { resultDiv.innerHTML = '<div style="color:#ff4444;">❌ Заказ не найден</div>'; }
     });
 }
 
-// ========== ПОИСК ПО КОДУ ==========
 function findOrder(code) {
     const result = document.getElementById('pvzResult');
     if (!code || code.length < 6) { result.innerHTML = ''; return; }
@@ -607,15 +443,11 @@ function findOrder(code) {
                     </div>
                 `;
             });
-        } else {
-            result.innerHTML = '<div style="color:#ff4444;">❌ Заказ не найден</div>';
-        }
+        } else { result.innerHTML = '<div style="color:#ff4444;">❌ Заказ не найден</div>'; }
     });
 }
 
-// ========== ИНИЦИАЛИЗАЦИЯ ==========
 console.log('📦 WHOPPER ПВЗ загружен');
-console.log('🎲 Номера хранения генерируются в случайном порядке');
 </script>
 </body>
 </html>
