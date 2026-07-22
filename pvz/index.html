@@ -4,12 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>WHOPPER - ПВЗ</title>
-    
-    <!-- ЛОКАЛЬНЫЕ БИБЛИОТЕКИ -->
-    <script src="../libs/firebase-app-compat.js"></script>
-    <script src="../libs/firebase-database-compat.js"></script>
-    <script src="../libs/html5-qrcode.min.js"></script>
-    
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:Arial,sans-serif; background:#0f0f1a; color:#fff; padding:10px; min-height:100vh; }
@@ -61,7 +58,9 @@
         .toast.show { opacity:1; }
         .scanned-package { background:rgba(76,175,80,0.1); border:2px solid #4CAF50; border-radius:12px; padding:12px; margin:10px 0; }
         .scanned-package .code-display { font-size:2rem; font-weight:bold; color:#f5a623; font-family:monospace; letter-spacing:8px; text-align:center; background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; }
-        @media (max-width:400px) { .scanner-overlay { width:150px; height:150px; } }
+        .scanner-buttons { display:flex; gap:6px; flex-wrap:wrap; margin:8px 0; }
+        .scanner-buttons button { flex:1; padding:10px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; font-size:0.75rem; min-width:100px; }
+        @media (max-width:400px) { .scanner-overlay { width:150px; height:150px; } .scanner-buttons button { min-width:80px; font-size:0.65rem; } }
     </style>
 </head>
 <body>
@@ -87,21 +86,40 @@
         <div style="background:rgba(245,166,35,0.1);border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid #f5a623;">
             <h4 style="color:#f5a623;font-size:0.85rem;margin-bottom:8px;">📦 Сканировать упаковку</h4>
             <p style="color:#888;font-size:0.75rem;margin-bottom:8px;">Отсканируйте QR-код на упаковке товара</p>
-            <button class="btn-cyan btn-block" onclick="startPackageScanner()">📷 Сканировать упаковку</button>
+            
+            <!-- ВЫБОР СКАНЕРА -->
+            <div class="scanner-buttons">
+                <button class="btn-cyan" onclick="startPackageScanner('camera')">📷 Камера</button>
+                <button class="btn-purple" onclick="startPackageScanner('physical')">🔍 Сканер</button>
+            </div>
+            
             <div id="packageScanner" class="scanner-container hidden"><div class="scanner-overlay"></div></div>
             <button class="btn-danger btn-block" onclick="stopPackageScanner()" style="margin-top:6px;">⏹ Остановить</button>
+            
+            <!-- Для физического сканера -->
+            <div class="scanner-input-area" id="physicalScannerInput">
+                <input type="text" id="physicalScanInput" placeholder="Отсканируйте физическим сканером..." oninput="physicalScanHandler(this.value)">
+                <button class="btn-info" onclick="physicalScanHandler(document.getElementById('physicalScanInput').value)">🔍</button>
+            </div>
+            
             <div id="scannedPackageResult"></div>
         </div>
         
         <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;">
             <h4 style="color:#f5a623;font-size:0.85rem;margin-bottom:8px;">📷 Сканировать заказ</h4>
-            <button class="btn-purple btn-block" onclick="startOrderScanner()">🔍 Сканировать заказ</button>
-            <div class="scanner-input-area">
-                <input type="text" id="scannerInput" placeholder="Или введите код вручную..." oninput="manualSearch(this.value)">
-                <button class="btn-info" onclick="manualSearch(document.getElementById('scannerInput').value)">🔍</button>
+            
+            <div class="scanner-buttons">
+                <button class="btn-cyan" onclick="startOrderScanner('camera')">📷 Камера</button>
+                <button class="btn-purple" onclick="startOrderScanner('physical')">🔍 Сканер</button>
             </div>
+            
             <div id="orderScanner" class="scanner-container hidden"><div class="scanner-overlay"></div></div>
             <button class="btn-danger btn-block" onclick="stopOrderScanner()" style="margin-top:6px;">⏹ Остановить</button>
+            
+            <div class="scanner-input-area">
+                <input type="text" id="scannerInput" placeholder="Введите код вручную..." oninput="manualSearch(this.value)">
+                <button class="btn-info" onclick="manualSearch(document.getElementById('scannerInput').value)">🔍</button>
+            </div>
             <div id="scannedResult"></div>
         </div>
         
@@ -134,6 +152,7 @@ let orderScanner = null;
 let packageScanner = null;
 let scannedOrderId = null;
 let usedPickupNumbers = [];
+let isPhysicalScanner = false;
 
 function showToast(msg, err = false) {
     let t = document.getElementById('toast');
@@ -299,11 +318,29 @@ function returnOrder(orderId) {
     });
 }
 
-function startPackageScanner() {
+// ========== ФИЗИЧЕСКИЙ СКАНЕР ==========
+function physicalScanHandler(value) {
+    if (!value || value.length < 3) return;
+    document.getElementById('physicalScanInput').value = '';
+    // Ищем заказ по отсканированным данным
+    findOrderByPackage(value);
+}
+
+// ========== СКАНИРОВАНИЕ УПАКОВКИ ==========
+function startPackageScanner(type) {
     const container = document.getElementById('packageScanner');
     const resultDiv = document.getElementById('scannedPackageResult');
     container.classList.remove('hidden');
     resultDiv.innerHTML = '';
+    
+    if (type === 'physical') {
+        // Физический сканер - просто показываем поле ввода
+        showToast('🔍 Наведите физический сканер на QR-код');
+        document.getElementById('physicalScanInput').focus();
+        return;
+    }
+    
+    // Камера
     showToast('📷 Наведите на QR-код на упаковке...');
     if (packageScanner) { packageScanner.stop().then(() => { packageScanner.clear(); startPackageScannerNow(); }).catch(() => { startPackageScannerNow(); }); } 
     else { startPackageScannerNow(); }
@@ -357,11 +394,19 @@ function findOrderByPackage(text) {
     });
 }
 
-function startOrderScanner() {
+// ========== СКАНИРОВАНИЕ ЗАКАЗА ==========
+function startOrderScanner(type) {
     const container = document.getElementById('orderScanner');
     const resultDiv = document.getElementById('scannedResult');
     container.classList.remove('hidden');
     resultDiv.innerHTML = '';
+    
+    if (type === 'physical') {
+        showToast('🔍 Наведите физический сканер на QR-код заказа');
+        document.getElementById('scannerInput').focus();
+        return;
+    }
+    
     showToast('📷 Сканирование заказа...');
     if (orderScanner) { orderScanner.stop().then(() => { orderScanner.clear(); startOrderScannerNow(); }).catch(() => { startOrderScannerNow(); }); } 
     else { startOrderScannerNow(); }
@@ -451,6 +496,7 @@ function findOrder(code) {
 }
 
 console.log('📦 WHOPPER ПВЗ загружен');
+console.log('📷 Доступны: камера и физический сканер');
 </script>
 </body>
 </html>
