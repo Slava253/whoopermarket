@@ -4,31 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>WHOPPER - Админ</title>
-    
-    <!-- PWA Meta -->
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#f5a623">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="WHOPPER">
-    <link rel="apple-touch-icon" href="/icon-192.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
-    
-    <link rel="stylesheet" href="../css/style.css">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="../js/firebase-config.js"></script>
-    <script src="../js/utils.js"></script>
     <style>
-        .back-link { display:inline-block; color:#f5a623; text-decoration:none; font-size:0.8rem; margin-bottom:10px; }
-        .back-link:hover { text-decoration:underline; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:Arial,sans-serif; background:#0f0f1a; color:#fff; padding:10px; min-height:100vh; }
+        .container { max-width:500px; margin:0 auto; }
+        .hidden { display:none !important; }
+        .header { display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:10px 14px; border-radius:16px; margin-bottom:12px; }
+        .logo { font-size:1.2rem; font-weight:bold; color:#f5a623; }
+        .user-badge { font-size:0.7rem; color:#888; background:rgba(255,255,255,0.05); padding:4px 12px; border-radius:30px; }
+        .user-badge button { background:none; border:none; color:#f5a623; cursor:pointer; margin-left:8px; }
+        .btn { padding:8px 16px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; font-size:0.8rem; }
+        .btn-primary { background:#f5a623; color:#1a1a2e; }
+        .btn-success { background:#4CAF50; color:#fff; }
+        .btn-danger { background:#ef4444; color:#fff; }
+        .btn-info { background:#2196F3; color:#fff; }
+        .btn-block { width:100%; padding:10px; }
+        .form-group { margin-bottom:10px; }
+        .form-group label { display:block; font-size:0.7rem; color:#888; margin-bottom:4px; }
+        .form-group input { width:100%; padding:10px 14px; border-radius:30px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.05); color:#fff; font-size:0.85rem; outline:none; }
+        .auth-box { background:rgba(255,255,255,0.03); border-radius:16px; padding:20px; margin-bottom:16px; border:1px solid rgba(255,255,255,0.05); }
+        .auth-box h3 { margin-bottom:12px; color:#f5a623; font-size:1rem; }
+        .auth-actions { display:flex; gap:8px; margin-top:12px; }
+        .auth-actions button { flex:1; padding:10px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; font-size:0.8rem; }
+        .pvz-item { background:rgba(255,255,255,0.03); border-radius:12px; padding:10px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; border:1px solid rgba(255,255,255,0.05); }
+        .pvz-item .pvz-info { font-size:0.85rem; }
+        .pvz-item .pvz-info .pvz-address { color:#888; font-size:0.75rem; }
+        .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:12px 24px; border-radius:40px; z-index:999; opacity:0; transition:0.3s; pointer-events:none; font-weight:600; max-width:90%; text-align:center; font-size:0.85rem; }
+        .toast.show { opacity:1; }
+        .admin-pvz-list { max-height:200px; overflow-y:auto; }
+        @media (max-width:400px) { .pvz-item { padding:8px; } }
     </style>
 </head>
 <body>
 <div class="container">
-    <a href="../index.html" class="back-link">← На главную</a>
-    
     <div class="header">
         <div class="logo">👑 WHOPPER</div>
         <div class="user-badge">👤 <span id="userNameDisplay">Гость</span> <button onclick="logout()">Выйти</button></div>
@@ -64,7 +74,29 @@
 </div>
 
 <script>
+const firebaseConfig = {
+    apiKey: "AIzaSyBlZ5ZtyTXgtXxSJAx1jOxwhTrzlHRJmo",
+    authDomain: "bk-cashier.firebaseapp.com",
+    databaseURL: "https://bk-cashier-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "bk-cashier",
+    storageBucket: "bk-cashier.firebasestorage.app",
+    messagingSenderId: "385000840969",
+    appId: "1:385000840969:web:1ec8d09176b6551dc0fdd8"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
 let currentUser = null;
+
+function showToast(msg, err = false) {
+    let t = document.getElementById('toast');
+    if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; document.body.appendChild(t); }
+    t.textContent = msg;
+    t.style.background = err ? '#ef4444' : '#1a1a2e';
+    t.classList.add('show');
+    clearTimeout(t._timeout);
+    t._timeout = setTimeout(() => t.classList.remove('show'), 3000);
+}
 
 function login() {
     const login = document.getElementById('adminLogin').value.trim();
@@ -78,9 +110,7 @@ function login() {
         loadPvz();
         loadSupport();
         loadStats();
-    } else {
-        showToast('❌ Неверный логин или пароль');
-    }
+    } else { showToast('❌ Неверный логин или пароль', true); }
 }
 
 function logout() {
@@ -112,10 +142,10 @@ function loadPvz() {
 function addPvz() {
     const code = document.getElementById('adminPvzCode').value.trim();
     const address = document.getElementById('adminPvzAddress').value.trim();
-    if (!code) { showToast('❌ Введите код ПВЗ'); return; }
-    if (!address) { showToast('❌ Введите адрес ПВЗ'); return; }
+    if (!code) { showToast('❌ Введите код ПВЗ', true); return; }
+    if (!address) { showToast('❌ Введите адрес ПВЗ', true); return; }
     db.ref('pvz').orderByChild('code').equalTo(code).once('value', (sn) => {
-        if (sn.exists()) { showToast('❌ ПВЗ с таким кодом уже существует'); return; }
+        if (sn.exists()) { showToast('❌ ПВЗ с таким кодом уже существует', true); return; }
         db.ref('pvz').push().set({ code, address }).then(() => {
             showToast('✅ ПВЗ добавлен!');
             document.getElementById('adminPvzCode').value = '';
@@ -125,9 +155,9 @@ function addPvz() {
     });
 }
 
-function deletePvz(pvzId) {
+function deletePvz(id) {
     if (!confirm('Удалить ПВЗ?')) return;
-    db.ref('pvz/' + pvzId).remove().then(() => { showToast('🗑️ ПВЗ удалён'); loadPvz(); });
+    db.ref('pvz/' + id).remove().then(() => { showToast('🗑️ ПВЗ удалён'); loadPvz(); });
 }
 
 function loadSupport() {
@@ -151,9 +181,9 @@ function loadSupport() {
 function addSupport() {
     const login = document.getElementById('adminSupportLogin').value.trim();
     const pass = document.getElementById('adminSupportPass').value.trim();
-    if (!login || !pass) { showToast('❌ Заполните все поля'); return; }
+    if (!login || !pass) { showToast('❌ Заполните все поля', true); return; }
     db.ref('support_users').orderByChild('login').equalTo(login).once('value', (sn) => {
-        if (sn.exists()) { showToast('❌ Логин занят'); return; }
+        if (sn.exists()) { showToast('❌ Логин занят', true); return; }
         db.ref('support_users').push().set({ login, password: pass, name: 'Оператор ' + login }).then(() => {
             showToast('✅ Сотрудник поддержки добавлен!');
             document.getElementById('adminSupportLogin').value = '';
@@ -163,24 +193,22 @@ function addSupport() {
     });
 }
 
-function deleteSupport(userId) {
+function deleteSupport(id) {
     if (!confirm('Удалить сотрудника поддержки?')) return;
-    db.ref('support_users/' + userId).remove().then(() => { showToast('🗑️ Сотрудник удалён'); loadSupport(); });
+    db.ref('support_users/' + id).remove().then(() => { showToast('🗑️ Сотрудник удалён'); loadSupport(); });
 }
 
 function loadStats() {
     const container = document.getElementById('stats');
     db.ref('orders').once('value', (sn) => {
-        let total = 0, collecting = 0, sent = 0, in_pvz = 0, ready = 0, delivered = 0, returns = 0;
+        let total = 0, collecting = 0, ready = 0, delivered = 0, returns = 0;
         sn.forEach(child => {
-            const order = child.val();
+            const o = child.val();
             total++;
-            if (order.status === 'collecting' || order.status === 'pending') collecting++;
-            else if (order.status === 'sent') sent++;
-            else if (order.status === 'in_pvz') in_pvz++;
-            else if (order.status === 'ready') ready++;
-            else if (order.status === 'delivered') delivered++;
-            else if (order.status === 'return') returns++;
+            if (o.status === 'collecting' || o.status === 'pending') collecting++;
+            else if (o.status === 'ready') ready++;
+            else if (o.status === 'delivered') delivered++;
+            else if (o.status === 'return') returns++;
         });
         container.innerHTML = `
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
@@ -191,14 +219,6 @@ function loadStats() {
                 <div style="background:rgba(255,255,255,0.03);padding:8px;border-radius:10px;text-align:center;">
                     <div style="font-size:1.5rem;color:#ff9800;">${collecting}</div>
                     <div style="font-size:0.7rem;color:#888;">Собираются</div>
-                </div>
-                <div style="background:rgba(255,255,255,0.03);padding:8px;border-radius:10px;text-align:center;">
-                    <div style="font-size:1.5rem;color:#2196F3;">${sent}</div>
-                    <div style="font-size:0.7rem;color:#888;">Отправлены</div>
-                </div>
-                <div style="background:rgba(255,255,255,0.03);padding:8px;border-radius:10px;text-align:center;">
-                    <div style="font-size:1.5rem;color:#4CAF50;">${in_pvz}</div>
-                    <div style="font-size:0.7rem;color:#888;">В ПВЗ</div>
                 </div>
                 <div style="background:rgba(255,255,255,0.03);padding:8px;border-radius:10px;text-align:center;">
                     <div style="font-size:1.5rem;color:#4CAF50;">${ready}</div>
@@ -217,14 +237,7 @@ function loadStats() {
     });
 }
 
-// ========== PWA РЕГИСТРАЦИЯ ==========
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js')
-        .then(() => console.log('✅ SW зарегистрирован'))
-        .catch(err => console.log('❌ SW ошибка:', err));
-}
-
-console.log('👑 WHOPPER - Администратор');
+console.log('👑 WHOPPER - Администратор загружен');
 </script>
 </body>
 </html>
