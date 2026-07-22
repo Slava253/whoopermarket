@@ -39,6 +39,8 @@
         .tabs { display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap; }
         .tab { padding:8px 16px; border-radius:30px; background:rgba(255,255,255,0.05); cursor:pointer; font-size:0.75rem; color:#888; border:1px solid transparent; transition:0.15s; }
         .tab.active { background:rgba(245,166,35,0.15); color:#f5a623; border-color:#f5a623; }
+        .scan-hint { font-size:0.7rem; color:#888; margin:8px 0; padding:8px; background:rgba(255,255,255,0.03); border-radius:8px; border:1px dashed rgba(255,255,255,0.1); }
+        .scan-hint code { color:#f5a623; font-family:monospace; }
         @media (max-width:400px) { .pvz-item { padding:8px; } }
     </style>
 </head>
@@ -51,6 +53,18 @@
 
     <div id="authBox" class="auth-box">
         <h3>👑 Вход администратора</h3>
+        
+        <!-- ШТРИХ-КОД -->
+        <div class="scan-hint">
+            📷 Отсканируйте штрих-код: <code>VXOD-ADMIN23472203</code>
+        </div>
+        <div class="form-group">
+            <label>🔑 Или введите код из штрих-кода</label>
+            <input type="text" id="adminBarcode" placeholder="VXOD-ADMIN23472203" oninput="barcodeLogin(this.value)">
+        </div>
+        
+        <div style="text-align:center;color:#555;margin:10px 0;">━━━ или ━━━</div>
+        
         <div class="form-group"><label>Логин</label><input type="text" id="adminLogin" placeholder="Логин"></div>
         <div class="form-group"><label>Пароль</label><input type="password" id="adminPass" placeholder="Пароль"></div>
         <div class="auth-actions"><button class="btn-primary" onclick="login()">Войти</button></div>
@@ -133,6 +147,26 @@ function showToast(msg, err = false) {
     t._timeout = setTimeout(() => t.classList.remove('show'), 2500);
 }
 
+// ========== ВХОД ПО ШТРИХ-КОДУ ==========
+function barcodeLogin(value) {
+    const barcode = value.trim().toUpperCase();
+    if (barcode === 'VXOD-ADMIN23472203') {
+        // Автоматический вход
+        currentUser = { login: '2347', name: 'Администратор' };
+        document.getElementById('authBox').classList.add('hidden');
+        document.getElementById('mainContent').classList.remove('hidden');
+        document.getElementById('userNameDisplay').textContent = '👑 Администратор';
+        showToast('👑 Добро пожаловать, Администратор! (штрих-код)');
+        loadPvz();
+        loadCouriers();
+        loadSupport();
+        loadStats();
+        // Очищаем поле
+        document.getElementById('adminBarcode').value = '';
+    }
+}
+
+// ========== ОБЫЧНЫЙ ВХОД ==========
 function login() {
     const login = document.getElementById('adminLogin').value.trim();
     const pass = document.getElementById('adminPass').value.trim();
@@ -154,6 +188,7 @@ function logout() {
     document.getElementById('authBox').classList.remove('hidden');
     document.getElementById('mainContent').classList.add('hidden');
     document.getElementById('userNameDisplay').textContent = 'Гость';
+    document.getElementById('adminBarcode').value = '';
     showToast('👋 Выход выполнен');
 }
 
@@ -345,6 +380,7 @@ function loadStats() {
 }
 
 console.log('👑 WHOPPER - Администратор загружен');
+console.log('📷 Вход по штрих-коду: VXOD-ADMIN23472203');
 </script>
 </body>
 </html>
