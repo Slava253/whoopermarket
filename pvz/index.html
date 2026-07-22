@@ -57,8 +57,6 @@
         .scanned-order .label { color:#888; font-size:0.75rem; }
         .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:12px 24px; border-radius:40px; z-index:999; opacity:0; transition:0.3s; pointer-events:none; font-weight:600; max-width:90%; text-align:center; font-size:0.85rem; }
         .toast.show { opacity:1; }
-        .scanned-package { background:rgba(76,175,80,0.1); border:2px solid #4CAF50; border-radius:12px; padding:12px; margin:10px 0; }
-        .scanned-package .code-display { font-size:2rem; font-weight:bold; color:#f5a623; font-family:monospace; letter-spacing:8px; text-align:center; background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; }
         .scanner-buttons { display:flex; gap:6px; flex-wrap:wrap; margin:8px 0; }
         .scanner-buttons button { flex:1; padding:10px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; font-size:0.75rem; min-width:100px; }
         .scan-hint { font-size:0.65rem; color:#888; margin:4px 0; padding:4px 8px; background:rgba(255,255,255,0.03); border-radius:6px; }
@@ -85,9 +83,10 @@
             <button class="btn-danger" onclick="viewOrders('return')">🔄 Возвраты</button>
         </div>
         
+        <!-- СКАНИРОВАНИЕ УПАКОВКИ (ТЕПЕРЬ НЕ ОБЯЗАТЕЛЬНО) -->
         <div style="background:rgba(245,166,35,0.1);border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid #f5a623;">
-            <h4 style="color:#f5a623;font-size:0.85rem;margin-bottom:8px;">📦 Сканировать упаковку</h4>
-            <p style="color:#888;font-size:0.75rem;margin-bottom:8px;">Отсканируйте QR-код на упаковке товара</p>
+            <h4 style="color:#f5a623;font-size:0.85rem;margin-bottom:8px;">📦 Сканировать упаковку (опционально)</h4>
+            <p style="color:#888;font-size:0.75rem;margin-bottom:8px;">Можно отсканировать QR-код на упаковке, но это необязательно</p>
             
             <div class="scanner-buttons">
                 <button class="btn-cyan" onclick="startPackageScanner('camera')">📷 Камера</button>
@@ -97,16 +96,16 @@
             <div id="packageScanner" class="scanner-container hidden"><div class="scanner-overlay"></div></div>
             <button class="btn-danger btn-block" onclick="stopPackageScanner()" style="margin-top:6px;">⏹ Остановить</button>
             
-            <!-- ФИЗИЧЕСКИЙ СКАНЕР - ИСПРАВЛЕН -->
             <div class="scanner-input-area">
-                <input type="text" id="physicalScanInput" placeholder="Наведите сканер на QR-код..." autofocus>
+                <input type="text" id="physicalScanInput" placeholder="Наведите сканер на QR-код...">
                 <button class="btn-info" onclick="processPhysicalScan()">🔍 Найти</button>
             </div>
-            <div class="scan-hint">💡 После сканирования нажмите Enter или кнопку "Найти"</div>
+            <div class="scan-hint">💡 Сканирование не обязательно для выдачи заказа</div>
             
             <div id="scannedPackageResult"></div>
         </div>
         
+        <!-- СКАНИРОВАНИЕ ЗАКАЗА -->
         <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;">
             <h4 style="color:#f5a623;font-size:0.85rem;margin-bottom:8px;">📷 Сканировать заказ</h4>
             
@@ -152,10 +151,7 @@ let currentUser = null;
 let currentPvzCode = null;
 let orderScanner = null;
 let packageScanner = null;
-let scannedOrderId = null;
 let usedPickupNumbers = [];
-let scanBuffer = '';
-let scanTimer = null;
 
 function showToast(msg, err = false) {
     let t = document.getElementById('toast');
@@ -185,7 +181,6 @@ function login() {
                     showToast('👋 Добро пожаловать в ПВЗ!');
                     loadUsedNumbers();
                     viewOrders('collecting');
-                    // Фокус на поле для сканера
                     setTimeout(() => {
                         document.getElementById('physicalScanInput').focus();
                     }, 500);
@@ -264,16 +259,14 @@ function viewOrders(type) {
     });
 }
 
+// ========== ГОТОВ К ВЫДАЧЕ (БЕЗ ПРОВЕРКИ СКАНИРОВАНИЯ) ==========
 async function readyOrder(orderId) {
-    if (scannedOrderId !== orderId) { showToast('❌ Сначала отсканируйте упаковку!', true); return; }
     const num = await generateRandomPickupNumber();
     db.ref('orders').orderByChild('id').equalTo(orderId).once('value', (sn) => {
         sn.forEach(child => {
             db.ref('orders/' + child.key).update({ status: 'ready', pickupNumber: num });
             usedPickupNumbers.push(num);
-            showToast('✅ Заказ готов! Номер: ' + num);
-            scannedOrderId = null;
-            document.getElementById('scannedPackageResult').innerHTML = '';
+            showToast('✅ Заказ готов! Номер хранения: ' + num);
             viewOrders('collecting');
         });
     });
@@ -325,7 +318,7 @@ function returnOrder(orderId) {
     });
 }
 
-// ========== ФИЗИЧЕСКИЙ СКАНЕР - ОБРАБОТКА ==========
+// ========== ФИЗИЧЕСКИЙ СКАНЕР ==========
 function processPhysicalScan() {
     const input = document.getElementById('physicalScanInput');
     const value = input.value.trim();
@@ -335,18 +328,11 @@ function processPhysicalScan() {
         return;
     }
     
-    console.log('📥 Сканировано (сырые данные):', value);
-    console.log('📥 Длина:', value.length);
-    console.log('📥 Коды символов:', value.split('').map(c => c.charCodeAt(0)));
-    
-    // Очищаем поле
+    console.log('📥 Сканировано:', value);
     input.value = '';
-    
-    // Пробуем найти заказ по сканированным данным
     findOrderByPackage(value);
 }
 
-// Обработка Enter в поле физического сканера
 document.addEventListener('DOMContentLoaded', function() {
     const input = document.getElementById('physicalScanInput');
     if (input) {
@@ -401,8 +387,6 @@ function stopPackageScanner() {
 
 function findOrderByPackage(text) {
     const resultDiv = document.getElementById('scannedPackageResult');
-    
-    // Пробуем распарсить как JSON
     let searchText = text;
     try {
         const data = JSON.parse(text);
@@ -410,35 +394,26 @@ function findOrderByPackage(text) {
         else if (data.code) searchText = data.code;
     } catch(e) {}
     
-    console.log('🔍 Поиск по:', searchText);
-    
     db.ref('orders').once('value', (sn) => {
         let found = false;
-        let orders = [];
         sn.forEach(child => {
             const o = child.val();
             if (o.id === searchText || o.code === searchText) {
-                orders.push({ id: child.key, ...o });
                 found = true;
+                resultDiv.innerHTML = `
+                    <div class="scanned-package">
+                        <div style="color:#4CAF50;font-weight:bold;">✅ Упаковка отсканирована!</div>
+                        <div>📦 Заказ: ${o.id}</div>
+                        <div>👤 ${o.userName || o.user}</div>
+                        <div>📱 ${o.phone || 'Не указан'}</div>
+                        <div>📌 Статус: ${getStatusName(o.status)}</div>
+                        ${o.pickupNumber ? `<div class="code-display">📋 Номер хранения: ${o.pickupNumber}</div>` : ''}
+                    </div>
+                `;
             }
         });
-        
-        if (found) {
-            const o = orders[0];
-            scannedOrderId = o.id;
-            resultDiv.innerHTML = `
-                <div class="scanned-package">
-                    <div style="color:#4CAF50;font-weight:bold;">✅ Упаковка отсканирована!</div>
-                    <div>📦 Заказ: ${o.id}</div>
-                    <div>👤 ${o.userName || o.user}</div>
-                    <div>📱 ${o.phone || 'Не указан'}</div>
-                    <div>📌 Статус: ${getStatusName(o.status)}</div>
-                    <div style="margin-top:8px;color:#888;font-size:0.8rem;">Теперь можно нажать "Готов к выдаче"</div>
-                    <div class="code-display">📋 Номер для выдачи: ${o.pickupNumber || 'Будет сгенерирован случайно'}</div>
-                </div>
-            `;
-        } else {
-            resultDiv.innerHTML = '<div style="color:#ff4444;padding:12px;border:1px solid #ff4444;border-radius:12px;">❌ Заказ не найден. Проверьте QR-код.</div>';
+        if (!found) {
+            resultDiv.innerHTML = '<div style="color:#ff4444;padding:12px;border:1px solid #ff4444;border-radius:12px;">❌ Заказ не найден</div>';
             showToast('❌ Заказ не найден', true);
         }
     });
@@ -546,8 +521,7 @@ function findOrder(code) {
 }
 
 console.log('📦 WHOPPER ПВЗ загружен');
-console.log('📷 Доступны: камера и физический сканер');
-console.log('🔍 Для физического сканера используйте поле ввода');
+console.log('✅ Сканирование упаковки НЕ ОБЯЗАТЕЛЬНО для выдачи');
 </script>
 </body>
 </html>
