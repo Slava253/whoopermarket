@@ -176,7 +176,7 @@
         <h3>💳 Оформление заказа</h3>
         <div class="form-group">
             <label>📍 Способ получения</label>
-            <select id="checkoutDelivery">
+            <select id="checkoutDelivery" onchange="toggleDeliveryFields()">
                 <option value="pvz">🏪 ПВЗ</option>
                 <option value="courier">🚚 Курьер</option>
             </select>
@@ -312,6 +312,12 @@ function logout() {
     showToast('👋 Выход выполнен');
 }
 
+function toggleDeliveryFields() {
+    const val = document.getElementById('checkoutDelivery').value;
+    document.getElementById('checkoutAddressField').classList.toggle('hidden', val !== 'courier');
+    document.getElementById('checkoutPvzField').classList.toggle('hidden', val !== 'pvz');
+}
+
 function enterMode() {
     document.getElementById('authBox').classList.add('hidden');
     document.getElementById('mainContent').classList.remove('hidden');
@@ -324,13 +330,6 @@ function enterMode() {
     loadReviews();
     loadSupport();
     renderCart();
-    
-    // Обработка смены способа доставки
-    document.getElementById('checkoutDelivery').addEventListener('change', function() {
-        const val = this.value;
-        document.getElementById('checkoutAddressField').classList.toggle('hidden', val !== 'courier');
-        document.getElementById('checkoutPvzField').classList.toggle('hidden', val !== 'pvz');
-    });
 }
 
 function loadPvzList() {
@@ -399,6 +398,7 @@ function showCheckout() {
     const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
     document.getElementById('checkoutTotal').textContent = 'Итого: ' + total + ' ₽';
     document.getElementById('checkoutModal').classList.remove('hidden');
+    toggleDeliveryFields();
 }
 function closeCheckoutModal() { document.getElementById('checkoutModal').classList.add('hidden'); }
 
@@ -422,21 +422,38 @@ function confirmCheckout() {
     const orderId = generateId('ORD');
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const order = {
-        id: orderId, user: currentUser.phone, userName: currentUser.name,
+        id: orderId, 
+        user: currentUser.phone, 
+        userName: currentUser.name,
         phone: currentUser.phone,
         items: cart.map(i => ({ name: i.name, price: i.price, qty: i.qty, image: i.image || null })),
-        total, code, pvz, address, delivery, payment, 
+        total, 
+        code, 
+        pvz: pvz, 
+        address: address, 
+        delivery: delivery, 
+        payment: payment, 
         status: 'collecting', 
         createdAt: Date.now()
     };
+    
     if (payment === 'now') {
         currentUser.wallet -= total;
         db.ref('users/' + currentUser.id).update({ wallet: currentUser.wallet });
         document.getElementById('walletAmount').textContent = currentUser.wallet + ' ₽';
     }
+    
+    // СОЗДАЁМ ТОЛЬКО ОДИН ЗАКАЗ!
     db.ref('orders').push().set(order).then(() => {
-        cart = []; renderCart(); loadOrders(); renderQR(); closeCheckoutModal();
+        cart = []; 
+        renderCart(); 
+        loadOrders(); 
+        renderQR(); 
+        closeCheckoutModal();
         showToast(`✅ Заказ #${orderId} оформлен!`);
+    }).catch(err => {
+        showToast('❌ Ошибка оформления заказа', true);
+        console.error(err);
     });
 }
 
@@ -623,7 +640,7 @@ function closePhotoModal() {
     document.body.style.overflow = '';
 }
 
-console.log('🛒 WHOPPER - Клиент загружен (быстрая версия)');
+console.log('🛒 WHOPPER - Клиент загружен');
 </script>
 </body>
 </html>
