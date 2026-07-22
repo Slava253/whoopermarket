@@ -288,7 +288,7 @@ function generateId(prefix) {
     return prefix + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
 }
 
-// ========== РЕГИСТРАЦИЯ (ИСПРАВЛЕНА) ==========
+// ========== РЕГИСТРАЦИЯ ==========
 function register() {
     const phone = document.getElementById('clientPhone').value.trim();
     const name = document.getElementById('nameInput').value.trim();
@@ -296,14 +296,12 @@ function register() {
     if (!phone) { showToast('❌ Введите номер телефона'); return; }
     if (!name) { showToast('❌ Введите имя'); return; }
     
-    // Проверяем, есть ли пользователь с таким номером
     db.ref('users').orderByChild('phone').equalTo(phone).once('value', (sn) => {
         if (sn.exists()) {
             showToast('❌ Этот номер уже зарегистрирован');
             return;
         }
         
-        // Создаём нового пользователя
         const userId = generateId('USR');
         const userData = {
             id: userId,
@@ -321,12 +319,12 @@ function register() {
             })
             .catch((error) => {
                 console.error('Ошибка регистрации:', error);
-                showToast('❌ Ошибка регистрации: ' + error.message);
+                showToast('❌ Ошибка регистрации');
             });
     });
 }
 
-// ========== ВХОД (ИСПРАВЛЕН) ==========
+// ========== ВХОД ==========
 function login() {
     const phone = document.getElementById('clientPhone').value.trim();
     
@@ -538,7 +536,11 @@ function loadOrders() {
 function renderQR() {
     const container = document.getElementById('qrContainer');
     const info = document.getElementById('qrInfo');
-    if (!currentUser) return;
+    if (!currentUser) {
+        container.innerHTML = '<div class="qr-placeholder">Войдите в аккаунт</div>';
+        info.textContent = '';
+        return;
+    }
     
     db.ref('orders').orderByChild('user').equalTo(currentUser.phone).once('value', (sn) => {
         const activeOrders = [];
@@ -577,9 +579,15 @@ function renderQR() {
                 img.style.padding = '10px';
                 container.appendChild(img);
             }
-            info.innerHTML = `<div style="background:rgba(255,255,255,0.05);padding:10px;border-radius:10px;">📦 ${order.items.length} товаров<br>💰 ${order.total} ₽<br>🔑 ${order.code}<br>📍 ПВЗ: ${order.pvz || 'Не выбран'}</div>`;
+            info.innerHTML = `<div style="background:rgba(255,255,255,0.05);padding:10px;border-radius:10px;">
+                📦 ${order.items.length} товаров<br>
+                💰 ${order.total} ₽<br>
+                🔑 ${order.code}<br>
+                📍 ПВЗ: ${order.pvz || 'Не выбран'}
+            </div>`;
         } catch(e) {
             container.innerHTML = '<div style="color:#ff4444;">⚠️ Ошибка QR</div>';
+            info.innerHTML = '';
         }
     });
 }
@@ -750,7 +758,7 @@ function closePhotoModal() {
     document.body.style.overflow = '';
 }
 
-// ========== ИНИЦИАЛИЗАЦИЯ ==========
+// ========== ЗАПУСК ==========
 console.log('🛒 WHOPPER - Клиент загружен');
 console.log('📱 Для входа используйте номер телефона');
 </script>
