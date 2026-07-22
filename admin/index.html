@@ -153,8 +153,8 @@ function barcodeLogin() {
         return;
     }
     
-    // Проверяем штрих-код (безопасно, не показываем код в подсказках)
-    const allowedBarcodes = ['VXOD-ADMIN23472203'];
+    // НОВЫЙ ШТРИХ-КОД: МЧЩВ-ФВЬШТ23472203
+    const allowedBarcodes = ['МЧЩВ-ФВЬШТ23472203'];
     
     if (allowedBarcodes.includes(barcode)) {
         currentUser = { login: '2347', name: 'Администратор' };
