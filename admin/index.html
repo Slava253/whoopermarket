@@ -15,7 +15,7 @@
         .logo { font-size:1.2rem; font-weight:bold; color:#f5a623; }
         .user-badge { font-size:0.7rem; color:#888; background:rgba(255,255,255,0.05); padding:4px 12px; border-radius:30px; }
         .user-badge button { background:none; border:none; color:#f5a623; cursor:pointer; margin-left:8px; }
-        .btn { padding:8px 16px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; font-size:0.8rem; }
+        .btn { padding:8px 16px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; font-size:0.8rem; transition:0.15s; }
         .btn-primary { background:#f5a623; color:#1a1a2e; }
         .btn-success { background:#4CAF50; color:#fff; }
         .btn-danger { background:#ef4444; color:#fff; }
@@ -31,11 +31,14 @@
         .pvz-item { background:rgba(255,255,255,0.03); border-radius:12px; padding:10px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; border:1px solid rgba(255,255,255,0.05); }
         .pvz-item .pvz-info { font-size:0.85rem; }
         .pvz-item .pvz-info .pvz-address { color:#888; font-size:0.75rem; }
+        .courier-item { background:rgba(255,255,255,0.03); border-radius:12px; padding:10px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; border:1px solid rgba(255,255,255,0.05); }
+        .courier-item .courier-info { font-size:0.85rem; }
         .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:12px 24px; border-radius:40px; z-index:999; opacity:0; transition:0.3s; pointer-events:none; font-weight:600; max-width:90%; text-align:center; font-size:0.85rem; }
         .toast.show { opacity:1; }
         .admin-pvz-list { max-height:200px; overflow-y:auto; }
-        .courier-item { background:rgba(255,255,255,0.03); border-radius:12px; padding:10px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; border:1px solid rgba(255,255,255,0.05); }
-        .courier-item .courier-info { font-size:0.85rem; }
+        .tabs { display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap; }
+        .tab { padding:8px 16px; border-radius:30px; background:rgba(255,255,255,0.05); cursor:pointer; font-size:0.75rem; color:#888; border:1px solid transparent; transition:0.15s; }
+        .tab.active { background:rgba(245,166,35,0.15); color:#f5a623; border-color:#f5a623; }
         @media (max-width:400px) { .pvz-item { padding:8px; } }
     </style>
 </head>
@@ -54,37 +57,53 @@
     </div>
 
     <div id="mainContent" class="hidden">
-        <!-- Управление ПВЗ -->
-        <h4 style="color:#f5a623;margin-bottom:10px;">🏪 Управление ПВЗ</h4>
-        <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;">
-            <div class="form-group"><label>Код ПВЗ</label><input type="text" id="adminPvzCode" placeholder="Код ПВЗ"></div>
-            <div class="form-group"><label>Адрес ПВЗ</label><input type="text" id="adminPvzAddress" placeholder="Адрес"></div>
-            <button class="btn-success btn-block" onclick="addPvz()">➕ Добавить ПВЗ</button>
+        <!-- ВКЛАДКИ -->
+        <div class="tabs">
+            <button class="tab active" data-tab="pvz" onclick="switchAdminTab('pvz')">🏪 ПВЗ</button>
+            <button class="tab" data-tab="courier" onclick="switchAdminTab('courier')">🚚 Курьеры</button>
+            <button class="tab" data-tab="support" onclick="switchAdminTab('support')">💬 Поддержка</button>
+            <button class="tab" data-tab="stats" onclick="switchAdminTab('stats')">📊 Статистика</button>
         </div>
-        <div id="pvzList" class="admin-pvz-list"></div>
         
-        <!-- Управление курьерами -->
-        <h4 style="color:#f5a623;margin:12px 0 8px;">🚚 Управление курьерами</h4>
-        <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;">
-            <div class="form-group"><label>Логин курьера</label><input type="text" id="adminCourierLogin" placeholder="Логин"></div>
-            <div class="form-group"><label>Пароль</label><input type="text" id="adminCourierPass" placeholder="Пароль"></div>
-            <div class="form-group"><label>Имя</label><input type="text" id="adminCourierName" placeholder="Имя курьера"></div>
-            <button class="btn-info btn-block" onclick="addCourier()">➕ Добавить курьера</button>
+        <!-- ПВЗ -->
+        <div id="tabPvz">
+            <h4 style="color:#f5a623;margin-bottom:10px;">🏪 Управление ПВЗ</h4>
+            <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;">
+                <div class="form-group"><label>Код ПВЗ</label><input type="text" id="adminPvzCode" placeholder="Код ПВЗ"></div>
+                <div class="form-group"><label>Адрес ПВЗ</label><input type="text" id="adminPvzAddress" placeholder="Адрес"></div>
+                <button class="btn-success btn-block" onclick="addPvz()">➕ Добавить ПВЗ</button>
+            </div>
+            <div id="pvzList" class="admin-pvz-list"></div>
         </div>
-        <div id="courierList" style="max-height:150px;overflow-y:auto;"></div>
         
-        <!-- Управление поддержкой -->
-        <h4 style="color:#f5a623;margin:12px 0 8px;">💬 Управление поддержкой</h4>
-        <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;">
-            <div class="form-group"><label>Логин сотрудника</label><input type="text" id="adminSupportLogin" placeholder="Логин"></div>
-            <div class="form-group"><label>Пароль</label><input type="text" id="adminSupportPass" placeholder="Пароль"></div>
-            <button class="btn-info btn-block" onclick="addSupport()">➕ Добавить сотрудника поддержки</button>
+        <!-- КУРЬЕРЫ -->
+        <div id="tabCourier" class="hidden">
+            <h4 style="color:#f5a623;margin-bottom:10px;">🚚 Управление курьерами</h4>
+            <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;">
+                <div class="form-group"><label>Логин курьера</label><input type="text" id="adminCourierLogin" placeholder="Логин"></div>
+                <div class="form-group"><label>Пароль</label><input type="text" id="adminCourierPass" placeholder="Пароль"></div>
+                <div class="form-group"><label>Имя курьера</label><input type="text" id="adminCourierName" placeholder="Имя курьера"></div>
+                <button class="btn-info btn-block" onclick="addCourier()">➕ Добавить курьера</button>
+            </div>
+            <div id="courierList" style="max-height:200px;overflow-y:auto;"></div>
         </div>
-        <div id="supportList" style="max-height:150px;overflow-y:auto;"></div>
         
-        <!-- Статистика -->
-        <h4 style="color:#f5a623;margin:12px 0 8px;">📊 Статистика</h4>
-        <div id="stats" style="background:rgba(255,255,255,0.03);border-radius:14px;padding:12px;"></div>
+        <!-- ПОДДЕРЖКА -->
+        <div id="tabSupport" class="hidden">
+            <h4 style="color:#f5a623;margin-bottom:10px;">💬 Управление поддержкой</h4>
+            <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;">
+                <div class="form-group"><label>Логин сотрудника</label><input type="text" id="adminSupportLogin" placeholder="Логин"></div>
+                <div class="form-group"><label>Пароль</label><input type="text" id="adminSupportPass" placeholder="Пароль"></div>
+                <button class="btn-info btn-block" onclick="addSupport()">➕ Добавить сотрудника</button>
+            </div>
+            <div id="supportList" style="max-height:200px;overflow-y:auto;"></div>
+        </div>
+        
+        <!-- СТАТИСТИКА -->
+        <div id="tabStats" class="hidden">
+            <h4 style="color:#f5a623;margin-bottom:10px;">📊 Статистика</h4>
+            <div id="stats" style="background:rgba(255,255,255,0.03);border-radius:14px;padding:12px;"></div>
+        </div>
     </div>
 </div>
 
@@ -100,6 +119,7 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+db.goOnline();
 
 let currentUser = null;
 
@@ -135,6 +155,17 @@ function logout() {
     document.getElementById('mainContent').classList.add('hidden');
     document.getElementById('userNameDisplay').textContent = 'Гость';
     showToast('👋 Выход выполнен');
+}
+
+function switchAdminTab(tab) {
+    document.querySelectorAll('#mainContent .tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    ['tabPvz', 'tabCourier', 'tabSupport', 'tabStats'].forEach(id => {
+        document.getElementById(id).classList.toggle('hidden', id !== 'tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+    });
+    if (tab === 'pvz') loadPvz();
+    if (tab === 'courier') loadCouriers();
+    if (tab === 'support') loadSupport();
+    if (tab === 'stats') loadStats();
 }
 
 // ========== ПВЗ ==========
