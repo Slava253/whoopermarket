@@ -49,8 +49,6 @@
         .scanner-container { background:#000; border-radius:16px; overflow:hidden; position:relative; min-height:300px; display:flex; align-items:center; justify-content:center; margin:12px 0; }
         .scanner-container video { width:100%; display:block; }
         .scanner-overlay { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:200px; height:200px; border:2px solid #f5a623; border-radius:12px; box-shadow:0 0 0 4000px rgba(0,0,0,0.4); pointer-events:none; }
-        .scan-btn-group { display:flex; gap:6px; flex-wrap:wrap; margin:10px 0; }
-        .scan-btn-group button { flex:1; padding:10px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; font-size:0.8rem; }
         .scanner-input-area { display:flex; gap:8px; margin:10px 0; }
         .scanner-input-area input { flex:1; padding:10px 16px; border-radius:30px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.05); color:#fff; font-size:0.85rem; outline:none; }
         .scanner-input-area button { padding:10px 20px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; }
@@ -65,6 +63,7 @@
 </head>
 <body>
 <div class="container">
+    
     <div class="header">
         <div class="logo">📦 WHOPPER ПВЗ</div>
         <div class="user-badge">👤 <span id="userNameDisplay">Гость</span> <button onclick="logout()">Выйти</button></div>
@@ -138,6 +137,7 @@ let currentPvzCode = null;
 let orderScanner = null;
 let packageScanner = null;
 let scannedOrderId = null;
+let usedPickupNumbers = [];
 
 // ========== ТОСТ ==========
 function showToast(msg) {
@@ -151,7 +151,7 @@ function showToast(msg) {
     toast.textContent = msg;
     toast.classList.add('show');
     clearTimeout(toast._timeout);
-    toast._timeout = setTimeout(() => toast.classList.remove('show'), 2500);
+    toast._timeout = setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
 // ========== АВТОРИЗАЦИЯ ==========
@@ -171,6 +171,7 @@ function login() {
                     document.getElementById('mainContent').classList.remove('hidden');
                     document.getElementById('userNameDisplay').textContent = '🏪 ПВЗ ' + code;
                     showToast('👋 Добро пожаловать в ПВЗ!');
+                    loadUsedNumbers();
                     viewOrders('collecting');
                 }
             });
@@ -188,6 +189,59 @@ function logout() {
     document.getElementById('mainContent').classList.add('hidden');
     document.getElementById('userNameDisplay').textContent = 'Гость';
     showToast('👋 Выход выполнен');
+}
+
+// ========== ЗАГРУЗКА ИСПОЛЬЗОВАННЫХ НОМЕРОВ ==========
+function loadUsedNumbers() {
+    db.ref('orders').once('value', (sn) => {
+        usedPickupNumbers = [];
+        sn.forEach(child => {
+            const order = child.val();
+            if (order.pickupNumber) {
+                usedPickupNumbers.push(order.pickupNumber);
+            }
+        });
+        console.log('📋 Загружено использованных номеров:', usedPickupNumbers.length);
+    });
+}
+
+// ========== ГЕНЕРАЦИЯ СЛУЧАЙНОГО НОМЕРА (РАНДОМНЫЙ ПОРЯДОК) ==========
+function generateRandomPickupNumber() {
+    return new Promise((resolve) => {
+        // Сначала обновляем список использованных номеров
+        db.ref('orders').once('value', (sn) => {
+            const used = [];
+            sn.forEach(child => {
+                const order = child.val();
+                if (order.pickupNumber) {
+                    used.push(order.pickupNumber);
+                }
+            });
+            usedPickupNumbers = used;
+            
+            // Создаём массив всех возможных номеров от 001 до 999
+            const allNumbers = [];
+            for (let i = 0; i < 1000; i++) {
+                allNumbers.push(String(i).padStart(3, '0'));
+            }
+            
+            // Убираем использованные номера
+            const available = allNumbers.filter(num => !used.includes(num));
+            
+            if (available.length === 0) {
+                // Если все номера заняты (маловероятно) - генерируем случайный
+                const random = String(Math.floor(Math.random() * 900) + 100).padStart(3, '0');
+                resolve(random);
+                return;
+            }
+            
+            // Выбираем случайный номер из доступных
+            const randomIndex = Math.floor(Math.random() * available.length);
+            const selected = available[randomIndex];
+            console.log('🎲 Доступно номеров:', available.length, 'Выбран:', selected);
+            resolve(selected);
+        });
+    });
 }
 
 // ========== СТАТУСЫ ==========
@@ -236,18 +290,7 @@ function viewOrders(type) {
     });
 }
 
-// ========== ГОТОВ К ВЫДАЧЕ (ТОЛЬКО ПОСЛЕ СКАНИРОВАНИЯ УПАКОВКИ) ==========
-function generatePickupNumber() {
-    return new Promise((resolve) => {
-        db.ref('orders').once('value', (sn) => {
-            const used = [];
-            sn.forEach(child => { const order = child.val(); if (order.pickupNumber) used.push(order.pickupNumber); });
-            for (let i = 0; i < 1000; i++) { const num = String(i).padStart(3, '0'); if (!used.includes(num)) { resolve(num); return; } }
-            resolve(String(Math.floor(Math.random() * 900) + 100).padStart(3, '0'));
-        });
-    });
-}
-
+// ========== ГОТОВ К ВЫДАЧЕ (С ГЕНЕРАЦИЕЙ СЛУЧАЙНОГО НОМЕРА) ==========
 async function readyOrder(orderId) {
     // Проверяем, отсканирована ли упаковка
     if (scannedOrderId !== orderId) {
@@ -255,11 +298,18 @@ async function readyOrder(orderId) {
         return;
     }
     
-    const pickupNumber = await generatePickupNumber();
+    // Генерируем случайный номер
+    const pickupNumber = await generateRandomPickupNumber();
+    
     db.ref('orders').orderByChild('id').equalTo(orderId).once('value', (sn) => {
         sn.forEach(child => {
-            db.ref('orders/' + child.key).update({ status: 'ready', pickupNumber: pickupNumber });
-            showToast('✅ Заказ готов! Номер: ' + pickupNumber);
+            db.ref('orders/' + child.key).update({ 
+                status: 'ready', 
+                pickupNumber: pickupNumber 
+            });
+            // Добавляем номер в список использованных
+            usedPickupNumbers.push(pickupNumber);
+            showToast('✅ Заказ готов! Номер хранения: ' + pickupNumber);
             scannedOrderId = null;
             document.getElementById('scannedPackageResult').innerHTML = '';
             viewOrders('collecting');
@@ -267,7 +317,7 @@ async function readyOrder(orderId) {
     });
 }
 
-// ========== ВЫДАТЬ ЗАКАЗ (СПИСАНИЕ ДЕНЕГ) ==========
+// ========== ВЫДАТЬ ЗАКАЗ ==========
 function deliverOrder(orderId) {
     if (!confirm('Выдать заказ?')) return;
     db.ref('orders').orderByChild('id').equalTo(orderId).once('value', (sn) => {
@@ -275,7 +325,6 @@ function deliverOrder(orderId) {
             const order = child.val();
             db.ref('orders/' + child.key).update({ status: 'delivered', deliveredAt: Date.now() });
             
-            // ===== СПИСЫВАЕМ ДЕНЬГИ ЕСЛИ ОПЛАТА ПРИ ПОЛУЧЕНИИ =====
             if (order.payment === 'on_delivery') {
                 db.ref('users').orderByChild('phone').equalTo(order.phone).once('value', (userSn) => {
                     userSn.forEach(userChild => {
@@ -287,28 +336,13 @@ function deliverOrder(orderId) {
                 });
             }
             
-            // Добавляем уведомление клиенту
-            db.ref('users').orderByChild('phone').equalTo(order.phone).once('value', (userSn) => {
-                userSn.forEach(userChild => {
-                    const userId = userChild.key;
-                    db.ref('notifications/' + userId).push().set({
-                        title: '📦 Заказ выдан',
-                        text: 'Ваш заказ #' + order.id + ' выдан в ПВЗ',
-                        type: 'order',
-                        orderId: order.id,
-                        createdAt: Date.now(),
-                        read: false
-                    });
-                });
-            });
-            
             showToast('✅ Заказ выдан!');
             viewOrders('ready');
         });
     });
 }
 
-// ========== ВОЗВРАТ В ТЕЧЕНИЕ 14 ДНЕЙ ==========
+// ========== ВОЗВРАТ ==========
 function returnOrder(orderId) {
     db.ref('orders').orderByChild('id').equalTo(orderId).once('value', (sn) => {
         sn.forEach(child => {
@@ -327,27 +361,12 @@ function returnOrder(orderId) {
             
             db.ref('orders/' + child.key).update({ status: 'return', returnedAt: Date.now() });
             
-            // Возвращаем деньги
             db.ref('users').orderByChild('phone').equalTo(order.phone).once('value', (userSn) => {
                 userSn.forEach(userChild => {
                     const user = userChild.val();
                     const newWallet = (user.wallet || 0) + order.total;
                     db.ref('users/' + userChild.key).update({ wallet: newWallet });
                     showToast('💰 Возвращено ' + order.total + ' ₽ на кошелёк');
-                });
-            });
-            
-            // Уведомление клиенту
-            db.ref('users').orderByChild('phone').equalTo(order.phone).once('value', (userSn) => {
-                userSn.forEach(userChild => {
-                    db.ref('notifications/' + userChild.key).push().set({
-                        title: '🔄 Возврат оформлен',
-                        text: 'Возврат по заказу #' + order.id + ' оформлен. Деньги возвращены на кошелёк.',
-                        type: 'return',
-                        orderId: order.id,
-                        createdAt: Date.now(),
-                        read: false
-                    });
                 });
             });
             
@@ -405,7 +424,6 @@ function onPackageScanSuccess(decodedText) {
     
     try {
         const data = JSON.parse(decodedText);
-        // Ищем заказ по данным из упаковки
         if (data.orderId) {
             findOrderByPackage(data.orderId);
         } else if (data.code) {
@@ -447,7 +465,7 @@ function findOrderByPackage(text) {
                         <div>📱 ${order.phone || 'Не указан'}</div>
                         <div>📌 Статус: ${getStatusName(order.status)}</div>
                         <div style="margin-top:8px;color:#888;font-size:0.8rem;">Теперь можно нажать "Готов к выдаче"</div>
-                        <div class="code-display">📋 Номер для выдачи: ${order.pickupNumber || 'Будет сгенерирован'}</div>
+                        <div class="code-display">📋 Номер для выдачи: ${order.pickupNumber || 'Будет сгенерирован случайно'}</div>
                     </div>
                 `;
             }
@@ -597,6 +615,7 @@ function findOrder(code) {
 
 // ========== ИНИЦИАЛИЗАЦИЯ ==========
 console.log('📦 WHOPPER ПВЗ загружен');
+console.log('🎲 Номера хранения генерируются в случайном порядке');
 </script>
 </body>
 </html>
