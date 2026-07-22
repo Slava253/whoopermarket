@@ -164,7 +164,6 @@ function getStatusName(s) {
 
 function loadOrders() {
     const container = document.getElementById('courierOrders');
-    // Показываем заказы для курьера: готовые и в статусах курьера
     db.ref('orders').orderByChild('delivery').equalTo('courier').on('value', (sn) => {
         const orders = [];
         sn.forEach(child => {
@@ -207,6 +206,7 @@ function courierGoToPvz(orderId) {
         sn.forEach(child => {
             db.ref('orders/' + child.key).update({ status: 'courier_to_pvz' });
             showToast('🚚 Курьер едет в ПВЗ');
+            loadOrders();
         });
     });
 }
@@ -216,6 +216,7 @@ function courierGoOut(orderId) {
         sn.forEach(child => {
             db.ref('orders/' + child.key).update({ status: 'courier_out' });
             showToast('🚚 Курьер выехал к клиенту');
+            loadOrders();
         });
     });
 }
@@ -225,6 +226,7 @@ function courierArrived(orderId) {
         sn.forEach(child => {
             db.ref('orders/' + child.key).update({ status: 'courier_arrived' });
             showToast('📍 Курьер прибыл на место');
+            loadOrders();
         });
     });
 }
