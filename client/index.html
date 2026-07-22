@@ -16,17 +16,18 @@
         .logo { font-size:1.2rem; font-weight:bold; color:#f5a623; }
         .user-badge { font-size:0.7rem; color:#888; background:rgba(255,255,255,0.05); padding:4px 12px; border-radius:30px; }
         .user-badge button { background:none; border:none; color:#f5a623; cursor:pointer; margin-left:8px; }
-        .btn { padding:8px 16px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; font-size:0.8rem; }
+        .btn { padding:8px 16px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; font-size:0.8rem; transition:0.15s; }
         .btn-primary { background:#f5a623; color:#1a1a2e; }
         .btn-success { background:#4CAF50; color:#fff; }
         .btn-danger { background:#ef4444; color:#fff; }
         .btn-secondary { background:rgba(255,255,255,0.08); color:#fff; }
         .btn-warning { background:#ff9800; color:#fff; }
+        .btn-info { background:#2196F3; color:#fff; }
         .btn-block { width:100%; padding:10px; }
         .form-group { margin-bottom:10px; }
         .form-group label { display:block; font-size:0.7rem; color:#888; margin-bottom:4px; }
         .form-group input, .form-group textarea, .form-group select { width:100%; padding:10px 14px; border-radius:30px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.05); color:#fff; font-size:0.85rem; outline:none; }
-        .form-group textarea { border-radius:14px; min-height:80px; resize:vertical; }
+        .form-group textarea { border-radius:14px; min-height:60px; resize:vertical; }
         .form-group select option { background:#1a1a2e; color:#fff; }
         .auth-box { background:rgba(255,255,255,0.03); border-radius:16px; padding:20px; margin-bottom:16px; border:1px solid rgba(255,255,255,0.05); }
         .auth-box h3 { margin-bottom:12px; color:#f5a623; font-size:1rem; }
@@ -35,10 +36,10 @@
         .wallet { background:rgba(255,255,255,0.03); border-radius:14px; padding:12px 16px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
         .wallet .amount { font-size:1.2rem; font-weight:bold; color:#f5a623; }
         .tabs { display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap; }
-        .tab { padding:8px 16px; border-radius:30px; background:rgba(255,255,255,0.05); cursor:pointer; font-size:0.75rem; color:#888; border:1px solid transparent; }
+        .tab { padding:8px 16px; border-radius:30px; background:rgba(255,255,255,0.05); cursor:pointer; font-size:0.75rem; color:#888; border:1px solid transparent; transition:0.15s; }
         .tab.active { background:rgba(245,166,35,0.15); color:#f5a623; border-color:#f5a623; }
         .product-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; margin-bottom:16px; }
-        .product-card { background:rgba(255,255,255,0.05); border-radius:14px; padding:12px; text-align:center; border:1px solid rgba(255,255,255,0.05); cursor:pointer; }
+        .product-card { background:rgba(255,255,255,0.05); border-radius:14px; padding:12px; text-align:center; border:1px solid rgba(255,255,255,0.05); cursor:pointer; transition:0.15s; }
         .product-card:hover { background:rgba(255,255,255,0.08); }
         .product-card .product-image { width:100%; height:100px; object-fit:cover; border-radius:10px; margin-bottom:6px; }
         .product-card .name { font-weight:600; font-size:0.85rem; margin-bottom:4px; }
@@ -58,6 +59,9 @@
         .status-ready { background:#4CAF50; color:#fff; }
         .status-delivered { background:#999; color:#fff; }
         .status-return { background:#ef4444; color:#fff; }
+        .status-courier_to_pvz { background:#2196F3; color:#fff; }
+        .status-courier_out { background:#2196F3; color:#fff; }
+        .status-courier_arrived { background:#4CAF50; color:#fff; }
         .order-card .order-code { font-size:1.6rem; font-weight:bold; color:#f5a623; font-family:monospace; letter-spacing:6px; background:rgba(255,255,255,0.08); padding:10px; border-radius:12px; margin:8px 0; text-align:center; border:2px solid rgba(245,166,35,0.25); }
         .order-card .order-pickup-number { font-size:1.3rem; font-weight:bold; color:#4CAF50; font-family:monospace; background:rgba(76,175,80,0.15); padding:6px 16px; border-radius:10px; display:inline-block; border:2px solid #4CAF50; letter-spacing:4px; }
         .order-card .order-review { margin-top:10px; padding:10px; background:rgba(255,255,255,0.05); border-radius:10px; }
@@ -171,6 +175,17 @@
         <button class="modal-close" onclick="closeCheckoutModal()">✕</button>
         <h3>💳 Оформление заказа</h3>
         <div class="form-group">
+            <label>📍 Способ получения</label>
+            <select id="checkoutDelivery">
+                <option value="pvz">🏪 ПВЗ</option>
+                <option value="courier">🚚 Курьер</option>
+            </select>
+        </div>
+        <div id="checkoutAddressField" class="form-group hidden">
+            <label>📍 Адрес доставки</label>
+            <input type="text" id="checkoutAddress" placeholder="Введите адрес">
+        </div>
+        <div id="checkoutPvzField" class="form-group">
             <label>📍 Выберите ПВЗ</label>
             <select id="checkoutPvz"><option value="">-- Выберите ПВЗ --</option></select>
         </div>
@@ -215,7 +230,6 @@
 </div>
 
 <script>
-// ========== FIREBASE ==========
 const firebaseConfig = {
     apiKey: "AIzaSyBlZ5ZtyTXgtXxSJAx1jOxwhTrzlHRJmo",
     authDomain: "bk-cashier.firebaseapp.com",
@@ -227,8 +241,8 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+db.goOnline();
 
-// ========== ПЕРЕМЕННЫЕ ==========
 let currentUser = null;
 let cart = [];
 let allPvzList = [];
@@ -236,7 +250,6 @@ let selectedStar = 0;
 let reviewOrderId = null;
 let reviewPhotoData = null;
 
-// ========== ТОСТ ==========
 function showToast(msg, err = false) {
     let t = document.getElementById('toast');
     if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; document.body.appendChild(t); }
@@ -244,7 +257,7 @@ function showToast(msg, err = false) {
     t.style.background = err ? '#ef4444' : '#1a1a2e';
     t.classList.add('show');
     clearTimeout(t._timeout);
-    t._timeout = setTimeout(() => t.classList.remove('show'), 3000);
+    t._timeout = setTimeout(() => t.classList.remove('show'), 2500);
 }
 
 function generateId(p) { return p + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase(); }
@@ -277,18 +290,12 @@ function login() {
     
     db.ref('users').orderByChild('phone').equalTo(phone).once('value', (sn) => {
         if (sn.exists()) {
-            let found = false;
             sn.forEach(child => {
                 const u = child.val();
                 currentUser = { id: child.key, phone: u.phone, name: u.name, wallet: u.wallet || 0 };
-                found = true;
             });
-            if (found) {
-                showToast('👋 Добро пожаловать, ' + currentUser.name + '!');
-                enterMode();
-            } else {
-                showToast('❌ Ошибка входа', true);
-            }
+            showToast('👋 Добро пожаловать, ' + currentUser.name + '!');
+            enterMode();
         } else {
             document.getElementById('loginError').textContent = '❌ Пользователь не найден. Зарегистрируйтесь.';
             document.getElementById('loginError').style.display = 'block';
@@ -298,8 +305,7 @@ function login() {
 }
 
 function logout() {
-    currentUser = null;
-    cart = [];
+    currentUser = null; cart = [];
     document.getElementById('authBox').classList.remove('hidden');
     document.getElementById('mainContent').classList.add('hidden');
     document.getElementById('userNameDisplay').textContent = 'Гость';
@@ -318,10 +324,17 @@ function enterMode() {
     loadReviews();
     loadSupport();
     renderCart();
+    
+    // Обработка смены способа доставки
+    document.getElementById('checkoutDelivery').addEventListener('change', function() {
+        const val = this.value;
+        document.getElementById('checkoutAddressField').classList.toggle('hidden', val !== 'courier');
+        document.getElementById('checkoutPvzField').classList.toggle('hidden', val !== 'pvz');
+    });
 }
 
 function loadPvzList() {
-    db.ref('pvz').on('value', (sn) => {
+    db.ref('pvz').once('value', (sn) => {
         allPvzList = [];
         sn.forEach(child => { allPvzList.push({ id: child.key, ...child.val() }); });
         const sel = document.getElementById('checkoutPvz');
@@ -391,18 +404,30 @@ function closeCheckoutModal() { document.getElementById('checkoutModal').classLi
 
 function confirmCheckout() {
     if (!currentUser) { showToast('❌ Войдите'); return; }
-    const pvz = document.getElementById('checkoutPvz').value;
-    if (!pvz) { showToast('❌ Выберите ПВЗ'); return; }
+    const delivery = document.getElementById('checkoutDelivery').value;
+    let address = null, pvz = null;
+    
+    if (delivery === 'courier') {
+        address = document.getElementById('checkoutAddress').value.trim();
+        if (!address) { showToast('❌ Введите адрес', true); return; }
+    } else {
+        pvz = document.getElementById('checkoutPvz').value;
+        if (!pvz) { showToast('❌ Выберите ПВЗ', true); return; }
+    }
+    
     const payment = document.getElementById('checkoutPayment').value;
     const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
     if (payment === 'now' && currentUser.wallet < total) { showToast('❌ Недостаточно средств'); return; }
+    
     const orderId = generateId('ORD');
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const order = {
         id: orderId, user: currentUser.phone, userName: currentUser.name,
         phone: currentUser.phone,
         items: cart.map(i => ({ name: i.name, price: i.price, qty: i.qty, image: i.image || null })),
-        total, code, pvz, payment, status: 'collecting', createdAt: Date.now()
+        total, code, pvz, address, delivery, payment, 
+        status: 'collecting', 
+        createdAt: Date.now()
     };
     if (payment === 'now') {
         currentUser.wallet -= total;
@@ -411,7 +436,7 @@ function confirmCheckout() {
     }
     db.ref('orders').push().set(order).then(() => {
         cart = []; renderCart(); loadOrders(); renderQR(); closeCheckoutModal();
-        showToast(`✅ Заказ #${orderId} оформлен! Код: ${code}`);
+        showToast(`✅ Заказ #${orderId} оформлен!`);
     });
 }
 
@@ -433,13 +458,28 @@ function loadOrders() {
                 <div style="font-weight:bold;">💰 ${o.total} ₽</div>
                 <div class="order-code">🔑 ${o.code}</div>
                 ${o.pickupNumber ? `<div style="text-align:center;margin:6px 0;"><span class="order-pickup-number">📋 ${o.pickupNumber}</span></div>` : ''}
-                <div class="order-delivery-info">📍 ПВЗ: <span>${o.pvz || 'Не выбран'}</span></div>
+                <div class="order-delivery-info">📦 ${o.delivery === 'courier' ? '🚚 Курьер' : '🏪 ПВЗ'}</div>
+                ${o.address ? `<div class="order-delivery-info">📍 ${o.address}</div>` : ''}
+                ${o.pvz ? `<div class="order-delivery-info">📍 ПВЗ: <span>${o.pvz}</span></div>` : ''}
                 <div class="order-delivery-info">💳 ${o.payment === 'now' ? 'Оплачено сразу' : 'Оплата при получении'}</div>
                 ${o.status === 'delivered' && !o.review ? `<button class="btn-warning" onclick="openReviewModal('${o.id}')" style="margin-top:6px;padding:4px 12px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">⭐ Оставить отзыв</button>` : ''}
                 ${o.review ? `<div class="order-review"><div class="stars">${'★'.repeat(o.review.stars)}${'☆'.repeat(5-o.review.stars)}</div><div>${o.review.comment}</div>${o.review.photo ? `<img src="${o.review.photo}" class="review-photo" onclick="openPhotoModal('${o.review.photo}')">` : ''}</div>` : ''}
             </div>
         `).join('');
     });
+}
+
+function getStatusName(s) {
+    const m = { 
+        'collecting': '🟡 Собирается', 
+        'ready': '✅ Готов', 
+        'delivered': '📦 Выдан', 
+        'return': '🔄 Возврат',
+        'courier_to_pvz': '🚚 Курьер едет в ПВЗ',
+        'courier_out': '🚚 Курьер выехал',
+        'courier_arrived': '📍 Курьер прибыл'
+    };
+    return m[s] || s;
 }
 
 function renderQR() {
@@ -469,11 +509,6 @@ function renderQR() {
             info.innerHTML = `<div style="background:rgba(255,255,255,0.05);padding:10px;border-radius:10px;">📦 ${order.items.length} товаров<br>💰 ${order.total} ₽<br>🔑 ${order.code}</div>`;
         } catch(e) { container.innerHTML = '<div style="color:#ff4444;">⚠️ Ошибка QR</div>'; }
     });
-}
-
-function getStatusName(s) {
-    const m = { 'collecting': '🟡 Собирается', 'ready': '✅ Готов', 'delivered': '📦 Выдан', 'return': '🔄 Возврат' };
-    return m[s] || s;
 }
 
 function switchTab(tab) {
@@ -588,7 +623,7 @@ function closePhotoModal() {
     document.body.style.overflow = '';
 }
 
-console.log('🛒 WHOPPER - Клиент загружен');
+console.log('🛒 WHOPPER - Клиент загружен (быстрая версия)');
 </script>
 </body>
 </html>
