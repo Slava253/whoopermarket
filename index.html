@@ -4,17 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>WHOPPER MARKET</title>
-    
-    <!-- PWA Meta -->
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#f5a623">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="WHOPPER">
-    <link rel="apple-touch-icon" href="/icon-192.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
-    
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:Arial,sans-serif; background:#0f0f1a; color:#fff; display:flex; justify-content:center; align-items:center; min-height:100vh; padding:20px; }
@@ -28,9 +17,6 @@
         .app-card .name { font-weight:bold; font-size:1rem; }
         .app-card .desc { font-size:0.7rem; color:#888; margin-top:4px; }
         .app-card.full { grid-column:span 2; }
-        .install-btn { background:#f5a623; color:#1a1a2e; border:none; padding:12px 24px; border-radius:40px; font-weight:bold; font-size:1rem; cursor:pointer; margin-top:20px; display:none; }
-        .install-btn:hover { opacity:0.8; }
-        .install-btn.show { display:block; }
         @media (max-width:400px) { .app-grid { grid-template-columns:1fr; } .app-card.full { grid-column:span 1; } }
     </style>
 </head>
@@ -65,70 +51,6 @@
                 <div class="desc">Управление ПВЗ и поддержкой</div>
             </a>
         </div>
-        
-        <button id="installBtn" class="install-btn">📱 Установить приложение</button>
     </div>
-
-    <script>
-        // ========== PWA УСТАНОВКА ==========
-        let deferredPrompt = null;
-
-        // Регистрация Service Worker
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js')
-                .then(reg => console.log('✅ Service Worker зарегистрирован'))
-                .catch(err => console.log('❌ Ошибка SW:', err));
-        }
-
-        // Обработка установки PWA
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            const installBtn = document.getElementById('installBtn');
-            installBtn.classList.add('show');
-            installBtn.addEventListener('click', () => {
-                if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    deferredPrompt.userChoice.then((choiceResult) => {
-                        if (choiceResult.outcome === 'accepted') {
-                            console.log('✅ Приложение установлено');
-                        } else {
-                            console.log('❌ Установка отменена');
-                        }
-                        deferredPrompt = null;
-                        installBtn.classList.remove('show');
-                    });
-                }
-            });
-        });
-
-        // Обработка успешной установки
-        window.addEventListener('appinstalled', (e) => {
-            console.log('✅ WHOPPER установлен как PWA');
-            document.getElementById('installBtn').classList.remove('show');
-            showToast('🎉 Приложение успешно установлено!');
-        });
-
-        function showToast(msg) {
-            let toast = document.getElementById('toast');
-            if (!toast) {
-                toast = document.createElement('div');
-                toast.id = 'toast';
-                toast.style.cssText = `
-                    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
-                    background:#333; color:#fff; padding:12px 24px; border-radius:40px;
-                    z-index:999; opacity:0; transition:0.3s; pointer-events:none;
-                    font-weight:600; max-width:90%; text-align:center;
-                `;
-                document.body.appendChild(toast);
-            }
-            toast.textContent = msg;
-            toast.style.opacity = '1';
-            clearTimeout(toast._timeout);
-            toast._timeout = setTimeout(() => { toast.style.opacity = '0'; }, 2500);
-        }
-
-        console.log('📦 WHOPPER PWA готов к установке!');
-    </script>
 </body>
 </html>
