@@ -4,12 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>WHOPPER - Продавец</title>
-    
-    <!-- ЛОКАЛЬНЫЕ БИБЛИОТЕКИ -->
-    <script src="../libs/firebase-app-compat.js"></script>
-    <script src="../libs/firebase-database-compat.js"></script>
-    <script src="../libs/qrcode.min.js"></script>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:Arial,sans-serif; background:#0f0f1a; color:#fff; padding:10px; min-height:100vh; }
@@ -241,16 +238,30 @@ function showProductQR(id) {
         const container = document.getElementById('modalQrContainer');
         container.innerHTML = '';
         try {
+            // ПРОВЕРЯЕМ, ЧТО QRCode ЗАГРУЖЕН
             if (typeof QRCode !== 'undefined') {
-                new QRCode(container, { text: JSON.stringify(qrData), width: 180, height: 180, colorDark: "#f5a623", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
+                new QRCode(container, { 
+                    text: JSON.stringify(qrData), 
+                    width: 180, 
+                    height: 180, 
+                    colorDark: "#f5a623", 
+                    colorLight: "#ffffff", 
+                    correctLevel: QRCode.CorrectLevel.H 
+                });
+                console.log('✅ QR-код сгенерирован для товара:', p.name);
             } else {
+                console.error('❌ QRCode библиотека не загружена');
+                // Резервный вариант через API
                 const enc = encodeURIComponent(JSON.stringify(qrData));
                 const img = document.createElement('img');
                 img.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${enc}&format=png&bgcolor=ffffff&color=f5a623&margin=10`;
                 img.style.width = '160px'; img.style.height = '160px'; img.style.borderRadius = '12px'; img.style.background = 'white'; img.style.padding = '10px';
                 container.appendChild(img);
             }
-        } catch(e) { container.innerHTML = '<div style="color:#ff4444;">⚠️ Ошибка QR</div>'; }
+        } catch(e) { 
+            console.error('Ошибка генерации QR:', e);
+            container.innerHTML = '<div style="color:#ff4444;">⚠️ Ошибка QR</div>'; 
+        }
         document.getElementById('productModal').classList.remove('hidden');
     });
 }
