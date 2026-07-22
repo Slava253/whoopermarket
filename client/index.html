@@ -142,6 +142,7 @@
             <button class="btn-primary" onclick="login()">Войти</button>
             <button class="btn-success" onclick="register()">Регистрация</button>
         </div>
+        <div id="loginError" style="color:#ef4444;margin-top:8px;font-size:0.8rem;display:none;"></div>
     </div>
 
     <!-- ОСНОВНОЙ КОНТЕНТ -->
@@ -269,7 +270,7 @@ let reviewPhotoData = null;
 let allPvzList = [];
 
 // ========== ТОСТ ==========
-function showToast(msg) {
+function showToast(msg, isError = false) {
     let toast = document.getElementById('toast');
     if (!toast) {
         toast = document.createElement('div');
@@ -278,9 +279,13 @@ function showToast(msg) {
         document.body.appendChild(toast);
     }
     toast.textContent = msg;
+    toast.style.background = isError ? '#ef4444' : '#333';
     toast.classList.add('show');
     clearTimeout(toast._timeout);
-    toast._timeout = setTimeout(() => toast.classList.remove('show'), 3000);
+    toast._timeout = setTimeout(() => {
+        toast.classList.remove('show');
+        toast.style.background = '#333';
+    }, 3000);
 }
 
 // ========== ГЕНЕРАЦИЯ ID ==========
@@ -288,70 +293,94 @@ function generateId(prefix) {
     return prefix + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
 }
 
-// ========== РЕГИСТРАЦИЯ ==========
+// ========== РЕГИСТРАЦИЯ (ИСПРАВЛЕНА) ==========
 function register() {
     const phone = document.getElementById('clientPhone').value.trim();
     const name = document.getElementById('nameInput').value.trim();
+    const errorDiv = document.getElementById('loginError');
+    errorDiv.style.display = 'none';
     
-    if (!phone) { showToast('❌ Введите номер телефона'); return; }
-    if (!name) { showToast('❌ Введите имя'); return; }
+    if (!phone) { showToast('❌ Введите номер телефона', true); return; }
+    if (!name) { showToast('❌ Введите имя', true); return; }
     
-    db.ref('users').orderByChild('phone').equalTo(phone).once('value', (sn) => {
-        if (sn.exists()) {
-            showToast('❌ Этот номер уже зарегистрирован');
-            return;
-        }
-        
-        const userId = generateId('USR');
-        const userData = {
-            id: userId,
-            phone: phone,
-            name: name,
-            wallet: 1000,
-            createdAt: Date.now()
-        };
-        
-        db.ref('users/' + userId).set(userData)
-            .then(() => {
-                currentUser = userData;
+    // Сначала проверяем, есть ли пользователь
+    db.ref('users').orderByChild('phone').equalTo(phone).once('value')
+        .then((sn) => {
+            if (sn.exists()) {
+                showToast('❌ Этот номер уже зарегистрирован', true);
+                return null;
+            }
+            
+            // Создаём пользователя
+            const userId = generateId('USR');
+            const userData = {
+                id: userId,
+                phone: phone,
+                name: name,
+                wallet: 1000,
+                createdAt: Date.now()
+            };
+            
+            return db.ref('users/' + userId).set(userData).then(() => {
+                // Сразу используем созданного пользователя
+                currentUser = {
+                    id: userId,
+                    phone: phone,
+                    name: name,
+                    wallet: 1000
+                };
                 showToast('✅ Регистрация успешна! +1000 ₽');
                 enterMode();
-            })
-            .catch((error) => {
-                console.error('Ошибка регистрации:', error);
-                showToast('❌ Ошибка регистрации');
             });
-    });
+        })
+        .catch((error) => {
+            console.error('Ошибка регистрации:', error);
+            showToast('❌ Ошибка регистрации: ' + error.message, true);
+        });
 }
 
 // ========== ВХОД ==========
 function login() {
     const phone = document.getElementById('clientPhone').value.trim();
+    const errorDiv = document.getElementById('loginError');
+    errorDiv.style.display = 'none';
     
-    if (!phone) { showToast('❌ Введите номер телефона'); return; }
+    if (!phone) { 
+        showToast('❌ Введите номер телефона', true); 
+        return; 
+    }
     
-    db.ref('users').orderByChild('phone').equalTo(phone).once('value', (sn) => {
-        if (sn.exists()) {
-            let userFound = false;
-            sn.forEach(child => {
-                const user = child.val();
-                currentUser = {
-                    id: child.key,
-                    phone: user.phone,
-                    name: user.name,
-                    wallet: user.wallet || 0
-                };
-                userFound = true;
-                showToast('👋 Добро пожаловать, ' + user.name + '!');
-                enterMode();
-            });
-            if (!userFound) {
-                showToast('❌ Ошибка входа');
+    db.ref('users').orderByChild('phone').equalTo(phone).once('value')
+        .then((sn) => {
+            if (sn.exists()) {
+                let userFound = false;
+                sn.forEach(child => {
+                    const user = child.val();
+                    currentUser = {
+                        id: child.key,
+                        phone: user.phone,
+                        name: user.name,
+                        wallet: user.wallet || 0
+                    };
+                    userFound = true;
+                });
+                
+                if (userFound) {
+                    showToast('👋 Добро пожаловать, ' + currentUser.name + '!');
+                    enterMode();
+                } else {
+                    showToast('❌ Ошибка входа', true);
+                }
+            } else {
+                errorDiv.textContent = '❌ Пользователь с номером ' + phone + ' не найден. Зарегистрируйтесь.';
+                errorDiv.style.display = 'block';
+                showToast('❌ Пользователь не найден', true);
             }
-        } else {
-            showToast('❌ Пользователь не найден. Зарегистрируйтесь.');
-        }
-    });
+        })
+        .catch((error) => {
+            console.error('Ошибка входа:', error);
+            showToast('❌ Ошибка подключения к базе данных', true);
+        });
 }
 
 // ========== ВЫХОД ==========
@@ -361,6 +390,7 @@ function logout() {
     document.getElementById('authBox').classList.remove('hidden');
     document.getElementById('mainContent').classList.add('hidden');
     document.getElementById('userNameDisplay').textContent = 'Гость';
+    document.getElementById('loginError').style.display = 'none';
     showToast('👋 Выход выполнен');
 }
 
