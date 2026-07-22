@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>WHOPPER - Курьер</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:Arial,sans-serif; background:#0f0f1a; color:#fff; padding:10px; min-height:100vh; }
+        .container { max-width:500px; margin:0 auto; }
+        .hidden { display:none !important; }
+        .header { display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:10px 14px; border-radius:16px; margin-bottom:12px; }
+        .logo { font-size:1.2rem; font-weight:bold; color:#f5a623; }
+        .user-badge { font-size:0.7rem; color:#888; background:rgba(255,255,255,0.05); padding:4px 12px; border-radius:30px; }
+        .user-badge button { background:none; border:none; color:#f5a623; cursor:pointer; margin-left:8px; }
+        .btn { padding:8px 16px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; font-size:0.8rem; transition:0.15s; }
+        .btn-primary { background:#f5a623; color:#1a1a2e; }
+        .btn-success { background:#4CAF50; color:#fff; }
+        .btn-danger { background:#ef4444; color:#fff; }
+        .btn-info { background:#2196F3; color:#fff; }
+        .btn-warning { background:#ff9800; color:#fff; }
+        .btn-block { width:100%; padding:10px; }
+        .form-group { margin-bottom:10px; }
+        .form-group label { display:block; font-size:0.7rem; color:#888; margin-bottom:4px; }
+        .form-group input { width:100%; padding:10px 14px; border-radius:30px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.05); color:#fff; font-size:0.85rem; outline:none; }
+        .auth-box { background:rgba(255,255,255,0.03); border-radius:16px; padding:20px; margin-bottom:16px; border:1px solid rgba(255,255,255,0.05); }
+        .auth-box h3 { margin-bottom:12px; color:#f5a623; font-size:1rem; }
+        .auth-actions { display:flex; gap:8px; margin-top:12px; }
+        .auth-actions button { flex:1; padding:10px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; font-size:0.8rem; }
+        .order-card { background:rgba(255,255,255,0.04); border-radius:14px; padding:14px; margin-bottom:10px; border-left:4px solid #2196F3; }
+        .order-card .order-header { display:flex; justify-content:space-between; font-weight:bold; margin-bottom:6px; font-size:0.85rem; flex-wrap:wrap; gap:4px; }
+        .order-card .order-number { color:#f5a623; font-size:0.85rem; }
+        .order-card .order-status { font-size:0.65rem; padding:3px 12px; border-radius:30px; }
+        .status-ready { background:#4CAF50; color:#fff; }
+        .status-courier_to_pvz { background:#2196F3; color:#fff; }
+        .status-courier_out { background:#2196F3; color:#fff; }
+        .status-courier_arrived { background:#4CAF50; color:#fff; }
+        .status-delivered { background:#999; color:#fff; }
+        .order-card .order-code { font-size:1.6rem; font-weight:bold; color:#f5a623; font-family:monospace; letter-spacing:6px; background:rgba(255,255,255,0.08); padding:10px; border-radius:12px; margin:8px 0; text-align:center; border:2px solid rgba(245,166,35,0.25); }
+        .order-item { display:flex; align-items:center; gap:10px; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.03); }
+        .order-item .item-info { flex:1; font-size:0.85rem; }
+        .order-delivery-info { font-size:0.8rem; color:#888; margin:4px 0; }
+        .order-delivery-info span { color:#f5a623; }
+        .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:12px 24px; border-radius:40px; z-index:999; opacity:0; transition:0.3s; pointer-events:none; font-weight:600; max-width:90%; text-align:center; font-size:0.85rem; }
+        .toast.show { opacity:1; }
+        .tabs { display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap; }
+        .tab { padding:8px 16px; border-radius:30px; background:rgba(255,255,255,0.05); cursor:pointer; font-size:0.75rem; color:#888; border:1px solid transparent; transition:0.15s; }
+        .tab.active { background:rgba(245,166,35,0.15); color:#f5a623; border-color:#f5a623; }
+        .code-input-area { display:flex; gap:8px; margin:10px 0; }
+        .code-input-area input { flex:1; padding:10px 16px; border-radius:30px; border:2px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.05); color:#fff; font-size:0.85rem; outline:none; font-family:monospace; letter-spacing:4px; }
+        .code-input-area input:focus { border-color:#f5a623; }
+        .code-input-area button { padding:10px 20px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; }
+        @media (max-width:400px) { .order-card { padding:10px; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="logo">🚚 WHOPPER</div>
+        <div class="user-badge">👤 <span id="userNameDisplay">Гость</span> <button onclick="logout()">Выйти</button></div>
+    </div>
+
+    <div id="authBox" class="auth-box">
+        <h3>🚚 Вход курьера</h3>
+        <div class="form-group"><label>Логин</label><input type="text" id="courierLogin" placeholder="Логин"></div>
+        <div class="form-group"><label>Пароль</label><input type="password" id="courierPass" placeholder="Пароль"></div>
+        <div class="auth-actions"><button class="btn-primary" onclick="login()">Войти</button></div>
+    </div>
+
+    <div id="mainContent" class="hidden">
+        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
+            <button class="tab active" data-tab="orders" onclick="switchTab('orders')">📦 Заказы</button>
+            <button class="tab" data-tab="deliver" onclick="switchTab('deliver')">📤 Выдать</button>
+        </div>
+        
+        <div id="tabOrders">
+            <div id="courierOrders"></div>
+        </div>
+        
+        <div id="tabDeliver" class="hidden">
+            <div style="background:rgba(245,166,35,0.1);border-radius:14px;padding:14px;border:1px solid #f5a623;">
+                <h4 style="color:#f5a623;font-size:0.9rem;">📤 Выдать заказ клиенту</h4>
+                <p style="color:#888;font-size:0.75rem;margin-bottom:8px;">Введите 6-значный код заказа</p>
+                <div class="code-input-area">
+                    <input type="text" id="deliverCodeInput" placeholder="Код заказа" maxlength="6">
+                    <button class="btn-success" onclick="deliverByCode()">📤 Выдать</button>
+                </div>
+                <div id="deliverResult" style="margin-top:8px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyBlZ5ZtyTXgtXxSJAx1jOxwhTrzlHRJmo",
+    authDomain: "bk-cashier.firebaseapp.com",
+    databaseURL: "https://bk-cashier-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "bk-cashier",
+    storageBucket: "bk-cashier.firebasestorage.app",
+    messagingSenderId: "385000840969",
+    appId: "1:385000840969:web:1ec8d09176b6551dc0fdd8"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+db.goOnline();
+
+let currentUser = null;
+
+function showToast(msg, err = false) {
+    let t = document.getElementById('toast');
+    if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; document.body.appendChild(t); }
+    t.textContent = msg;
+    t.style.background = err ? '#ef4444' : '#1a1a2e';
+    t.classList.add('show');
+    clearTimeout(t._timeout);
+    t._timeout = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function login() {
+    const login = document.getElementById('courierLogin').value.trim();
+    const pass = document.getElementById('courierPass').value.trim();
+    if (!login || !pass) { showToast('❌ Заполните все поля', true); return; }
+    db.ref('couriers').orderByChild('login').equalTo(login).once('value', (sn) => {
+        if (sn.exists()) {
+            let found = false;
+            sn.forEach(child => {
+                const c = child.val();
+                if (c.password === pass) {
+                    currentUser = { id: child.key, login: c.login, name: c.name };
+                    found = true;
+                    document.getElementById('authBox').classList.add('hidden');
+                    document.getElementById('mainContent').classList.remove('hidden');
+                    document.getElementById('userNameDisplay').textContent = '🚚 ' + c.name;
+                    showToast('👋 Добро пожаловать, ' + c.name + '!');
+                    loadOrders();
+                }
+            });
+            if (!found) showToast('❌ Неверный пароль', true);
+        } else { showToast('❌ Курьер не найден', true); }
+    });
+}
+
+function logout() {
+    currentUser = null;
+    document.getElementById('authBox').classList.remove('hidden');
+    document.getElementById('mainContent').classList.add('hidden');
+    document.getElementById('userNameDisplay').textContent = 'Гость';
+    showToast('👋 Выход выполнен');
+}
+
+function getStatusName(s) {
+    const m = { 
+        'ready': '✅ Готов к выдаче', 
+        'courier_to_pvz': '🚚 Еду в ПВЗ',
+        'courier_out': '🚚 Выезжаю к клиенту',
+        'courier_arrived': '📍 Прибыл на место',
+        'delivered': '📦 Выдан'
+    };
+    return m[s] || s;
+}
+
+function loadOrders() {
+    const container = document.getElementById('courierOrders');
+    // Показываем заказы для курьера: готовые и в статусах курьера
+    db.ref('orders').orderByChild('delivery').equalTo('courier').on('value', (sn) => {
+        const orders = [];
+        sn.forEach(child => {
+            const o = child.val();
+            if (o.status === 'ready' || 
+                o.status === 'courier_to_pvz' || 
+                o.status === 'courier_out' || 
+                o.status === 'courier_arrived') {
+                orders.push({ id: child.key, ...o });
+            }
+        });
+        orders.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        if (!orders.length) { 
+            container.innerHTML = '<div style="text-align:center;color:#555;padding:20px;">📭 Нет заказов для доставки</div>'; 
+            return; 
+        }
+        container.innerHTML = orders.map(o => `
+            <div class="order-card">
+                <div class="order-header">
+                    <span class="order-number">🆔 ${o.id}</span>
+                    <span class="order-status status-${o.status}">${getStatusName(o.status)}</span>
+                </div>
+                <div>👤 ${o.userName || o.user}</div>
+                <div>📱 ${o.phone || 'Не указан'}</div>
+                <div style="margin:6px 0;">${o.items.map(i => `<div class="order-item"><div class="item-info">${i.name} x${i.qty}</div><div style="color:#f5a623;">${i.price * i.qty} ₽</div></div>`).join('')}</div>
+                <div style="font-weight:bold;">💰 ${o.total} ₽</div>
+                <div class="order-code">🔑 ${o.code}</div>
+                <div class="order-delivery-info">📍 ${o.address || 'Адрес не указан'}</div>
+                ${o.status === 'ready' ? `<button class="btn-info btn-block" onclick="courierGoToPvz('${o.id}')" style="margin-top:6px;">🚚 Еду на ПВЗ</button>` : ''}
+                ${o.status === 'courier_to_pvz' ? `<button class="btn-warning btn-block" onclick="courierGoOut('${o.id}')" style="margin-top:6px;">🚚 Выезжаю</button>` : ''}
+                ${o.status === 'courier_out' ? `<button class="btn-success btn-block" onclick="courierArrived('${o.id}')" style="margin-top:6px;">📍 Прибыл</button>` : ''}
+            </div>
+        `).join('');
+    });
+}
+
+// ========== ДЕЙСТВИЯ КУРЬЕРА ==========
+function courierGoToPvz(orderId) {
+    db.ref('orders').orderByChild('id').equalTo(orderId).once('value', (sn) => {
+        sn.forEach(child => {
+            db.ref('orders/' + child.key).update({ status: 'courier_to_pvz' });
+            showToast('🚚 Курьер едет в ПВЗ');
+        });
+    });
+}
+
+function courierGoOut(orderId) {
+    db.ref('orders').orderByChild('id').equalTo(orderId).once('value', (sn) => {
+        sn.forEach(child => {
+            db.ref('orders/' + child.key).update({ status: 'courier_out' });
+            showToast('🚚 Курьер выехал к клиенту');
+        });
+    });
+}
+
+function courierArrived(orderId) {
+    db.ref('orders').orderByChild('id').equalTo(orderId).once('value', (sn) => {
+        sn.forEach(child => {
+            db.ref('orders/' + child.key).update({ status: 'courier_arrived' });
+            showToast('📍 Курьер прибыл на место');
+        });
+    });
+}
+
+// ========== ВЫДАЧА ПО КОДУ ==========
+function deliverByCode() {
+    const code = document.getElementById('deliverCodeInput').value.trim();
+    const resultDiv = document.getElementById('deliverResult');
+    resultDiv.innerHTML = '';
+    
+    if (!code || code.length < 6) {
+        showToast('❌ Введите 6-значный код', true);
+        return;
+    }
+    
+    db.ref('orders').orderByChild('code').equalTo(code).once('value', (sn) => {
+        if (sn.exists()) {
+            let found = false;
+            sn.forEach(child => {
+                const o = child.val();
+                if (o.status === 'courier_arrived' || o.status === 'ready' || o.status === 'courier_out') {
+                    found = true;
+                    db.ref('orders/' + child.key).update({ status: 'delivered', deliveredAt: Date.now() });
+                    resultDiv.innerHTML = `
+                        <div style="background:rgba(76,175,80,0.15);padding:12px;border-radius:12px;border:1px solid #4CAF50;">
+                            <div style="color:#4CAF50;font-weight:bold;">✅ Заказ #${o.id} выдан!</div>
+                            <div>👤 ${o.userName || o.user}</div>
+                            <div>📍 ${o.address || 'Адрес не указан'}</div>
+                            <div style="font-weight:bold;">💰 ${o.total} ₽</div>
+                        </div>
+                    `;
+                    document.getElementById('deliverCodeInput').value = '';
+                    showToast('✅ Заказ выдан клиенту!');
+                    loadOrders();
+                    setTimeout(() => { resultDiv.innerHTML = ''; }, 5000);
+                } else {
+                    resultDiv.innerHTML = `<div style="color:#ff4444;">❌ Заказ не готов к выдаче (статус: ${getStatusName(o.status)})</div>`;
+                    showToast('❌ Заказ не готов к выдаче', true);
+                }
+            });
+            if (!found) {
+                resultDiv.innerHTML = '<div style="color:#ff4444;">❌ Заказ не найден</div>';
+                showToast('❌ Заказ не найден', true);
+            }
+        } else {
+            resultDiv.innerHTML = '<div style="color:#ff4444;">❌ Заказ с таким кодом не найден</div>';
+            showToast('❌ Заказ не найден', true);
+        }
+    });
+}
+
+function switchTab(tab) {
+    document.querySelectorAll('#mainContent .tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    document.getElementById('tabOrders').classList.toggle('hidden', tab !== 'orders');
+    document.getElementById('tabDeliver').classList.toggle('hidden', tab !== 'deliver');
+    if (tab === 'orders') loadOrders();
+}
+
+console.log('🚚 WHOPPER - Курьер загружен');
+</script>
+</body>
+</html>
