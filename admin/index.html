@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>WHOPPER - Админ</title>
-    
-    <!-- ЛОКАЛЬНЫЕ БИБЛИОТЕКИ -->
-    <script src="../libs/firebase-app-compat.js"></script>
-    <script src="../libs/firebase-database-compat.js"></script>
-    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:Arial,sans-serif; background:#0f0f1a; color:#fff; padding:10px; min-height:100vh; }
@@ -37,6 +34,8 @@
         .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:12px 24px; border-radius:40px; z-index:999; opacity:0; transition:0.3s; pointer-events:none; font-weight:600; max-width:90%; text-align:center; font-size:0.85rem; }
         .toast.show { opacity:1; }
         .admin-pvz-list { max-height:200px; overflow-y:auto; }
+        .courier-item { background:rgba(255,255,255,0.03); border-radius:12px; padding:10px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; border:1px solid rgba(255,255,255,0.05); }
+        .courier-item .courier-info { font-size:0.85rem; }
         @media (max-width:400px) { .pvz-item { padding:8px; } }
     </style>
 </head>
@@ -55,6 +54,7 @@
     </div>
 
     <div id="mainContent" class="hidden">
+        <!-- Управление ПВЗ -->
         <h4 style="color:#f5a623;margin-bottom:10px;">🏪 Управление ПВЗ</h4>
         <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;">
             <div class="form-group"><label>Код ПВЗ</label><input type="text" id="adminPvzCode" placeholder="Код ПВЗ"></div>
@@ -63,6 +63,17 @@
         </div>
         <div id="pvzList" class="admin-pvz-list"></div>
         
+        <!-- Управление курьерами -->
+        <h4 style="color:#f5a623;margin:12px 0 8px;">🚚 Управление курьерами</h4>
+        <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;">
+            <div class="form-group"><label>Логин курьера</label><input type="text" id="adminCourierLogin" placeholder="Логин"></div>
+            <div class="form-group"><label>Пароль</label><input type="text" id="adminCourierPass" placeholder="Пароль"></div>
+            <div class="form-group"><label>Имя</label><input type="text" id="adminCourierName" placeholder="Имя курьера"></div>
+            <button class="btn-info btn-block" onclick="addCourier()">➕ Добавить курьера</button>
+        </div>
+        <div id="courierList" style="max-height:150px;overflow-y:auto;"></div>
+        
+        <!-- Управление поддержкой -->
         <h4 style="color:#f5a623;margin:12px 0 8px;">💬 Управление поддержкой</h4>
         <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;">
             <div class="form-group"><label>Логин сотрудника</label><input type="text" id="adminSupportLogin" placeholder="Логин"></div>
@@ -71,6 +82,7 @@
         </div>
         <div id="supportList" style="max-height:150px;overflow-y:auto;"></div>
         
+        <!-- Статистика -->
         <h4 style="color:#f5a623;margin:12px 0 8px;">📊 Статистика</h4>
         <div id="stats" style="background:rgba(255,255,255,0.03);border-radius:14px;padding:12px;"></div>
     </div>
@@ -98,7 +110,7 @@ function showToast(msg, err = false) {
     t.style.background = err ? '#ef4444' : '#1a1a2e';
     t.classList.add('show');
     clearTimeout(t._timeout);
-    t._timeout = setTimeout(() => t.classList.remove('show'), 3000);
+    t._timeout = setTimeout(() => t.classList.remove('show'), 2500);
 }
 
 function login() {
@@ -111,6 +123,7 @@ function login() {
         document.getElementById('userNameDisplay').textContent = '👑 Администратор';
         showToast('👑 Добро пожаловать, Администратор!');
         loadPvz();
+        loadCouriers();
         loadSupport();
         loadStats();
     } else { showToast('❌ Неверный логин или пароль', true); }
@@ -124,6 +137,7 @@ function logout() {
     showToast('👋 Выход выполнен');
 }
 
+// ========== ПВЗ ==========
 function loadPvz() {
     const container = document.getElementById('pvzList');
     db.ref('pvz').on('value', (sn) => {
@@ -163,6 +177,48 @@ function deletePvz(id) {
     db.ref('pvz/' + id).remove().then(() => { showToast('🗑️ ПВЗ удалён'); loadPvz(); });
 }
 
+// ========== КУРЬЕРЫ ==========
+function loadCouriers() {
+    const container = document.getElementById('courierList');
+    db.ref('couriers').on('value', (sn) => {
+        const couriers = [];
+        sn.forEach(child => { couriers.push({ id: child.key, ...child.val() }); });
+        if (!couriers.length) { container.innerHTML = '<div style="color:#555;padding:8px;">Нет курьеров</div>'; return; }
+        container.innerHTML = couriers.map(c => `
+            <div class="courier-item">
+                <div class="courier-info">
+                    <div style="font-weight:bold;">🚚 ${c.name}</div>
+                    <div style="color:#888;font-size:0.7rem;">Логин: ${c.login}</div>
+                </div>
+                <button class="btn-danger" onclick="deleteCourier('${c.id}')" style="padding:4px 10px;border:none;border-radius:30px;cursor:pointer;font-size:0.7rem;">🗑</button>
+            </div>
+        `).join('');
+    });
+}
+
+function addCourier() {
+    const login = document.getElementById('adminCourierLogin').value.trim();
+    const pass = document.getElementById('adminCourierPass').value.trim();
+    const name = document.getElementById('adminCourierName').value.trim();
+    if (!login || !pass || !name) { showToast('❌ Заполните все поля', true); return; }
+    db.ref('couriers').orderByChild('login').equalTo(login).once('value', (sn) => {
+        if (sn.exists()) { showToast('❌ Логин занят', true); return; }
+        db.ref('couriers').push().set({ login, password: pass, name }).then(() => {
+            showToast('✅ Курьер добавлен!');
+            document.getElementById('adminCourierLogin').value = '';
+            document.getElementById('adminCourierPass').value = '';
+            document.getElementById('adminCourierName').value = '';
+            loadCouriers();
+        });
+    });
+}
+
+function deleteCourier(id) {
+    if (!confirm('Удалить курьера?')) return;
+    db.ref('couriers/' + id).remove().then(() => { showToast('🗑️ Курьер удалён'); loadCouriers(); });
+}
+
+// ========== ПОДДЕРЖКА ==========
 function loadSupport() {
     const container = document.getElementById('supportList');
     db.ref('support_users').on('value', (sn) => {
@@ -201,10 +257,12 @@ function deleteSupport(id) {
     db.ref('support_users/' + id).remove().then(() => { showToast('🗑️ Сотрудник удалён'); loadSupport(); });
 }
 
+// ========== СТАТИСТИКА ==========
 function loadStats() {
     const container = document.getElementById('stats');
     db.ref('orders').once('value', (sn) => {
         let total = 0, collecting = 0, ready = 0, delivered = 0, returns = 0;
+        let courierToPvz = 0, courierOut = 0, courierArrived = 0;
         sn.forEach(child => {
             const o = child.val();
             total++;
@@ -212,6 +270,9 @@ function loadStats() {
             else if (o.status === 'ready') ready++;
             else if (o.status === 'delivered') delivered++;
             else if (o.status === 'return') returns++;
+            else if (o.status === 'courier_to_pvz') courierToPvz++;
+            else if (o.status === 'courier_out') courierOut++;
+            else if (o.status === 'courier_arrived') courierArrived++;
         });
         container.innerHTML = `
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
@@ -234,6 +295,18 @@ function loadStats() {
                 <div style="background:rgba(255,255,255,0.03);padding:8px;border-radius:10px;text-align:center;grid-column:span 2;">
                     <div style="font-size:1.5rem;color:#ef4444;">${returns}</div>
                     <div style="font-size:0.7rem;color:#888;">Возвратов</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.03);padding:8px;border-radius:10px;text-align:center;">
+                    <div style="font-size:1.2rem;color:#2196F3;">${courierToPvz}</div>
+                    <div style="font-size:0.6rem;color:#888;">Курьер едет в ПВЗ</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.03);padding:8px;border-radius:10px;text-align:center;">
+                    <div style="font-size:1.2rem;color:#2196F3;">${courierOut}</div>
+                    <div style="font-size:0.6rem;color:#888;">Курьер выехал</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.03);padding:8px;border-radius:10px;text-align:center;grid-column:span 2;">
+                    <div style="font-size:1.2rem;color:#4CAF50;">${courierArrived}</div>
+                    <div style="font-size:0.6rem;color:#888;">Курьер прибыл</div>
                 </div>
             </div>
         `;
