@@ -288,55 +288,71 @@ function generateId(prefix) {
     return prefix + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
 }
 
-// ========== ВХОД ==========
-function login() {
-    const phone = document.getElementById('clientPhone').value.trim();
-    if (!phone) { showToast('❌ Введите номер телефона'); return; }
-    
-    db.ref('users').orderByChild('phone').equalTo(phone).once('value', (sn) => {
-        if (sn.exists()) {
-            let found = false;
-            sn.forEach(child => {
-                const user = child.val();
-                currentUser = { id: child.key, ...user };
-                found = true;
-                showToast('👋 Добро пожаловать, ' + user.name + '!');
-                enterMode();
-            });
-            if (!found) showToast('❌ Ошибка входа');
-        } else {
-            showToast('❌ Пользователь не найден. Зарегистрируйтесь.');
-        }
-    });
-}
-
-// ========== РЕГИСТРАЦИЯ ==========
+// ========== РЕГИСТРАЦИЯ (ИСПРАВЛЕНА) ==========
 function register() {
     const phone = document.getElementById('clientPhone').value.trim();
     const name = document.getElementById('nameInput').value.trim();
+    
     if (!phone) { showToast('❌ Введите номер телефона'); return; }
     if (!name) { showToast('❌ Введите имя'); return; }
     
+    // Проверяем, есть ли пользователь с таким номером
     db.ref('users').orderByChild('phone').equalTo(phone).once('value', (sn) => {
-        if (sn.exists()) { 
-            showToast('❌ Номер уже зарегистрирован'); 
-            return; 
+        if (sn.exists()) {
+            showToast('❌ Этот номер уже зарегистрирован');
+            return;
         }
         
+        // Создаём нового пользователя
         const userId = generateId('USR');
-        const user = { 
+        const userData = {
             id: userId,
-            phone: phone, 
-            name: name, 
+            phone: phone,
+            name: name,
             wallet: 1000,
             createdAt: Date.now()
         };
         
-        db.ref('users/' + userId).set(user).then(() => {
-            currentUser = { id: userId, ...user };
-            showToast('✅ Регистрация успешна! +1000 ₽');
-            enterMode();
-        });
+        db.ref('users/' + userId).set(userData)
+            .then(() => {
+                currentUser = userData;
+                showToast('✅ Регистрация успешна! +1000 ₽');
+                enterMode();
+            })
+            .catch((error) => {
+                console.error('Ошибка регистрации:', error);
+                showToast('❌ Ошибка регистрации: ' + error.message);
+            });
+    });
+}
+
+// ========== ВХОД (ИСПРАВЛЕН) ==========
+function login() {
+    const phone = document.getElementById('clientPhone').value.trim();
+    
+    if (!phone) { showToast('❌ Введите номер телефона'); return; }
+    
+    db.ref('users').orderByChild('phone').equalTo(phone).once('value', (sn) => {
+        if (sn.exists()) {
+            let userFound = false;
+            sn.forEach(child => {
+                const user = child.val();
+                currentUser = {
+                    id: child.key,
+                    phone: user.phone,
+                    name: user.name,
+                    wallet: user.wallet || 0
+                };
+                userFound = true;
+                showToast('👋 Добро пожаловать, ' + user.name + '!');
+                enterMode();
+            });
+            if (!userFound) {
+                showToast('❌ Ошибка входа');
+            }
+        } else {
+            showToast('❌ Пользователь не найден. Зарегистрируйтесь.');
+        }
     });
 }
 
@@ -736,6 +752,7 @@ function closePhotoModal() {
 
 // ========== ИНИЦИАЛИЗАЦИЯ ==========
 console.log('🛒 WHOPPER - Клиент загружен');
+console.log('📱 Для входа используйте номер телефона');
 </script>
 </body>
 </html>
