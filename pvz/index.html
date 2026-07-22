@@ -16,13 +16,12 @@
         .logo { font-size:1.2rem; font-weight:bold; color:#f5a623; }
         .user-badge { font-size:0.7rem; color:#888; background:rgba(255,255,255,0.05); padding:4px 12px; border-radius:30px; }
         .user-badge button { background:none; border:none; color:#f5a623; cursor:pointer; margin-left:8px; }
-        .btn { padding:8px 16px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; font-size:0.8rem; }
+        .btn { padding:8px 16px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; font-size:0.8rem; transition:0.15s; }
         .btn-primary { background:#f5a623; color:#1a1a2e; }
         .btn-success { background:#4CAF50; color:#fff; }
         .btn-danger { background:#ef4444; color:#fff; }
         .btn-info { background:#2196F3; color:#fff; }
         .btn-warning { background:#ff9800; color:#fff; }
-        .btn-purple { background:#9c27b0; color:#fff; }
         .btn-cyan { background:#00bcd4; color:#fff; }
         .btn-block { width:100%; padding:10px; }
         .form-group { margin-bottom:10px; }
@@ -46,21 +45,23 @@
         .order-delivery-info span { color:#f5a623; }
         .order-item { display:flex; align-items:center; gap:10px; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.03); }
         .order-item .item-info { flex:1; font-size:0.85rem; }
-        .scanner-container { background:#000; border-radius:16px; overflow:hidden; position:relative; min-height:300px; display:flex; align-items:center; justify-content:center; margin:12px 0; }
-        .scanner-container video { width:100%; display:block; }
-        .scanner-overlay { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:200px; height:200px; border:2px solid #f5a623; border-radius:12px; box-shadow:0 0 0 4000px rgba(0,0,0,0.4); pointer-events:none; }
+        .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:12px 24px; border-radius:40px; z-index:999; opacity:0; transition:0.3s; pointer-events:none; font-weight:600; max-width:90%; text-align:center; font-size:0.85rem; }
+        .toast.show { opacity:1; }
+        .tabs { display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap; }
+        .tab { padding:8px 16px; border-radius:30px; background:rgba(255,255,255,0.05); cursor:pointer; font-size:0.75rem; color:#888; border:1px solid transparent; transition:0.15s; }
+        .tab.active { background:rgba(245,166,35,0.15); color:#f5a623; border-color:#f5a623; }
         .scanner-input-area { display:flex; gap:8px; margin:10px 0; align-items:center; }
         .scanner-input-area input { flex:1; padding:10px 16px; border-radius:30px; border:2px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.05); color:#fff; font-size:0.85rem; outline:none; font-family:monospace; letter-spacing:1px; }
         .scanner-input-area input:focus { border-color:#f5a623; }
         .scanner-input-area button { padding:10px 20px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; }
         .scanned-order { background:rgba(76,175,80,0.1); border:1px solid #4CAF50; border-radius:12px; padding:12px; margin-top:10px; }
         .scanned-order .label { color:#888; font-size:0.75rem; }
-        .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:12px 24px; border-radius:40px; z-index:999; opacity:0; transition:0.3s; pointer-events:none; font-weight:600; max-width:90%; text-align:center; font-size:0.85rem; }
-        .toast.show { opacity:1; }
         .scanner-buttons { display:flex; gap:6px; flex-wrap:wrap; margin:8px 0; }
         .scanner-buttons button { flex:1; padding:10px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; font-size:0.75rem; min-width:100px; }
-        .scan-hint { font-size:0.65rem; color:#888; margin:4px 0; padding:4px 8px; background:rgba(255,255,255,0.03); border-radius:6px; }
-        @media (max-width:400px) { .scanner-overlay { width:150px; height:150px; } .scanner-buttons button { min-width:80px; font-size:0.65rem; } }
+        .scanner-container { background:#000; border-radius:16px; overflow:hidden; position:relative; min-height:300px; display:flex; align-items:center; justify-content:center; margin:12px 0; }
+        .scanner-container video { width:100%; display:block; }
+        .scanner-overlay { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:200px; height:200px; border:2px solid #f5a623; border-radius:12px; box-shadow:0 0 0 4000px rgba(0,0,0,0.4); pointer-events:none; }
+        @media (max-width:400px) { .scanner-buttons button { min-width:80px; font-size:0.65rem; } .scanner-overlay { width:150px; height:150px; } }
     </style>
 </head>
 <body>
@@ -78,59 +79,14 @@
 
     <div id="mainContent" class="hidden">
         <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
-            <button class="btn-warning" onclick="viewOrders('collecting')">📥 Сборка</button>
-            <button class="btn-success" onclick="viewOrders('ready')">📤 Выдача</button>
-            <button class="btn-danger" onclick="viewOrders('return')">🔄 Возвраты</button>
+            <button class="tab active" data-tab="collecting" onclick="switchTab('collecting')">📥 Сборка</button>
+            <button class="tab" data-tab="ready" onclick="switchTab('ready')">📤 Выдача</button>
+            <button class="tab" data-tab="return" onclick="switchTab('return')">🔄 Возвраты</button>
         </div>
         
-        <!-- СКАНИРОВАНИЕ УПАКОВКИ (ТЕПЕРЬ НЕ ОБЯЗАТЕЛЬНО) -->
-        <div style="background:rgba(245,166,35,0.1);border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid #f5a623;">
-            <h4 style="color:#f5a623;font-size:0.85rem;margin-bottom:8px;">📦 Сканировать упаковку (опционально)</h4>
-            <p style="color:#888;font-size:0.75rem;margin-bottom:8px;">Можно отсканировать QR-код на упаковке, но это необязательно</p>
-            
-            <div class="scanner-buttons">
-                <button class="btn-cyan" onclick="startPackageScanner('camera')">📷 Камера</button>
-                <button class="btn-purple" onclick="startPackageScanner('physical')">🔍 Сканер</button>
-            </div>
-            
-            <div id="packageScanner" class="scanner-container hidden"><div class="scanner-overlay"></div></div>
-            <button class="btn-danger btn-block" onclick="stopPackageScanner()" style="margin-top:6px;">⏹ Остановить</button>
-            
-            <div class="scanner-input-area">
-                <input type="text" id="physicalScanInput" placeholder="Наведите сканер на QR-код...">
-                <button class="btn-info" onclick="processPhysicalScan()">🔍 Найти</button>
-            </div>
-            <div class="scan-hint">💡 Сканирование не обязательно для выдачи заказа</div>
-            
-            <div id="scannedPackageResult"></div>
-        </div>
-        
-        <!-- СКАНИРОВАНИЕ ЗАКАЗА -->
-        <div style="background:rgba(255,255,255,0.03);border-radius:14px;padding:14px;margin-bottom:12px;">
-            <h4 style="color:#f5a623;font-size:0.85rem;margin-bottom:8px;">📷 Сканировать заказ</h4>
-            
-            <div class="scanner-buttons">
-                <button class="btn-cyan" onclick="startOrderScanner('camera')">📷 Камера</button>
-                <button class="btn-purple" onclick="startOrderScanner('physical')">🔍 Сканер</button>
-            </div>
-            
-            <div id="orderScanner" class="scanner-container hidden"><div class="scanner-overlay"></div></div>
-            <button class="btn-danger btn-block" onclick="stopOrderScanner()" style="margin-top:6px;">⏹ Остановить</button>
-            
-            <div class="scanner-input-area">
-                <input type="text" id="scannerInput" placeholder="Введите код вручную..." oninput="manualSearch(this.value)">
-                <button class="btn-info" onclick="manualSearch(document.getElementById('scannerInput').value)">🔍</button>
-            </div>
-            <div id="scannedResult"></div>
-        </div>
-        
-        <div class="scan-area">
-            <h4 style="color:#f5a623;font-size:0.85rem;">🔑 Поиск по коду</h4>
-            <input type="text" id="pvzSearch" placeholder="6-значный код" maxlength="6" oninput="findOrder(this.value)">
-            <div id="pvzResult" style="margin-top:6px;"></div>
-        </div>
-        
-        <div id="ordersList"></div>
+        <div id="tabCollecting"><div id="collectingOrders"></div></div>
+        <div id="tabReady" class="hidden"><div id="readyOrders"></div></div>
+        <div id="tabReturn" class="hidden"><div id="returnOrders"></div></div>
     </div>
 </div>
 
@@ -146,11 +102,10 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+db.goOnline();
 
 let currentUser = null;
 let currentPvzCode = null;
-let orderScanner = null;
-let packageScanner = null;
 let usedPickupNumbers = [];
 
 function showToast(msg, err = false) {
@@ -160,7 +115,7 @@ function showToast(msg, err = false) {
     t.style.background = err ? '#ef4444' : '#1a1a2e';
     t.classList.add('show');
     clearTimeout(t._timeout);
-    t._timeout = setTimeout(() => t.classList.remove('show'), 3000);
+    t._timeout = setTimeout(() => t.classList.remove('show'), 2500);
 }
 
 function login() {
@@ -180,10 +135,7 @@ function login() {
                     document.getElementById('userNameDisplay').textContent = '🏪 ПВЗ ' + code;
                     showToast('👋 Добро пожаловать в ПВЗ!');
                     loadUsedNumbers();
-                    viewOrders('collecting');
-                    setTimeout(() => {
-                        document.getElementById('physicalScanInput').focus();
-                    }, 500);
+                    loadOrders('collecting');
                 }
             });
             if (!found) showToast('❌ Неверный код ПВЗ', true);
@@ -229,13 +181,18 @@ function getStatusName(s) {
     return m[s] || s;
 }
 
-function viewOrders(type) {
-    const container = document.getElementById('ordersList');
+function loadOrders(type) {
+    const container = document.getElementById(type + 'Orders');
     const status = { 'collecting': 'collecting', 'ready': 'ready', 'return': 'return' }[type] || 'collecting';
     const names = { 'collecting': '🟡 Собирается', 'ready': '✅ Готов', 'return': '🔄 Возврат' };
+    
     db.ref('orders').orderByChild('status').equalTo(status).on('value', (sn) => {
         const orders = [];
-        sn.forEach(child => { orders.push({ id: child.key, ...child.val() }); });
+        sn.forEach(child => { 
+            const o = child.val();
+            // Показываем только заказы для этого ПВЗ
+            if (o.pvz === currentPvzCode) orders.push({ id: child.key, ...o });
+        });
         if (!orders.length) { container.innerHTML = `<div style="text-align:center;color:#555;padding:20px;">📭 Нет заказов</div>`; return; }
         container.innerHTML = orders.map(o => `
             <div class="order-card">
@@ -249,7 +206,8 @@ function viewOrders(type) {
                 <div style="font-weight:bold;">💰 ${o.total} ₽</div>
                 <div class="order-code">🔑 ${o.code}</div>
                 ${o.pickupNumber ? `<div style="text-align:center;margin:6px 0;"><span class="order-pickup-number">📋 ${o.pickupNumber}</span></div>` : ''}
-                <div class="order-delivery-info">📍 ПВЗ: <span>${o.pvz || 'Не выбран'}</span></div>
+                <div class="order-delivery-info">📦 ${o.delivery === 'courier' ? '🚚 Курьер' : '🏪 ПВЗ'}</div>
+                ${o.address ? `<div class="order-delivery-info">📍 ${o.address}</div>` : ''}
                 <div class="order-delivery-info">💳 ${o.payment === 'now' ? 'Оплачено' : 'При получении'}</div>
                 ${o.status === 'collecting' ? `<button class="btn-success" onclick="readyOrder('${o.id}')" style="margin-top:4px;padding:4px 12px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">✅ Готов к выдаче</button>` : ''}
                 ${o.status === 'ready' ? `<button class="btn-primary" onclick="deliverOrder('${o.id}')" style="margin-top:4px;padding:4px 12px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">📤 Выдать</button>` : ''}
@@ -259,15 +217,14 @@ function viewOrders(type) {
     });
 }
 
-// ========== ГОТОВ К ВЫДАЧЕ (БЕЗ ПРОВЕРКИ СКАНИРОВАНИЯ) ==========
 async function readyOrder(orderId) {
     const num = await generateRandomPickupNumber();
     db.ref('orders').orderByChild('id').equalTo(orderId).once('value', (sn) => {
         sn.forEach(child => {
             db.ref('orders/' + child.key).update({ status: 'ready', pickupNumber: num });
             usedPickupNumbers.push(num);
-            showToast('✅ Заказ готов! Номер хранения: ' + num);
-            viewOrders('collecting');
+            showToast('✅ Заказ готов! Номер: ' + num);
+            loadOrders('collecting');
         });
     });
 }
@@ -289,7 +246,7 @@ function deliverOrder(orderId) {
                 });
             }
             showToast('✅ Заказ выдан!');
-            viewOrders('ready');
+            loadOrders('ready');
         });
     });
 }
@@ -313,215 +270,20 @@ function returnOrder(orderId) {
                 });
             });
             showToast('🔄 Возврат оформлен');
-            viewOrders('collecting');
+            loadOrders('collecting');
         });
     });
 }
 
-// ========== ФИЗИЧЕСКИЙ СКАНЕР ==========
-function processPhysicalScan() {
-    const input = document.getElementById('physicalScanInput');
-    const value = input.value.trim();
-    
-    if (!value) {
-        showToast('❌ Ничего не отсканировано', true);
-        return;
-    }
-    
-    console.log('📥 Сканировано:', value);
-    input.value = '';
-    findOrderByPackage(value);
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    const input = document.getElementById('physicalScanInput');
-    if (input) {
-        input.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                processPhysicalScan();
-            }
-        });
-    }
-});
-
-// ========== СКАНИРОВАНИЕ УПАКОВКИ ==========
-function startPackageScanner(type) {
-    const container = document.getElementById('packageScanner');
-    const resultDiv = document.getElementById('scannedPackageResult');
-    container.classList.remove('hidden');
-    resultDiv.innerHTML = '';
-    
-    if (type === 'physical') {
-        showToast('🔍 Наведите физический сканер на QR-код');
-        document.getElementById('physicalScanInput').focus();
-        return;
-    }
-    
-    showToast('📷 Наведите на QR-код на упаковке...');
-    if (packageScanner) { packageScanner.stop().then(() => { packageScanner.clear(); startPackageScannerNow(); }).catch(() => { startPackageScannerNow(); }); } 
-    else { startPackageScannerNow(); }
-}
-
-function startPackageScannerNow() {
-    packageScanner = new Html5Qrcode("packageScanner");
-    const config = { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 };
-    packageScanner.start({ facingMode: "environment" }, config, onPackageScanSuccess, onPackageScanError)
-        .then(() => showToast('📷 Сканирование упаковки...'))
-        .catch(err => { showToast('❌ Ошибка: ' + err, true); document.getElementById('packageScanner').classList.add('hidden'); });
-}
-
-function onPackageScanSuccess(decodedText) {
-    showToast('✅ Упаковка отсканирована!');
-    document.getElementById('packageScanner').classList.add('hidden');
-    stopPackageScanner();
-    try { const data = JSON.parse(decodedText); findOrderByPackage(data.orderId || data.code || decodedText); } 
-    catch(e) { findOrderByPackage(decodedText); }
-}
-function onPackageScanError(error) {}
-
-function stopPackageScanner() {
-    if (packageScanner) { try { packageScanner.stop(); packageScanner.clear(); } catch(e) {} }
-    document.getElementById('packageScanner').classList.add('hidden');
-}
-
-function findOrderByPackage(text) {
-    const resultDiv = document.getElementById('scannedPackageResult');
-    let searchText = text;
-    try {
-        const data = JSON.parse(text);
-        if (data.orderId) searchText = data.orderId;
-        else if (data.code) searchText = data.code;
-    } catch(e) {}
-    
-    db.ref('orders').once('value', (sn) => {
-        let found = false;
-        sn.forEach(child => {
-            const o = child.val();
-            if (o.id === searchText || o.code === searchText) {
-                found = true;
-                resultDiv.innerHTML = `
-                    <div class="scanned-package">
-                        <div style="color:#4CAF50;font-weight:bold;">✅ Упаковка отсканирована!</div>
-                        <div>📦 Заказ: ${o.id}</div>
-                        <div>👤 ${o.userName || o.user}</div>
-                        <div>📱 ${o.phone || 'Не указан'}</div>
-                        <div>📌 Статус: ${getStatusName(o.status)}</div>
-                        ${o.pickupNumber ? `<div class="code-display">📋 Номер хранения: ${o.pickupNumber}</div>` : ''}
-                    </div>
-                `;
-            }
-        });
-        if (!found) {
-            resultDiv.innerHTML = '<div style="color:#ff4444;padding:12px;border:1px solid #ff4444;border-radius:12px;">❌ Заказ не найден</div>';
-            showToast('❌ Заказ не найден', true);
-        }
+function switchTab(tab) {
+    document.querySelectorAll('#mainContent .tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    ['tabCollecting', 'tabReady', 'tabReturn'].forEach(id => {
+        document.getElementById(id).classList.toggle('hidden', id !== 'tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
     });
+    loadOrders(tab);
 }
 
-// ========== СКАНИРОВАНИЕ ЗАКАЗА ==========
-function startOrderScanner(type) {
-    const container = document.getElementById('orderScanner');
-    const resultDiv = document.getElementById('scannedResult');
-    container.classList.remove('hidden');
-    resultDiv.innerHTML = '';
-    
-    if (type === 'physical') {
-        showToast('🔍 Наведите физический сканер на QR-код заказа');
-        document.getElementById('scannerInput').focus();
-        return;
-    }
-    
-    showToast('📷 Сканирование заказа...');
-    if (orderScanner) { orderScanner.stop().then(() => { orderScanner.clear(); startOrderScannerNow(); }).catch(() => { startOrderScannerNow(); }); } 
-    else { startOrderScannerNow(); }
-}
-
-function startOrderScannerNow() {
-    orderScanner = new Html5Qrcode("orderScanner");
-    const config = { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 };
-    orderScanner.start({ facingMode: "environment" }, config, onOrderScanSuccess, onOrderScanError)
-        .then(() => showToast('📷 Камера работает'))
-        .catch(err => { showToast('❌ Ошибка: ' + err, true); document.getElementById('orderScanner').classList.add('hidden'); });
-}
-
-function onOrderScanSuccess(decodedText) {
-    showToast('✅ QR-код считан!');
-    document.getElementById('orderScanner').classList.add('hidden');
-    stopOrderScanner();
-    try { const data = JSON.parse(decodedText); findOrderByText(data.orderId || decodedText); } 
-    catch(e) { findOrderByText(decodedText); }
-}
-function onOrderScanError(error) {}
-
-function stopOrderScanner() {
-    if (orderScanner) { try { orderScanner.stop(); orderScanner.clear(); } catch(e) {} }
-    document.getElementById('orderScanner').classList.add('hidden');
-    showToast('⏹ Сканирование остановлено');
-}
-
-function manualSearch(value) {
-    if (!value || value.length < 3) return;
-    findOrderByText(value);
-    document.getElementById('scannerInput').value = '';
-}
-
-function findOrderByText(text) {
-    const resultDiv = document.getElementById('scannedResult');
-    db.ref('orders').once('value', (sn) => {
-        let found = false;
-        sn.forEach(child => {
-            const o = child.val();
-            if (o.id === text || o.code === text) {
-                found = true;
-                resultDiv.innerHTML = `
-                    <div class="scanned-order">
-                        <div style="color:#4CAF50;font-weight:bold;">✅ Заказ найден!</div>
-                        <div><span class="label">🆔</span> ${o.id}</div>
-                        <div><span class="label">👤</span> ${o.userName || o.user}</div>
-                        <div><span class="label">📱</span> ${o.phone || 'Не указан'}</div>
-                        <div><span class="label">💰</span> ${o.total} ₽</div>
-                        <div><span class="label">🔑</span> ${o.code}</div>
-                        ${o.pickupNumber ? `<div><span class="label">📋 Номер:</span> <span class="order-pickup-number">${o.pickupNumber}</span></div>` : ''}
-                        <div><span class="label">📌 Статус:</span> ${getStatusName(o.status)}</div>
-                        ${o.status === 'collecting' ? `<button class="btn-success" onclick="readyOrder('${o.id}')" style="margin-top:8px;padding:8px 20px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">✅ Готов</button>` : ''}
-                        ${o.status === 'ready' ? `<button class="btn-primary" onclick="deliverOrder('${o.id}')" style="margin-top:8px;padding:8px 20px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">📤 Выдать</button>` : ''}
-                        ${(o.status === 'collecting' || o.status === 'ready') ? `<button class="btn-danger" onclick="returnOrder('${o.id}')" style="margin-top:8px;padding:8px 20px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">🔄 Возврат</button>` : ''}
-                    </div>
-                `;
-            }
-        });
-        if (!found) { resultDiv.innerHTML = '<div style="color:#ff4444;">❌ Заказ не найден</div>'; }
-    });
-}
-
-function findOrder(code) {
-    const result = document.getElementById('pvzResult');
-    if (!code || code.length < 6) { result.innerHTML = ''; return; }
-    db.ref('orders').orderByChild('code').equalTo(code).once('value', (sn) => {
-        if (sn.exists()) {
-            sn.forEach(child => {
-                const o = child.val();
-                result.innerHTML = `
-                    <div style="background:rgba(76,175,80,0.15);padding:12px;border-radius:12px;border:1px solid #4CAF50;">
-                        <div style="color:#4CAF50;font-weight:bold;">✅ Заказ найден!</div>
-                        <div>👤 ${o.userName || o.user}</div>
-                        <div>📱 ${o.phone || 'Не указан'}</div>
-                        <div>💰 ${o.total} ₽</div>
-                        <div>Код: ${o.code}</div>
-                        <div>Статус: ${getStatusName(o.status)}</div>
-                        ${o.status === 'collecting' ? `<button class="btn-success" onclick="readyOrder('${o.id}')" style="margin-top:8px;padding:8px 20px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">✅ Готов</button>` : ''}
-                        ${o.status === 'ready' ? `<button class="btn-primary" onclick="deliverOrder('${o.id}')" style="margin-top:8px;padding:8px 20px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">📤 Выдать</button>` : ''}
-                        ${(o.status === 'collecting' || o.status === 'ready') ? `<button class="btn-danger" onclick="returnOrder('${o.id}')" style="margin-top:8px;padding:8px 20px;border-radius:30px;border:none;font-weight:bold;cursor:pointer;">🔄 Возврат</button>` : ''}
-                    </div>
-                `;
-            });
-        } else { result.innerHTML = '<div style="color:#ff4444;">❌ Заказ не найден</div>'; }
-    });
-}
-
-console.log('📦 WHOPPER ПВЗ загружен');
-console.log('✅ Сканирование упаковки НЕ ОБЯЗАТЕЛЬНО для выдачи');
+console.log('📦 WHOPPER ПВЗ загружен (быстрая версия)');
 </script>
 </body>
 </html>
