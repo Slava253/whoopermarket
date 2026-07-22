@@ -49,8 +49,9 @@
         .scanner-container { background:#000; border-radius:16px; overflow:hidden; position:relative; min-height:300px; display:flex; align-items:center; justify-content:center; margin:12px 0; }
         .scanner-container video { width:100%; display:block; }
         .scanner-overlay { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:200px; height:200px; border:2px solid #f5a623; border-radius:12px; box-shadow:0 0 0 4000px rgba(0,0,0,0.4); pointer-events:none; }
-        .scanner-input-area { display:flex; gap:8px; margin:10px 0; }
-        .scanner-input-area input { flex:1; padding:10px 16px; border-radius:30px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.05); color:#fff; font-size:0.85rem; outline:none; }
+        .scanner-input-area { display:flex; gap:8px; margin:10px 0; align-items:center; }
+        .scanner-input-area input { flex:1; padding:10px 16px; border-radius:30px; border:2px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.05); color:#fff; font-size:0.85rem; outline:none; font-family:monospace; letter-spacing:1px; }
+        .scanner-input-area input:focus { border-color:#f5a623; }
         .scanner-input-area button { padding:10px 20px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; }
         .scanned-order { background:rgba(76,175,80,0.1); border:1px solid #4CAF50; border-radius:12px; padding:12px; margin-top:10px; }
         .scanned-order .label { color:#888; font-size:0.75rem; }
@@ -60,6 +61,7 @@
         .scanned-package .code-display { font-size:2rem; font-weight:bold; color:#f5a623; font-family:monospace; letter-spacing:8px; text-align:center; background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; }
         .scanner-buttons { display:flex; gap:6px; flex-wrap:wrap; margin:8px 0; }
         .scanner-buttons button { flex:1; padding:10px; border-radius:30px; border:none; font-weight:bold; cursor:pointer; font-size:0.75rem; min-width:100px; }
+        .scan-hint { font-size:0.65rem; color:#888; margin:4px 0; padding:4px 8px; background:rgba(255,255,255,0.03); border-radius:6px; }
         @media (max-width:400px) { .scanner-overlay { width:150px; height:150px; } .scanner-buttons button { min-width:80px; font-size:0.65rem; } }
     </style>
 </head>
@@ -87,7 +89,6 @@
             <h4 style="color:#f5a623;font-size:0.85rem;margin-bottom:8px;">📦 Сканировать упаковку</h4>
             <p style="color:#888;font-size:0.75rem;margin-bottom:8px;">Отсканируйте QR-код на упаковке товара</p>
             
-            <!-- ВЫБОР СКАНЕРА -->
             <div class="scanner-buttons">
                 <button class="btn-cyan" onclick="startPackageScanner('camera')">📷 Камера</button>
                 <button class="btn-purple" onclick="startPackageScanner('physical')">🔍 Сканер</button>
@@ -96,11 +97,12 @@
             <div id="packageScanner" class="scanner-container hidden"><div class="scanner-overlay"></div></div>
             <button class="btn-danger btn-block" onclick="stopPackageScanner()" style="margin-top:6px;">⏹ Остановить</button>
             
-            <!-- Для физического сканера -->
-            <div class="scanner-input-area" id="physicalScannerInput">
-                <input type="text" id="physicalScanInput" placeholder="Отсканируйте физическим сканером..." oninput="physicalScanHandler(this.value)">
-                <button class="btn-info" onclick="physicalScanHandler(document.getElementById('physicalScanInput').value)">🔍</button>
+            <!-- ФИЗИЧЕСКИЙ СКАНЕР - ИСПРАВЛЕН -->
+            <div class="scanner-input-area">
+                <input type="text" id="physicalScanInput" placeholder="Наведите сканер на QR-код..." autofocus>
+                <button class="btn-info" onclick="processPhysicalScan()">🔍 Найти</button>
             </div>
+            <div class="scan-hint">💡 После сканирования нажмите Enter или кнопку "Найти"</div>
             
             <div id="scannedPackageResult"></div>
         </div>
@@ -152,7 +154,8 @@ let orderScanner = null;
 let packageScanner = null;
 let scannedOrderId = null;
 let usedPickupNumbers = [];
-let isPhysicalScanner = false;
+let scanBuffer = '';
+let scanTimer = null;
 
 function showToast(msg, err = false) {
     let t = document.getElementById('toast');
@@ -182,6 +185,10 @@ function login() {
                     showToast('👋 Добро пожаловать в ПВЗ!');
                     loadUsedNumbers();
                     viewOrders('collecting');
+                    // Фокус на поле для сканера
+                    setTimeout(() => {
+                        document.getElementById('physicalScanInput').focus();
+                    }, 500);
                 }
             });
             if (!found) showToast('❌ Неверный код ПВЗ', true);
@@ -318,13 +325,39 @@ function returnOrder(orderId) {
     });
 }
 
-// ========== ФИЗИЧЕСКИЙ СКАНЕР ==========
-function physicalScanHandler(value) {
-    if (!value || value.length < 3) return;
-    document.getElementById('physicalScanInput').value = '';
-    // Ищем заказ по отсканированным данным
+// ========== ФИЗИЧЕСКИЙ СКАНЕР - ОБРАБОТКА ==========
+function processPhysicalScan() {
+    const input = document.getElementById('physicalScanInput');
+    const value = input.value.trim();
+    
+    if (!value) {
+        showToast('❌ Ничего не отсканировано', true);
+        return;
+    }
+    
+    console.log('📥 Сканировано (сырые данные):', value);
+    console.log('📥 Длина:', value.length);
+    console.log('📥 Коды символов:', value.split('').map(c => c.charCodeAt(0)));
+    
+    // Очищаем поле
+    input.value = '';
+    
+    // Пробуем найти заказ по сканированным данным
     findOrderByPackage(value);
 }
+
+// Обработка Enter в поле физического сканера
+document.addEventListener('DOMContentLoaded', function() {
+    const input = document.getElementById('physicalScanInput');
+    if (input) {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                processPhysicalScan();
+            }
+        });
+    }
+});
 
 // ========== СКАНИРОВАНИЕ УПАКОВКИ ==========
 function startPackageScanner(type) {
@@ -334,13 +367,11 @@ function startPackageScanner(type) {
     resultDiv.innerHTML = '';
     
     if (type === 'physical') {
-        // Физический сканер - просто показываем поле ввода
         showToast('🔍 Наведите физический сканер на QR-код');
         document.getElementById('physicalScanInput').focus();
         return;
     }
     
-    // Камера
     showToast('📷 Наведите на QR-код на упаковке...');
     if (packageScanner) { packageScanner.stop().then(() => { packageScanner.clear(); startPackageScannerNow(); }).catch(() => { startPackageScannerNow(); }); } 
     else { startPackageScannerNow(); }
@@ -370,27 +401,46 @@ function stopPackageScanner() {
 
 function findOrderByPackage(text) {
     const resultDiv = document.getElementById('scannedPackageResult');
+    
+    // Пробуем распарсить как JSON
+    let searchText = text;
+    try {
+        const data = JSON.parse(text);
+        if (data.orderId) searchText = data.orderId;
+        else if (data.code) searchText = data.code;
+    } catch(e) {}
+    
+    console.log('🔍 Поиск по:', searchText);
+    
     db.ref('orders').once('value', (sn) => {
         let found = false;
+        let orders = [];
         sn.forEach(child => {
             const o = child.val();
-            if (o.id === text || o.code === text) {
+            if (o.id === searchText || o.code === searchText) {
+                orders.push({ id: child.key, ...o });
                 found = true;
-                scannedOrderId = o.id;
-                resultDiv.innerHTML = `
-                    <div class="scanned-package">
-                        <div style="color:#4CAF50;font-weight:bold;">✅ Упаковка отсканирована!</div>
-                        <div>📦 Заказ: ${o.id}</div>
-                        <div>👤 ${o.userName || o.user}</div>
-                        <div>📱 ${o.phone || 'Не указан'}</div>
-                        <div>📌 Статус: ${getStatusName(o.status)}</div>
-                        <div style="margin-top:8px;color:#888;font-size:0.8rem;">Теперь можно нажать "Готов к выдаче"</div>
-                        <div class="code-display">📋 Номер для выдачи: ${o.pickupNumber || 'Будет сгенерирован случайно'}</div>
-                    </div>
-                `;
             }
         });
-        if (!found) { resultDiv.innerHTML = '<div style="color:#ff4444;padding:12px;border:1px solid #ff4444;border-radius:12px;">❌ Заказ не найден</div>'; }
+        
+        if (found) {
+            const o = orders[0];
+            scannedOrderId = o.id;
+            resultDiv.innerHTML = `
+                <div class="scanned-package">
+                    <div style="color:#4CAF50;font-weight:bold;">✅ Упаковка отсканирована!</div>
+                    <div>📦 Заказ: ${o.id}</div>
+                    <div>👤 ${o.userName || o.user}</div>
+                    <div>📱 ${o.phone || 'Не указан'}</div>
+                    <div>📌 Статус: ${getStatusName(o.status)}</div>
+                    <div style="margin-top:8px;color:#888;font-size:0.8rem;">Теперь можно нажать "Готов к выдаче"</div>
+                    <div class="code-display">📋 Номер для выдачи: ${o.pickupNumber || 'Будет сгенерирован случайно'}</div>
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = '<div style="color:#ff4444;padding:12px;border:1px solid #ff4444;border-radius:12px;">❌ Заказ не найден. Проверьте QR-код.</div>';
+            showToast('❌ Заказ не найден', true);
+        }
     });
 }
 
@@ -497,6 +547,7 @@ function findOrder(code) {
 
 console.log('📦 WHOPPER ПВЗ загружен');
 console.log('📷 Доступны: камера и физический сканер');
+console.log('🔍 Для физического сканера используйте поле ввода');
 </script>
 </body>
 </html>
